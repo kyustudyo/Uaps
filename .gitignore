@@ -4,6 +4,7 @@ node_modules/
 *.log
 .env
 package-lock.json
+.vscode/
 
 # YoYo AI version control directory
 .yoyo/
