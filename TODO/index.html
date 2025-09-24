@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODO - 토스 스타일</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .todo-list {
+            list-style: none;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            animation: slideIn 0.3s ease;
+        }
+
+        .todo-item:hover {
+            background: #f8f9fa;
+        }
+
+        .todo-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .todo-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            margin-right: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .todo-checkbox.checked {
+            background: #ff6b6b;
+            border-color: #ff6b6b;
+        }
+
+        .todo-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .delete-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #ff3742;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state img {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ff6b6b;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                margin: 0;
+                border-radius: 15px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .header p {
+                font-size: 1rem;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .todo-item {
+                padding: 15px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .todo-checkbox {
+                width: 20px;
+                height: 20px;
+                margin-right: 0;
+                margin-bottom: 5px;
+            }
+
+            .todo-text {
+                font-size: 14px;
+                margin-bottom: 10px;
+            }
+
+            .delete-btn {
+                align-self: flex-end;
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .stat-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .stat-number {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .todo-item {
+                padding: 12px;
+            }
+
+            .todo-text {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 TODO</h1>
+            <p>오늘도 화이팅! 할 일을 차근차근 정리해보세요</p>
+        </div>
+
+        <div class="content">
+            <!-- TODO 리스트 -->
+            <ul class="todo-list" id="todoList">
+                <li class="empty-state" id="emptyState">
+                    <div>📋</div>
+                    <p>아직 할 일이 없습니다.<br>새로운 할 일을 추가해보세요!</p>
+                </li>
+            </ul>
+
+            <!-- 통계 -->
+            <div class="stats" id="stats" style="display: none;">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalTodos">0</div>
+                    <div class="stat-label">전체</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="completedTodos">0</div>
+                    <div class="stat-label">완료</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="remainingTodos">0</div>
+                    <div class="stat-label">남은 일</div>
+                </div>
+            </div>
+
+            <!-- Long TODO 리스트 -->
+            <div class="long-todo-section">
+                <h2 style="margin: 30px 0 20px 0; color: #333; font-size: 1.5rem;">📋 Long TODO 리스트</h2>
+                <ul class="todo-list" id="longTodoList">
+                    <li class="empty-state" id="longEmptyState">
+                        <div>📝</div>
+                        <p>장기 프로젝트가 없습니다.<br>새로운 장기 목표를 추가해보세요!</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let todos = [];
+        let longTodos = [];
+        let todoIdCounter = 1;
+        let longTodoIdCounter = 1;
+
+        // 데이터 로드 함수
+        function loadData() {
+            try {
+                todos = JSON.parse(localStorage.getItem('todos')) || [];
+                longTodos = JSON.parse(localStorage.getItem('longTodos')) || [];
+                todoIdCounter = parseInt(localStorage.getItem('todoIdCounter')) || 1;
+                longTodoIdCounter = parseInt(localStorage.getItem('longTodoIdCounter')) || 1;
+            } catch (error) {
+                console.error('데이터 로드 오류:', error);
+                todos = [];
+                longTodos = [];
+                todoIdCounter = 1;
+                longTodoIdCounter = 1;
+            }
+        }
+
+        // 데이터 저장 함수
+        function saveData() {
+            try {
+                localStorage.setItem('todos', JSON.stringify(todos));
+                localStorage.setItem('longTodos', JSON.stringify(longTodos));
+                localStorage.setItem('todoIdCounter', todoIdCounter.toString());
+                localStorage.setItem('longTodoIdCounter', longTodoIdCounter.toString());
+                console.log('데이터 저장 완료');
+            } catch (error) {
+                console.error('데이터 저장 오류:', error);
+            }
+        }
+
+        // 페이지 로드 시 TODO 리스트 렌더링
+        window.onload = function() {
+            // 데이터 로드
+            loadData();
+            
+            
+            // 새로운 TODO 항목이 없으면 추가
+            const newTodoItems = [
+                "미드저니 또는 짐니 와 meshy를 이용한 3d 모델"
+            ];
+            
+            newTodoItems.forEach(itemText => {
+                const hasItem = todos.some(todo => todo.text.includes("미드저니"));
+                if (!hasItem) {
+                    const newId = Math.max(...todos.map(t => t.id), 0) + 1;
+                    todos.push({
+                        id: newId,
+                        text: itemText,
+                        completed: false,
+                        createdAt: new Date().toISOString()
+                    });
+                    todoIdCounter = newId + 1;
+                }
+            });
+            
+            // 기본 TODO 항목들 추가 (첫 방문 시에만)
+            if (todos.length === 0) {
+                todos = [
+                    { id: 1, text: "Figma 캔버스 MCP 연결", completed: false, createdAt: new Date().toISOString() },
+                    { id: 2, text: "프롬프트 입력으로 디자인 생성", completed: false, createdAt: new Date().toISOString() },
+                    { id: 3, text: "왼쪽 체크리스트 UI 구현", completed: false, createdAt: new Date().toISOString() },
+                    { id: 4, text: "미드저니 또는 짐니 와 meshy를 이용한 3d 모델", completed: false, createdAt: new Date().toISOString() }
+                ];
+                todoIdCounter = 5;
+                saveData();
+            }
+
+            // 새로운 항목들이 Long TODO에 없으면 추가
+            const newItems = [
+                "클로드코드 병행(결필요제)",
+                "블렌더, 펄플렉서티 MCP",
+                "지표추가, 에러처리"
+            ];
+            
+            newItems.forEach(itemText => {
+                const hasItem = longTodos.some(todo => todo.text.includes(itemText));
+                if (!hasItem) {
+                    const newId = Math.max(...longTodos.map(t => t.id), 0) + 1;
+                    longTodos.push({
+                        id: newId,
+                        text: itemText,
+                        completed: false,
+                        createdAt: new Date().toISOString()
+                    });
+                    longTodoIdCounter = newId + 1;
+                }
+            });
+            saveData();
+
+            // 기본 Long TODO 항목들 추가 (첫 방문 시에만)
+            if (longTodos.length === 0) {
+                longTodos = [
+                    { id: 1, text: "웹 개발 마스터하기", completed: false, createdAt: new Date().toISOString() },
+                    { id: 2, text: "AI/ML 프로젝트 완성", completed: false, createdAt: new Date().toISOString() },
+                    { id: 3, text: "포트폴리오 웹사이트 제작", completed: false, createdAt: new Date().toISOString() },
+                    { id: 4, text: "오픈소스 프로젝트 기여", completed: false, createdAt: new Date().toISOString() },
+                    { id: 5, text: "클로드코드 병행(결필요제)", completed: false, createdAt: new Date().toISOString() },
+                    { id: 6, text: "블렌더, 펄플렉서티 MCP", completed: false, createdAt: new Date().toISOString() },
+                    { id: 7, text: "지표추가, 에러처리", completed: false, createdAt: new Date().toISOString() }
+                ];
+                longTodoIdCounter = 8;
+                saveData();
+            }
+
+            renderTodos();
+            renderLongTodos();
+            updateStats();
+            
+            // 이벤트 위임으로 클릭 이벤트 처리
+            document.getElementById('todoList').addEventListener('click', function(e) {
+                const todoItem = e.target.closest('.todo-item');
+                if (!todoItem) return;
+                
+                const todoId = parseInt(todoItem.getAttribute('data-id'));
+                
+                if (e.target.classList.contains('todo-checkbox')) {
+                    console.log('Checkbox clicked for todo:', todoId);
+                    toggleTodo(todoId);
+                } else if (e.target.classList.contains('delete-btn')) {
+                    console.log('Delete clicked for todo:', todoId);
+                    deleteTodo(todoId);
+                }
+            });
+
+            // Long TODO 이벤트 위임
+            document.getElementById('longTodoList').addEventListener('click', function(e) {
+                const todoItem = e.target.closest('.todo-item');
+                if (!todoItem) return;
+                
+                const todoId = parseInt(todoItem.getAttribute('data-id'));
+                
+                if (e.target.classList.contains('todo-checkbox')) {
+                    console.log('Long checkbox clicked for todo:', todoId);
+                    toggleLongTodo(todoId);
+                } else if (e.target.classList.contains('delete-btn')) {
+                    console.log('Long delete clicked for todo:', todoId);
+                    deleteLongTodo(todoId);
+                }
+            });
+        };
+
+        // TODO 토글 (완료/미완료)
+        function toggleTodo(id) {
+            console.log('toggleTodo called with id:', id);
+            const todo = todos.find(t => t.id === id);
+            if (todo) {
+                todo.completed = !todo.completed;
+                console.log('Todo updated:', todo);
+                saveData(); // 통합 저장 함수 사용
+                // 즉시 UI 업데이트
+                const todoItem = document.querySelector(`[data-id="${id}"]`);
+                if (todoItem) {
+                    todoItem.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+                    const checkbox = todoItem.querySelector('.todo-checkbox');
+                    checkbox.className = `todo-checkbox ${todo.completed ? 'checked' : ''}`;
+                }
+                updateStats();
+            }
+        }
+
+        // TODO 삭제
+        function deleteTodo(id) {
+            console.log('deleteTodo called with id:', id);
+            
+            // 알림창 표시
+            if (confirm('정말 삭제하시겠습니까?')) {
+                todos = todos.filter(t => t.id !== id);
+                saveData(); // 통합 저장 함수 사용
+                // 즉시 UI에서 제거
+                const todoItem = document.querySelector(`[data-id="${id}"]`);
+                if (todoItem) {
+                    todoItem.remove();
+                }
+                updateStats();
+            }
+        }
+
+        // TODO 리스트 렌더링
+        function renderTodos() {
+            console.log('renderTodos called, todos:', todos);
+            const todoList = document.getElementById('todoList');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (todos.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            
+            // innerHTML로 렌더링하고 이벤트 위임 사용
+            todoList.innerHTML = todos.map(todo => `
+                <li class="todo-item ${todo.completed ? 'completed' : ''}" data-id="${todo.id}">
+                    <div class="todo-checkbox ${todo.completed ? 'checked' : ''}"></div>
+                    <div class="todo-text">${todo.text}</div>
+                    <button class="delete-btn">삭제</button>
+                </li>
+            `).join('');
+        }
+
+        // Long TODO 토글 (완료/미완료)
+        function toggleLongTodo(id) {
+            console.log('toggleLongTodo called with id:', id);
+            const todo = longTodos.find(t => t.id === id);
+            if (todo) {
+                todo.completed = !todo.completed;
+                console.log('Long Todo updated:', todo);
+                saveData(); // 통합 저장 함수 사용
+                // 즉시 UI 업데이트
+                const todoItem = document.querySelector(`#longTodoList [data-id="${id}"]`);
+                if (todoItem) {
+                    todoItem.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+                    const checkbox = todoItem.querySelector('.todo-checkbox');
+                    checkbox.className = `todo-checkbox ${todo.completed ? 'checked' : ''}`;
+                }
+            }
+        }
+
+        // Long TODO 삭제
+        function deleteLongTodo(id) {
+            console.log('deleteLongTodo called with id:', id);
+            
+            // 알림창 표시
+            if (confirm('정말 삭제하시겠습니까?')) {
+                longTodos = longTodos.filter(t => t.id !== id);
+                saveData(); // 통합 저장 함수 사용
+                // 즉시 UI에서 제거
+                const todoItem = document.querySelector(`#longTodoList [data-id="${id}"]`);
+                if (todoItem) {
+                    todoItem.remove();
+                }
+                // 빈 상태 처리
+                renderLongTodos();
+            }
+        }
+
+        // Long TODO 리스트 렌더링
+        function renderLongTodos() {
+            console.log('renderLongTodos called, longTodos:', longTodos);
+            const todoList = document.getElementById('longTodoList');
+            const emptyState = document.getElementById('longEmptyState');
+            
+            if (longTodos.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            
+            // innerHTML로 렌더링하고 이벤트 위임 사용
+            todoList.innerHTML = longTodos.map(todo => `
+                <li class="todo-item ${todo.completed ? 'completed' : ''}" data-id="${todo.id}">
+                    <div class="todo-checkbox ${todo.completed ? 'checked' : ''}"></div>
+                    <div class="todo-text">${todo.text}</div>
+                    <button class="delete-btn">삭제</button>
+                </li>
+            `).join('');
+        }
+
+        // 통계 업데이트
+        function updateStats() {
+            const total = todos.length;
+            const completed = todos.filter(t => t.completed).length;
+            const remaining = total - completed;
+
+            document.getElementById('totalTodos').textContent = total;
+            document.getElementById('completedTodos').textContent = completed;
+            document.getElementById('remainingTodos').textContent = remaining;
+
+            const stats = document.getElementById('stats');
+            stats.style.display = total > 0 ? 'flex' : 'none';
+        }
+    </script>
+</body>
+</html>
