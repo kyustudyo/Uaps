@@ -338,11 +338,17 @@
             
             // 새로운 TODO 항목이 없으면 추가
             const newTodoItems = [
-                "미드저니 또는 짐니 와 meshy를 이용한 3d 모델"
+                "미드저니 또는 짐니 와 meshy를 이용한 3d 모델",
+                "카메라 관련 강의 완료 - Cinemachine 시스템 이해",
+                "맵 경계 제한 기능 구현 강의 수강",
+                "Unity 6.0 다운로드 및 설치",
+                "Cursor AI로 코드 해석 및 분석",
+                "필요한 코드만 선별하여 주석 처리",
+                "실제 프로젝트 파일 생성 및 Git 추가"
             ];
             
             newTodoItems.forEach(itemText => {
-                const hasItem = todos.some(todo => todo.text.includes("미드저니"));
+                const hasItem = todos.some(todo => todo.text.includes(itemText.split(' ')[0]));
                 if (!hasItem) {
                     const newId = Math.max(...todos.map(t => t.id), 0) + 1;
                     todos.push({
