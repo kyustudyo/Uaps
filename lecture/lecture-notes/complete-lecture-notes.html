@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Unity RTS 강의 완전 정리 - 노바1492 프로젝트 적용</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 20px; background: white; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border-radius: 20px; }
+        .header { text-align: center; margin-bottom: 40px; padding: 40px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 20px; margin: -20px -20px 40px -20px; }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 700; }
+        .lecture-section { margin-bottom: 50px; padding: 30px; background: #f8f9fa; border-radius: 15px; border-left: 5px solid #667eea; }
+        .lecture-title { font-size: 1.8rem; color: #667eea; margin-bottom: 20px; font-weight: 600; }
+        .lecture-goal { background: #e3f2fd; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #2196f3; }
+        .content-section { margin-bottom: 25px; }
+        .content-section h3 { color: #333; margin-bottom: 15px; font-size: 1.3rem; }
+        .content-list { list-style: none; padding-left: 0; }
+        .content-list li { padding: 8px 0; padding-left: 25px; position: relative; }
+        .content-list li::before { content: "✓"; position: absolute; left: 0; color: #4caf50; font-weight: bold; }
+        .code-block { background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 10px; margin: 15px 0; overflow-x: auto; font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; font-size: 0.9rem; }
+        .project-application { background: #f0f4f8; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #38a169; }
+        .tech-stack { background: #fff5f5; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #e53e3e; }
+        .summary-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; border-radius: 20px; margin-top: 40px; text-align: center; }
+        .toc { background: #f7fafc; padding: 20px; border-radius: 10px; margin-bottom: 30px; }
+        .toc ul { list-style: none; padding-left: 0; }
+        .toc li { padding: 5px 0; padding-left: 20px; position: relative; }
+        .toc li::before { content: "📚"; position: absolute; left: 0; }
+        .toc a { color: #4a5568; text-decoration: none; transition: color 0.3s; }
+        .toc a:hover { color: #667eea; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Unity RTS 강의 완전 정리</h1>
+            <p>노바1492 프로젝트 적용</p>
+        </div>
+        
+        <div class="toc">
+            <h3>📚 목차</h3>
+            <ul>
+                <li><a href="#lecture1">강의 1: 패키지 매니저 등록 및 어셋 등록</a></li>
+                <li><a href="#lecture2">강의 2: Cinemachine 카메라 시스템 구현</a></li>
+                <li><a href="#lecture3">강의 3: 키보드 카메라 이동 시스템</a></li>
+                <li><a href="#lecture4">강의 4: Warcraft 3 스타일 줌 시스템</a></li>
+                <li><a href="#lecture5">강의 5: 카메라 회전 시스템</a></li>
+                <li><a href="#lecture6">강의 6: 마우스 엣지 팬 시스템</a></li>
+                <li><a href="#lecture7">강의 7: 카메라 경계 제한 시스템</a></li>
+                <li><a href="#summary">노바1492 프로젝트 종합 적용 방안</a></li>
+            </ul>
+        </div>
+        
+        <div class="lecture-section" id="lecture1">
+            <h2 class="lecture-title">📦 강의 1: 패키지 매니저 등록 및 어셋 등록</h2>
+            <div class="lecture-goal">
+                <h3>🎯 강의 목표</h3>
+                <p>Unity RTS 게임 개발을 위한 기본 패키지와 어셋들을 프로젝트에 등록하고 설정하는 방법을 학습합니다.</p>
+            </div>
+            <div class="content-section">
+                <h3>📋 주요 내용</h3>
+                <h4>1. 패키지 매니저 설정</h4>
+                <ul class="content-list">
+                    <li><strong>Unity Package Manager</strong>를 통한 패키지 관리</li>
+                    <li><strong>Input System</strong> 패키지 등록</li>
+                    <li><strong>Cinemachine</strong> 패키지 등록</li>
+                    <li><strong>Universal Render Pipeline (URP)</strong> 설정</li>
+                </ul>
+                <h4>2. 어셋 등록</h4>
+                <ul class="content-list">
+                    <li><strong>SciFi Pack</strong>: 우주/미래 테마 3D 모델들</li>
+                    <li><strong>UI Assets</strong>: 게임 인터페이스 요소들</li>
+                    <li><strong>Particle Effects</strong>: 폭발, 연기, 머즐플래시 등</li>
+                    <li><strong>Terrain Assets</strong>: 지형 텍스처 및 레이어</li>
+                </ul>
+            </div>
+            <div class="project-application">
+                <h3>🎮 노바1492 프로젝트 적용 포인트</h3>
+                <ul class="content-list">
+                    <li><strong>SciFi Pack의 모델들</strong>: 로봇 파츠의 기본 형태로 활용</li>
+                    <li><strong>UI 시스템</strong>: 파츠 선택 및 커스터마이징 인터페이스</li>
+                    <li><strong>머티리얼 시스템</strong>: 각 파츠별 고유한 머티리얼 적용</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="lecture-section" id="lecture2">
+            <h2 class="lecture-title">📹 강의 2: Cinemachine 카메라 시스템 구현</h2>
+            <div class="lecture-goal">
+                <h3>🎯 강의 목표</h3>
+                <p>RTS 게임에 최적화된 카메라 시스템을 Cinemachine을 사용하여 구현하는 방법을 학습합니다.</p>
+            </div>
+            <div class="content-section">
+                <h3>📋 주요 내용</h3>
+                <h4>1. Cinemachine Brain 설정</h4>
+                <ul class="content-list">
+                    <li><strong>메인 카메라</strong>에 Cinemachine Brain 컴포넌트 추가</li>
+                    <li><strong>Brain</strong>은 여러 Virtual Camera 간의 전환을 관리</li>
+                    <li><strong>Blend List Camera</strong>를 통한 카메라 전환 시스템</li>
+                </ul>
+                <h4>2. Virtual Camera 생성 및 설정</h4>
+                <div class="code-block">
+// Cinemachine Virtual Camera 설정
+CinemachineVirtualCamera vcam = gameObject.AddComponent&lt;CinemachineVirtualCamera&gt;();
+                </div>
+                <h4>3. 카메라 위치 및 각도 설정</h4>
+                <ul class="content-list">
+                    <li><strong>위치</strong>: (6, 10, -8) - RTS 게임에 적합한 시점</li>
+                    <li><strong>회전</strong>: (62, -60, 0) - 지형을 잘 볼 수 있는 각도</li>
+                    <li><strong>Field of View</strong>: 60도 - 적절한 시야각</li>
+                </ul>
+            </div>
+            <div class="project-application">
+                <h3>🎮 노바1492 프로젝트 적용 포인트</h3>
+                <ul class="content-list">
+                    <li><strong>전체 맵 시야</strong>: 로봇들의 위치를 파악하기 쉬운 시점</li>
+                    <li><strong>빠른 반응성</strong>: 전투 중 빠른 카메라 이동</li>
+                    <li><strong>부드러운 전환</strong>: 로봇 간 전환 시 자연스러운 카메라 이동</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="lecture-section" id="lecture3">
+            <h2 class="lecture-title">⌨️ 강의 3: 키보드 카메라 이동 시스템</h2>
+            <div class="lecture-goal">
+                <h3>🎯 강의 목표</h3>
+                <p>새로운 Input System을 사용하여 키보드로 카메라를 이동시키는 시스템을 구현합니다.</p>
+            </div>
+            <div class="content-section">
+                <h3>📋 주요 내용</h3>
+                <h4>1. 새로운 Input System 소개</h4>
+                <ul class="content-list">
+                    <li><strong>Unity 2018</strong>부터 도입된 새로운 Input System</li>
+                    <li><strong>Polling 방식</strong>: 매 프레임마다 입력을 확인</li>
+                    <li><strong>Event-driven 방식</strong>: 입력이 발생할 때 콜백을 받음</li>
+                </ul>
+                <h4>2. 키보드 입력 처리</h4>
+                <div class="code-block">
+// 키보드 입력 확인
+if (Keyboard.current.upArrowKey.isPressed) {
+    moveAmount.y += keyboardPanSpeed;
+}
+if (Keyboard.current.leftArrowKey.isPressed) {
+    moveAmount.x -= keyboardPanSpeed;
+}
+                </div>
+            </div>
+            <div class="project-application">
+                <h3>🎮 노바1492 프로젝트 적용 포인트</h3>
+                <ul class="content-list">
+                    <li><strong>빠른 반응성</strong>: 전투 중 즉각적인 카메라 이동</li>
+                    <li><strong>정확한 제어</strong>: 로봇 위치를 정확히 파악할 수 있는 시점</li>
+                    <li><strong>직관적 조작</strong>: 플레이어가 쉽게 익힐 수 있는 조작법</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="lecture-section" id="lecture4">
+            <h2 class="lecture-title">🔍 강의 4: Warcraft 3 스타일 줌 시스템</h2>
+            <div class="lecture-goal">
+                <h3>🎯 강의 목표</h3>
+                <p>Warcraft 3와 같은 RTS 게임의 줌 시스템을 구현하여 카메라를 확대/축소할 수 있게 합니다.</p>
+            </div>
+            <div class="content-section">
+                <h3>📋 주요 내용</h3>
+                <h4>1. 줌 시스템 구현</h4>
+                <ul class="content-list">
+                    <li><strong>End 키</strong>를 누르면 줌인, 놓으면 줌아웃</li>
+                    <li><strong>Cinemachine Follow Offset</strong>을 조작하여 줌 구현</li>
+                    <li><strong>Lerp vs Slerp</strong>: 부드러운 애니메이션을 위한 보간법</li>
+                </ul>
+                <h4>2. 부드러운 애니메이션</h4>
+                <ul class="content-list">
+                    <li><strong>Vector3.Lerp</strong>: 선형 보간 (직선 이동)</li>
+                    <li><strong>Vector3.Slerp</strong>: 구면 보간 (부드러운 곡선 이동)</li>
+                    <li><strong>Mathf.Clamp</strong>: 시간 값을 0-1 사이로 제한</li>
+                </ul>
+            </div>
+            <div class="project-application">
+                <h3>🎮 노바1492 프로젝트 적용 포인트</h3>
+                <ul class="content-list">
+                    <li><strong>전체 전장 파악</strong>: 줌아웃으로 전체 맵 보기</li>
+                    <li><strong>세부 전투 관찰</strong>: 줌인으로 개별 로봇 전투 보기</li>
+                    <li><strong>빠른 전환</strong>: 전투 상황에 따른 즉각적인 줌 조절</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="lecture-section" id="lecture5">
+            <h2 class="lecture-title">🔄 강의 5: 카메라 회전 시스템</h2>
+            <div class="lecture-goal">
+                <h3>🎯 강의 목표</h3>
+                <p>Page Up/Page Down 키를 사용하여 카메라를 회전시키는 시스템을 구현합니다.</p>
+            </div>
+            <div class="content-section">
+                <h3>📋 주요 내용</h3>
+                <h4>1. 회전 시스템 구현</h4>
+                <ul class="content-list">
+                    <li><strong>Page Up</strong>: 왼쪽으로 회전</li>
+                    <li><strong>Page Down</strong>: 오른쪽으로 회전</li>
+                    <li><strong>Follow Offset의 X, Z 값을 조작</strong>하여 회전 구현</li>
+                </ul>
+                <h4>2. 부드러운 회전</h4>
+                <ul class="content-list">
+                    <li><strong>Slerp</strong>를 사용한 부드러운 회전 애니메이션</li>
+                    <li><strong>회전 속도</strong> 조절 가능</li>
+                    <li><strong>자동 리셋</strong> 기능</li>
+                </ul>
+            </div>
+            <div class="project-application">
+                <h3>🎮 노바1492 프로젝트 적용 포인트</h3>
+                <ul class="content-list">
+                    <li><strong>다각도 관찰</strong>: 다양한 각도에서 전투 상황 파악</li>
+                    <li><strong>전략적 시점</strong>: 팀 전략에 맞는 최적 시점 선택</li>
+                    <li><strong>빠른 전환</strong>: 전투 중 즉각적인 시점 변경</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="lecture-section" id="lecture6">
+            <h2 class="lecture-title">🖱️ 강의 6: 마우스 엣지 팬 시스템</h2>
+            <div class="lecture-goal">
+                <h3>🎯 강의 목표</h3>
+                <p>마우스를 화면 가장자리로 이동시키면 카메라가 해당 방향으로 이동하는 시스템을 구현합니다.</p>
+            </div>
+            <div class="content-section">
+                <h3>📋 주요 내용</h3>
+                <h4>1. 엣지 팬 시스템</h4>
+                <ul class="content-list">
+                    <li><strong>마우스 위치 감지</strong>: 화면 가장자리에서 마우스 위치 확인</li>
+                    <li><strong>방향별 이동</strong>: 상하좌우 각 방향으로 카메라 이동</li>
+                    <li><strong>임계값 설정</strong>: 엣지 팬이 시작되는 거리 조절</li>
+                </ul>
+                <h4>2. 화면 좌표계 이해</h4>
+                <div class="code-block">
+(0, 1080) ──────────── (1920, 1080)
+    │                       │
+    │                       │
+    │                       │
+(0, 0) ────────────────── (1920, 0)
+                </div>
+            </div>
+            <div class="project-application">
+                <h3>🎮 노바1492 프로젝트 적용 포인트</h3>
+                <ul class="content-list">
+                    <li><strong>빠른 카메라 이동</strong>: 마우스만으로 즉각적인 카메라 이동</li>
+                    <li><strong>정밀한 제어</strong>: 키보드와 마우스 조합으로 정밀한 카메라 제어</li>
+                    <li><strong>직관적 조작</strong>: RTS 게임의 표준적인 조작법</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="lecture-section" id="lecture7">
+            <h2 class="lecture-title">🚧 강의 7: 카메라 경계 제한 시스템</h2>
+            <div class="lecture-goal">
+                <h3>🎯 강의 목표</h3>
+                <p>카메라가 맵 경계를 벗어나지 않도록 제한하는 시스템을 구현합니다.</p>
+            </div>
+            <div class="content-section">
+                <h3>📋 주요 내용</h3>
+                <h4>1. 물리 기반 경계 제한</h4>
+                <ul class="content-list">
+                    <li><strong>Rigidbody + Collider</strong>를 사용한 물리 기반 제한</li>
+                    <li><strong>World Bounds</strong> 레이어 생성</li>
+                    <li><strong>Physics Material</strong>을 사용한 마찰력 제거</li>
+                </ul>
+                <h4>2. 물리 기반 이동</h4>
+                <div class="code-block">
+// Transform 직접 조작 대신 Rigidbody 사용
+cameraTarget.linearVelocity = new Vector3(
+    moveAmount.x, 
+    0, 
+    moveAmount.y
+);
+                </div>
+            </div>
+            <div class="project-application">
+                <h3>🎮 노바1492 프로젝트 적용 포인트</h3>
+                <ul class="content-list">
+                    <li><strong>전장 한정</strong>: 로봇들이 전장 내에서만 전투</li>
+                    <li><strong>현실감</strong>: 맵을 벗어날 수 없는 현실적인 제약</li>
+                    <li><strong>전략적 요소</strong>: 맵 경계를 활용한 전략 수립</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="summary-section" id="summary">
+            <h2>🎯 노바1492 프로젝트 종합 적용 방안</h2>
+            
+            <h3>🚀 핵심 시스템 통합</h3>
+            <p><strong>로봇 파츠 커스터마이징 시스템</strong>: SciFi Pack 모델들을 로봇 파츠 기본 형태로 활용</p>
+            <p><strong>4:4 팀전 카메라 시스템</strong>: 전체 전장 관찰과 개별 로봇 관리</p>
+            <p><strong>서버 분리 아키텍처</strong>: 모듈화된 구조로 나중에 멀티플레이어 지원</p>
+            
+            <h3>🔧 기술 스택 통합</h3>
+            <p><strong>Unity 6.0 + C#</strong>: 새로운 Input System, Cinemachine, URP</p>
+            <p><strong>멀티플레이어 준비</strong>: Photon 또는 Mirror로 4:4 팀 매칭 시스템</p>
+            
+            <h3>📊 강의 통계</h3>
+            <p><strong>총 7개 강의</strong> | <strong>4-5시간</strong> | <strong>난이도: ⭐⭐⭐☆☆</strong></p>
+            
+            <h3>🚀 다음 단계</h3>
+            <p>유닛 시스템 구현 → 전투 시스템 구현 → UI 시스템 구현 → 멀티플레이어 구현</p>
+            <p>각 강의에서 학습한 내용을 <strong>노바1492 스타일 로봇 대전 게임</strong>에 적용하여 3개월 내에 MVP를 완성할 수 있을 것입니다! 🎮</p>
+        </div>
+    </div>
+</body>
+</html>
