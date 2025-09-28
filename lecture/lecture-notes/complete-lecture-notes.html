@@ -28,6 +28,72 @@
         .toc li::before { content: "📚"; position: absolute; left: 0; }
         .toc a { color: #4a5568; text-decoration: none; transition: color 0.3s; }
         .toc a:hover { color: #667eea; }
+        
+        .step-guide {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+        
+        .step-guide h5 {
+            color: #2e7d32;
+            margin-top: 0;
+            font-size: 16px;
+        }
+        
+        .step-guide ol {
+            margin: 12px 0;
+            padding-left: 20px;
+        }
+        
+        .step-guide li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+        
+        .option-explanation {
+            margin: 20px 0;
+        }
+        
+        .option-explanation h5 {
+            color: #1976d2;
+            font-size: 16px;
+            margin: 20px 0 10px 0;
+            padding: 8px 12px;
+            background: #e3f2fd;
+            border-radius: 6px;
+            border-left: 4px solid #1976d2;
+        }
+        
+        .problem-solution {
+            background: #fff3e0;
+            border: 1px solid #ff9800;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+        
+        .problem-solution h5 {
+            color: #e65100;
+            margin-top: 0;
+            font-size: 16px;
+        }
+        
+        .area-types {
+            background: #f3e5f5;
+            border: 1px solid #9c27b0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+        
+        .area-types h5 {
+            color: #7b1fa2;
+            margin-top: 0;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -290,48 +356,125 @@ cameraTarget.linearVelocity = new Vector3(
             
             <div class="lecture-goal">
                 <h3>🎯 강의 목표</h3>
-                <p>Navigation Mesh를 구워서 AI 에이전트가 이동할 수 있는 경로를 설정하는 방법을 학습합니다.</p>
+                <p>AI 로봇들이 맵에서 어디로 갈 수 있는지 미리 계산해서 저장하는 <strong>Navigation Mesh</strong>를 만드는 방법을 학습합니다.</p>
             </div>
             
             <div class="content-section">
                 <h3>📋 주요 내용</h3>
                 
-                <h4>1. Navigation Mesh란?</h4>
+                <h4>1. Navigation Mesh란? (쉽게 설명)</h4>
                 <ul class="content-list">
-                    <li><strong>NavMesh</strong>: AI 에이전트가 이동할 수 있는 영역을 정의하는 메시</li>
-                    <li><strong>NavMesh Agent</strong>: NavMesh를 따라 이동하는 AI 컴포넌트</li>
-                    <li><strong>Area Cost</strong>: 각 영역별 이동 비용 설정 (물은 비싸게, 평지는 저렴하게)</li>
+                    <li><strong>NavMesh</strong>: AI가 "여기로 갈 수 있어!"라고 미리 표시해둔 지도</li>
+                    <li><strong>Bake (구워내기)</strong>: 이 지도를 미리 계산해서 파일로 저장하는 과정</li>
+                    <li><strong>NavMesh Agent</strong>: 이 지도를 보고 이동하는 AI 컴포넌트</li>
+                    <li><strong>Area Cost (영역 비용)</strong>: 
+                        <ul>
+                            <li>평지 = 비용 1 (빠르게 이동)</li>
+                            <li>물 = 비용 5 (느리게 이동, 피하려고 함)</li>
+                            <li>벽 = 비용 무한대 (갈 수 없음)</li>
+                        </ul>
+                    </li>
                 </ul>
                 
-                <h4>2. NavMesh Surface 컴포넌트</h4>
-                <ul class="content-list">
-                    <li><strong>Community AI Navigation Package</strong>: 2019년부터 사용 가능한 새로운 네비게이션 패키지</li>
-                    <li><strong>Agent Type별 NavMesh</strong>: 다양한 유닛 타입별로 다른 NavMesh 생성 가능</li>
-                    <li><strong>Object Collection</strong>: 어떤 오브젝트들을 NavMesh 생성에 포함할지 설정</li>
-                </ul>
-                
-                <h4>3. Object Collection 옵션들</h4>
-                <ul class="content-list">
-                    <li><strong>All Game Objects</strong>: 씬의 모든 오브젝트 포함 (권장하지 않음)</li>
-                    <li><strong>Current Object Hierarchy</strong>: 현재 오브젝트와 자식들만 포함</li>
-                    <li><strong>Volume</strong>: 특정 영역 내의 오브젝트들만 포함 (권장)</li>
-                    <li><strong>NavMesh Modifiers</strong>: NavMesh Modifier가 있는 오브젝트들만 포함</li>
-                </ul>
-                
-                <h4>4. Volume Bounds 설정</h4>
-                <div class="code-block">
-// Volume Bounds 설정 예시
-- X: -96 ~ 96 (좌우 경계)
-- Y: 3.5 ~ 7 (높이 범위)
-- Z: -128 ~ 128 (앞뒤 경계)
+                <h4>2. NavMesh Surface 컴포넌트 설정 (단계별)</h4>
+                <div class="step-guide">
+                    <h5>🔧 설정 방법</h5>
+                    <ol>
+                        <li><strong>Floor 오브젝트 선택</strong> (Hierarchy에서)</li>
+                        <li><strong>Inspector에서 "Add Component" 클릭</strong></li>
+                        <li><strong>"Navmesh Surface" 검색해서 추가</strong></li>
+                        <li><strong>설정값들 확인</strong>:
+                            <ul>
+                                <li>Agent Type: Default Agent (기본값)</li>
+                                <li>Use Geometry: Physics Colliders (권장)</li>
+                                <li>Collect Objects: Volume (권장)</li>
+                            </ul>
+                        </li>
+                    </ol>
                 </div>
                 
-                <h4>5. Layer 기반 제외 설정</h4>
-                <ul class="content-list">
-                    <li><strong>Include Layers</strong>: NavMesh에 포함할 레이어 선택</li>
-                    <li><strong>Exclude Layers</strong>: NavMesh에서 제외할 레이어 선택</li>
-                    <li><strong>Water 제외</strong>: 물의 Mesh Collider를 비활성화하여 통과 불가능하게 설정</li>
-                </ul>
+                <h4>3. Object Collection 옵션들 (상세 설명)</h4>
+                <div class="option-explanation">
+                    <h5>📦 All Game Objects (모든 오브젝트 포함)</h5>
+                    <ul>
+                        <li><strong>의미</strong>: 씬에 있는 모든 오브젝트를 NavMesh 생성에 포함</li>
+                        <li><strong>문제점</strong>: 카메라, UI 등 불필요한 오브젝트까지 포함되어 구멍(Hole) 생성</li>
+                        <li><strong>결과</strong>: 이상한 구멍들이 생겨서 AI가 갑자기 멈춤</li>
+                        <li><strong>권장</strong>: ❌ 사용하지 말 것</li>
+                    </ul>
+                    
+                    <h5>📁 Current Object Hierarchy (현재 오브젝트만)</h5>
+                    <ul>
+                        <li><strong>의미</strong>: 선택한 오브젝트와 그 자식들만 포함</li>
+                        <li><strong>장점</strong>: 카메라 타겟 같은 불필요한 오브젝트 제외</li>
+                        <li><strong>문제점</strong>: 여전히 맵 밖 영역까지 포함됨</li>
+                        <li><strong>권장</strong>: ⚠️ 임시로 사용</li>
+                    </ul>
+                    
+                    <h5>📏 Volume (특정 영역만) - 권장!</h5>
+                    <ul>
+                        <li><strong>의미</strong>: 지정한 영역 내의 오브젝트들만 포함</li>
+                        <li><strong>장점</strong>: 전장 영역만 정확히 설정 가능</li>
+                        <li><strong>설정법</strong>: Volume Bounds로 영역 크기 조정</li>
+                        <li><strong>권장</strong>: ✅ 가장 좋은 방법</li>
+                    </ul>
+                </div>
+                
+                <h4>4. Volume Bounds 설정 (구체적인 방법)</h4>
+                <div class="step-guide">
+                    <h5>🎯 전장 영역 설정하기</h5>
+                    <ol>
+                        <li><strong>Collect Objects를 "Volume"으로 변경</strong></li>
+                        <li><strong>"Edit Volume" 버튼 클릭</strong> (씬에서 보라색 박스가 나타남)</li>
+                        <li><strong>씬에서 보라색 박스 조정</strong>:
+                            <ul>
+                                <li>마우스로 모서리를 드래그해서 크기 조정</li>
+                                <li>World Collider Bounds 안쪽에 맞춰서 설정</li>
+                            </ul>
+                        </li>
+                        <li><strong>구체적인 수치</strong>:
+                            <ul>
+                                <li>X: -96 ~ 96 (좌우 경계)</li>
+                                <li>Y: 3.5 ~ 7 (높이 범위 - 지형 위, 물 아래)</li>
+                                <li>Z: -128 ~ 128 (앞뒤 경계)</li>
+                            </ul>
+                        </li>
+                        <li><strong>"Bake" 버튼 클릭</strong></li>
+                    </ol>
+                </div>
+                
+                <h4>5. Layer 기반 제외 설정 (문제 해결)</h4>
+                <div class="problem-solution">
+                    <h5>🚫 Hole 문제 해결하기</h5>
+                    <p><strong>문제</strong>: NavMesh에 이상한 구멍들이 생김</p>
+                    <p><strong>원인</strong>: 카메라 타겟, UI 등이 NavMesh 생성에 방해</p>
+                    <p><strong>해결법</strong>:</p>
+                    <ol>
+                        <li><strong>Include Layers 설정</strong>:
+                            <ul>
+                                <li>Ground, Terrain 등 이동 가능한 레이어만 선택</li>
+                                <li>World Bounds 레이어는 제외</li>
+                            </ul>
+                        </li>
+                        <li><strong>Water 제외하기</strong>:
+                            <ul>
+                                <li>Water 오브젝트의 Mesh Collider 비활성화</li>
+                                <li>이렇게 하면 물은 통과 불가능한 장애물이 됨</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+                
+                <h4>6. Area Types 설정 (로봇별 이동 특성)</h4>
+                <div class="area-types">
+                    <h5>🏷️ 영역별 이동 비용 설정</h5>
+                    <ul>
+                        <li><strong>Walkable (이동 가능)</strong>: Cost 1.0 - 평지, 기본 이동 영역</li>
+                        <li><strong>Water (물)</strong>: Cost 5.0 - 로봇이 피하려고 하는 영역</li>
+                        <li><strong>Rough Terrain (거친 지형)</strong>: Cost 2.0 - 느리게 이동하는 영역</li>
+                        <li><strong>Impassable (통과 불가)</strong>: Cost 무한대 - 절대 갈 수 없는 영역</li>
+                    </ul>
+                </div>
             </div>
             
             <div class="project-application">
