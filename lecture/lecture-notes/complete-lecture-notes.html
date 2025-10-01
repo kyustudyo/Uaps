@@ -114,6 +114,7 @@
                 <li><a href="#lecture6">강의 6: 마우스 엣지 팬 시스템</a></li>
                 <li><a href="#lecture7">강의 7: 카메라 경계 제한 시스템</a></li>
                 <li><a href="#lecture8">강의 8: Navigation Mesh 시스템</a></li>
+                <li><a href="#lecture9">강의 9: NavMesh Agent 시스템</a></li>
                 <li><a href="#summary">노바1492 프로젝트 종합 적용 방안</a></li>
             </ul>
         </div>
@@ -515,6 +516,255 @@ cameraTarget.linearVelocity = new Vector3(
                     <li><strong>Water</strong>: Cost 5.0 (물 - 이동 비용 높음)</li>
                     <li><strong>Rough Terrain</strong>: Cost 2.0 (거친 지형)</li>
                     <li><strong>Impassable</strong>: Cost 무한대 (통과 불가능)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="lecture-section" id="lecture9">
+            <h2 class="lecture-title">🤖 강의 9: NavMesh Agent 시스템</h2>
+            
+            <div class="lecture-goal">
+                <h3>🎯 강의 목표</h3>
+                <p>AI 로봇들이 <strong>NavMesh Agent</strong> 컴포넌트를 사용해서 목표 지점까지 자동으로 이동하는 방법을 학습합니다.</p>
+            </div>
+            
+            <div class="content-section">
+                <h3>📋 주요 내용</h3>
+                
+                <h4>1. NavMesh Agent란? (쉽게 설명)</h4>
+                <ul class="content-list">
+                    <li><strong>NavMesh Agent</strong>: AI가 목표까지 자동으로 길을 찾아 이동하게 해주는 컴포넌트</li>
+                    <li><strong>Player Controller for AI</strong>: 플레이어가 직접 조작하는 대신 AI가 스스로 움직이게 해주는 도구</li>
+                    <li><strong>자동 경로 계산</strong>: 목표까지 가는 최적의 길을 자동으로 찾아줌</li>
+                    <li><strong>충돌 회피</strong>: 다른 AI들과 부딪히지 않게 피해서 이동</li>
+                </ul>
+                
+                <h4>2. NavMesh Agent 컴포넌트 설정 (단계별)</h4>
+                <div class="step-guide">
+                    <h5>🔧 Agent 컴포넌트 추가하기</h5>
+                    <ol>
+                        <li><strong>Worker 프리팹 선택</strong> (Project → Units → Worker)</li>
+                        <li><strong>Inspector에서 "Add Component" 클릭</strong></li>
+                        <li><strong>"NavMesh Agent" 검색해서 추가</strong></li>
+                        <li><strong>씬에서 원통형 기즈모 확인</strong> (Agent의 크기 표시)</li>
+                    </ol>
+                </div>
+                
+                <h4>3. Agent 설정값들 (상세 설명)</h4>
+                <div class="option-explanation">
+                    <h5>📏 Agent Size (크기 설정)</h5>
+                    <ul>
+                        <li><strong>Radius (반지름)</strong>: 0.5 (권장값)
+                            <ul>
+                                <li>의미: AI가 통과할 수 있는 통로의 최소 폭</li>
+                                <li>다른 AI들과의 충돌 회피 거리</li>
+                                <li>너무 크면: 좁은 곳을 못 지나감</li>
+                                <li>너무 작으면: 다른 AI와 부딪힘</li>
+                            </ul>
+                        </li>
+                        <li><strong>Height (높이)</strong>: 2.0 (기본값)
+                            <ul>
+                                <li>의미: AI의 키 (천장이 있는 곳 통과 시 필요)</li>
+                                <li>RTS에서는 보통 중요하지 않음</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    
+                    <h5>🚀 Steering (이동 제어)</h5>
+                    <ul>
+                        <li><strong>Speed (속도)</strong>: 3.5 (권장값)
+                            <ul>
+                                <li>의미: 초당 이동 거리 (유닛/초)</li>
+                                <li>0에서 3.5까지 1초에 이동</li>
+                                <li>로봇 타입별로 다르게 설정 가능</li>
+                            </ul>
+                        </li>
+                        <li><strong>Angular Speed (회전 속도)</strong>: 120 (기본값)
+                            <ul>
+                                <li>의미: 초당 회전 각도 (도/초)</li>
+                                <li>낮으면: 천천히 돌아서 부자연스러움</li>
+                                <li>높으면: 빠르게 돌아서 자연스러움</li>
+                            </ul>
+                        </li>
+                        <li><strong>Acceleration (가속도)</strong>: 8 (기본값)
+                            <ul>
+                                <li>의미: 속도 변화의 빠름 정도</li>
+                                <li>낮으면: 천천히 가속, 자연스러운 움직임</li>
+                                <li>높으면: 빠르게 가속, 반응적 움직임</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    
+                    <h5>🛑 Stopping Distance (정지 거리)</h5>
+                    <ul>
+                        <li><strong>의미</strong>: 목표에서 얼마나 떨어져 있어도 "도착했다"고 인식할지</li>
+                        <li><strong>권장값</strong>: 1.0 (Agent의 Radius와 같게)</li>
+                        <li><strong>문제 해결</strong>: 다른 AI를 계속 밀어내는 문제 해결</li>
+                    </ul>
+                </div>
+                
+                <h4>4. Worker 스크립트 작성 (구체적인 방법)</h4>
+                <div class="step-guide">
+                    <h5>💻 C# 스크립트 만들기</h5>
+                    <ol>
+                        <li><strong>Project → Scripts → Units 폴더에서 우클릭</strong></li>
+                        <li><strong>Create → C# Script → "Worker" 이름으로 생성</strong></li>
+                        <li><strong>VS Code에서 열기</strong></li>
+                        <li><strong>다음 코드 작성</strong>:</li>
+                    </ol>
+                </div>
+                
+                <div class="code-block">
+using UnityEngine;
+using UnityEngine.AI;
+
+namespace GameDev.Units
+{
+    [RequireComponent(typeof(NavMeshAgent))]
+    public class Worker : MonoBehaviour
+    {
+        private NavMeshAgent agent;
+        [SerializeField] private Transform target;
+        
+        private void Awake()
+        {
+            agent = GetComponent&lt;NavMeshAgent&gt;();
+        }
+        
+        private void Update()
+        {
+            if (target != null)
+            {
+                agent.SetDestination(target.position);
+            }
+        }
+    }
+}
+                </div>
+                
+                <h4>5. Obstacle Avoidance (충돌 회피) 설정</h4>
+                <div class="option-explanation">
+                    <h5>🎯 Avoidance Quality (회피 품질)</h5>
+                    <ul>
+                        <li><strong>None</strong>: 충돌 회피 없음
+                            <ul>
+                                <li>용도: 자원 수집 시 다른 AI를 통과</li>
+                                <li>장점: 성능 좋음, 간단함</li>
+                                <li>단점: AI들이 겹쳐서 이동</li>
+                            </ul>
+                        </li>
+                        <li><strong>Low Quality</strong>: 기본적인 회피
+                            <ul>
+                                <li>용도: 성능이 중요한 경우</li>
+                                <li>특징: 적은 데이터 포인트로 빠른 처리</li>
+                            </ul>
+                        </li>
+                        <li><strong>High Quality</strong>: 정밀한 회피 (권장)
+                            <ul>
+                                <li>용도: 정확한 충돌 회피가 필요한 경우</li>
+                                <li>특징: 많은 데이터 포인트로 정밀한 처리</li>
+                                <li>성능: 상대적으로 느림</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    
+                    <h5>⚡ Priority (우선순위)</h5>
+                    <ul>
+                        <li><strong>의미</strong>: AI들 간의 밀어내기 우선순위</li>
+                        <li><strong>낮은 숫자</strong>: 높은 우선순위 (다른 AI를 밀어낼 수 있음)</li>
+                        <li><strong>높은 숫자</strong>: 낮은 우선순위 (다른 AI에게 밀려남)</li>
+                        <li><strong>예시</strong>: 탱크(40) vs 보병(50) → 탱크가 보병을 밀어냄</li>
+                    </ul>
+                </div>
+                
+                <h4>6. 문제 해결법 (실제 발생한 문제들)</h4>
+                <div class="problem-solution">
+                    <h5>🚫 AI가 다른 AI를 계속 밀어내는 문제</h5>
+                    <p><strong>문제</strong>: Worker가 목표 Worker를 계속 밀어내면서 이동</p>
+                    <p><strong>원인</strong>: Stopping Distance가 너무 작아서 목표에 도달했다고 인식하지 못함</p>
+                    <p><strong>해결법</strong>:
+                        <ul>
+                            <li>Stopping Distance를 1.0으로 설정 (Agent Radius와 같게)</li>
+                            <li>목표에 충분히 가까워지면 이동을 멈춤</li>
+                        </ul>
+                    </p>
+                    
+                    <h5>🔄 AI가 잘못된 방향으로 이동하는 문제</h5>
+                    <p><strong>문제</strong>: AI가 목표를 향해 이동하지만 몸은 다른 방향을 향함</p>
+                    <p><strong>원인</strong>: Angular Speed가 너무 낮아서 회전이 느림</p>
+                    <p><strong>해결법</strong>:
+                        <ul>
+                            <li>Angular Speed를 720으로 증가 (기본값 120보다 높게)</li>
+                            <li>Acceleration과 Angular Speed의 균형 맞추기</li>
+                        </ul>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="project-application">
+                <h3>🎮 노바1492 프로젝트 적용 포인트</h3>
+                
+                <h4>로봇 AI 이동 시스템</h4>
+                <ul class="content-list">
+                    <li><strong>로봇 타입별 설정</strong>:
+                        <ul>
+                            <li>경량 로봇: Speed 5.0, Angular Speed 360</li>
+                            <li>중형 로봇: Speed 3.5, Angular Speed 180</li>
+                            <li>중장갑 로봇: Speed 2.0, Angular Speed 120</li>
+                        </ul>
+                    </li>
+                    <li><strong>전투 AI</strong>: 적 로봇을 추적하거나 전략적 위치로 이동</li>
+                    <li><strong>팀워크 AI</strong>: 팀원들과 협력하여 포지셔닝</li>
+                </ul>
+                
+                <h4>4:4 팀전 활용</h4>
+                <ul class="content-list">
+                    <li><strong>팀 우선순위 시스템</strong>:
+                        <ul>
+                            <li>탱크 로봇: Priority 40 (다른 로봇들을 밀어냄)</li>
+                            <li>스카우트 로봇: Priority 50 (탱크에게 밀려남)</li>
+                            <li>지원 로봇: Priority 45 (중간 우선순위)</li>
+                        </ul>
+                    </li>
+                    <li><strong>전술적 이동</strong>: 팀원들과 함께 포메이션 유지하며 이동</li>
+                    <li><strong>적 회피</strong>: High Quality Avoidance로 정밀한 전투 기동</li>
+                </ul>
+                
+                <h4>로봇 파츠별 특성</h4>
+                <ul class="content-list">
+                    <li><strong>다리 파츠</strong>: 이동 속도와 회전 속도에 영향
+                        <ul>
+                            <li>바퀴형: 빠른 속도, 느린 회전</li>
+                            <li>이족보행: 중간 속도, 빠른 회전</li>
+                            <li>궤도형: 느린 속도, 매우 느린 회전</li>
+                        </ul>
+                    </li>
+                    <li><strong>몸통 파츠</strong>: Agent 크기와 우선순위에 영향</li>
+                    <li><strong>무기 파츠</strong>: 전투 시 회피 행동에 영향</li>
+                </ul>
+            </div>
+            
+            <div class="tech-stack">
+                <h3>🔧 핵심 기술</h3>
+                
+                <h4>NavMesh Agent 설정값</h4>
+                <div class="code-block">
+// 권장 설정값들
+- Radius: 0.5 (통과 가능한 최소 폭)
+- Height: 2.0 (로봇의 키)
+- Speed: 3.5 (초당 이동 거리)
+- Angular Speed: 720 (빠른 회전을 위해 증가)
+- Acceleration: 8 (자연스러운 가속)
+- Stopping Distance: 1.0 (목표 도달 인식 거리)
+- Avoidance Quality: High (정밀한 충돌 회피)
+- Priority: 50 (기본 우선순위)
+                </div>
+                
+                <h4>스크립트 패턴</h4>
+                <ul class="content-list">
+                    <li><strong>RequireComponent</strong>: 필수 컴포넌트 자동 추가</li>
+                    <li><strong>Awake에서 GetComponent</strong>: 컴포넌트 참조 초기화</li>
+                    <li><strong>Update에서 SetDestination</strong>: 매 프레임 목표 설정</li>
                 </ul>
             </div>
         </div>
