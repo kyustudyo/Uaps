@@ -1067,6 +1067,279 @@ Assets/Units/Worker/Worker.prefab (수정)</div>
             </div>
         </div>
 
+        <!-- 강의 11: Unit & Decal Rendering Layers -->
+        <div class="lecture-section" id="lecture-11">
+            <h2 class="lecture-title">📚 강의 11: Unit & Decal Rendering Layers (유닛 & 데칼 렌더링 레이어)</h2>
+
+            <div class="lecture-goal">
+                <h3>🎯 학습 목표</h3>
+                <ul class="content-list">
+                    <li>Decal Projector가 다른 유닛 위에 렌더링되지 않도록 설정</li>
+                    <li>Rendering Layers를 사용하여 바닥에만 투영</li>
+                    <li>Physics Layers로 유닛/건물 선택 정밀도 향상</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>📝 핵심 개념</h3>
+
+                <h4>1. 문제 상황</h4>
+                <p><strong>현재 문제점</strong></p>
+                <ul class="content-list">
+                    <li>선택된 유닛을 다른 유닛 근처로 이동하면 Decal이 다른 유닛 발 위에도 렌더링됨</li>
+                    <li>모든 객체가 기본적으로 Default Rendering Layer에 있음</li>
+                    <li>Raycast가 Default Physics Layer의 모든 객체를 감지</li>
+                </ul>
+
+                <h4>2. URP Rendering Layers</h4>
+                <p><strong>Rendering Layer 개념</strong></p>
+                <ul class="content-list">
+                    <li>물리 레이어와 별개로 렌더링 제어용 레이어</li>
+                    <li>총 8개 레이어 사용 가능 (Unity 권장: 최소한으로 유지)</li>
+                    <li>Layer 0: Default (기본값)</li>
+                    <li>Decal Projector가 특정 레이어만 영향받도록 제한 가능</li>
+                </ul>
+
+                <div class="step-guide">
+                    <h5>⚙️ Rendering Layer 설정</h5>
+                    <ol>
+                        <li>Tags & Layers 창 열기: Edit → Project Settings → Tags and Layers</li>
+                        <li>Rendering Layers 섹션 확장</li>
+                        <li>Light Layer 1 ~ 7 제거 (최소화)</li>
+                        <li>Light Layer 1을 "Floor"로 이름 변경</li>
+                    </ol>
+                </div>
+
+                <h4>3. Physics Layers</h4>
+                <p><strong>Physics Layer 분리</strong></p>
+                <ul class="content-list">
+                    <li><strong>Units Layer</strong>: 모든 유닛 객체</li>
+                    <li><strong>Buildings Layer</strong>: 모든 건물 객체</li>
+                    <li>Raycast 시 특정 레이어만 감지하여 정밀도 향상</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>💻 구현 코드</h3>
+
+                <h4>PlayerInput.cs - LayerMask 사용</h4>
+                <div class="code-block">public class PlayerInput : MonoBehaviour
+{
+    [SerializeField] private new Camera camera;
+    [SerializeField] private LayerMask selectableUnitsLayers;  // 추가
+    private ISelectable selectedUnit;
+
+    private void HandleLeftClick()
+    {
+        if (camera == null) return;
+
+        Ray cameraRay = camera.ScreenPointToRay(Mouse.current.position.ReadValue());
+
+        if (Mouse.current.leftButton.wasReleasedThisFrame)
+        {
+            if (selectedUnit != null)
+            {
+                selectedUnit.Deselect();
+                selectedUnit = null;
+            }
+
+            // LayerMask.GetMask("Default") 대신 selectableUnitsLayers 사용
+            if (Physics.Raycast(cameraRay, out RaycastHit hit, float.MaxValue, selectableUnitsLayers)
+                && hit.collider.TryGetComponent(out ISelectable selectable))
+            {
+                selectable.Select();
+                selectedUnit = selectable;
+            }
+        }
+    }
+}</div>
+            </div>
+
+            <div class="content-section">
+                <h3>⚙️ Unity 설정</h3>
+
+                <h4>1. Rendering Layers 설정</h4>
+                <div class="step-guide">
+                    <h5>Tags and Layers 설정</h5>
+                    <ol>
+                        <li>Edit → Project Settings → Tags and Layers</li>
+                        <li>Rendering Layers 확장</li>
+                        <li>Light Layer 1 = "Floor"</li>
+                        <li>나머지 레이어 비활성화</li>
+                    </ol>
+                </div>
+
+                <h4>2. Decal Projector 설정</h4>
+                <div class="step-guide">
+                    <h5>Decal이 Floor만 영향받도록</h5>
+                    <ol>
+                        <li>Worker Prefab의 Decal Projector 선택</li>
+                        <li>Rendering Layers: Default 끄고 Floor만 체크</li>
+                        <li>Prefab Overrides → Apply All</li>
+                        <li>기본 상태: Disabled 확인</li>
+                    </ol>
+                </div>
+
+                <h4>3. Terrain Rendering Layer 설정</h4>
+                <div class="step-guide">
+                    <h5>Terrain이 Floor Decal을 받도록</h5>
+                    <ol>
+                        <li>Terrain 선택</li>
+                        <li>Inspector 오른쪽 끝 → Terrain Settings</li>
+                        <li>맨 아래 Rendering Layer Mask</li>
+                        <li>Default + Floor 체크</li>
+                    </ol>
+                </div>
+
+                <div class="option-explanation">
+                    <h5>💡 참고: 다른 객체 설정</h5>
+                    <p><strong>Water (물)</strong></p>
+                    <ul class="content-list">
+                        <li>투명 객체에는 Decal이 투영되지 않음 (URP 제한)</li>
+                        <li>Floor 레이어 추가해도 효과 없음</li>
+                    </ul>
+
+                    <p><strong>Coral (산호) 등 환경 객체</strong></p>
+                    <ul class="content-list">
+                        <li>원하면 Mesh Renderer → Additional Settings → Rendering Layer Mask에 Floor 추가</li>
+                        <li>권장: Terrain만 Floor 레이어 사용 (깔끔한 시각)</li>
+                    </ul>
+                </div>
+
+                <h4>4. Physics Layers 설정</h4>
+                <div class="step-guide">
+                    <h5>유닛/건물 레이어 추가</h5>
+                    <ol>
+                        <li>Edit → Project Settings → Tags and Layers</li>
+                        <li>Layers 섹션 확장</li>
+                        <li>빈 레이어에 "Units" 추가</li>
+                        <li>빈 레이어에 "Buildings" 추가</li>
+                    </ol>
+                </div>
+
+                <h4>5. Worker Prefab Layer 설정</h4>
+                <div class="step-guide">
+                    <h5>Worker를 Units 레이어로</h5>
+                    <ol>
+                        <li>Worker Prefab의 루트 GameObject 선택</li>
+                        <li>Inspector 상단 Layer → Units</li>
+                        <li>"Change This Object Only" 선택 (Collider가 있는 루트만)</li>
+                        <li>Prefab Overrides → Apply All</li>
+                    </ol>
+                </div>
+
+                <h4>6. PlayerInput LayerMask 설정</h4>
+                <div class="step-guide">
+                    <h5>선택 가능한 레이어 지정</h5>
+                    <ol>
+                        <li>Main Camera (PlayerInput 컴포넌트 있음) 선택</li>
+                        <li>Selectable Units Layers 필드</li>
+                        <li>Units + Buildings 체크</li>
+                    </ol>
+                </div>
+
+                <h4>7. Physics Collision Matrix 설정</h4>
+                <div class="step-guide">
+                    <h5>⚠️ 중요: 충돌 제거</h5>
+                    <ol>
+                        <li>Edit → Project Settings → Physics</li>
+                        <li>Layer Collision Matrix (Shared 탭)</li>
+                        <li>Units와 World Bounds 충돌 체크 해제</li>
+                        <li>Buildings와 World Bounds 충돌 체크 해제</li>
+                    </ol>
+                    <p><strong>이유</strong>: 카메라 타겟의 World Collider Bounds가 유닛과 충돌하지 않도록</p>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎓 학습 포인트</h3>
+
+                <h4>1. Rendering Layers vs Physics Layers</h4>
+                <ul class="content-list">
+                    <li><strong>Rendering Layers</strong>: 렌더링 제어용 (Decal, Light 등)</li>
+                    <li><strong>Physics Layers</strong>: 물리 충돌 및 Raycast 제어용</li>
+                    <li>두 레이어 시스템은 완전히 독립적</li>
+                </ul>
+
+                <h4>2. Serialized LayerMask</h4>
+                <ul class="content-list">
+                    <li>코드에 레이어 이름 하드코딩 대신 Inspector에서 설정</li>
+                    <li>유지보수성 향상: 레이어 추가 시 코드 수정 불필요</li>
+                    <li><code>[SerializeField] private LayerMask selectableUnitsLayers;</code></li>
+                </ul>
+
+                <h4>3. Layer Collision Matrix</h4>
+                <ul class="content-list">
+                    <li>새 레이어 추가 시 반드시 충돌 매트릭스 확인</li>
+                    <li>기본적으로 모든 레이어가 서로 충돌 설정됨</li>
+                    <li>불필요한 충돌은 성능 저하 원인</li>
+                </ul>
+
+                <h4>4. URP Decal 제한사항</h4>
+                <ul class="content-list">
+                    <li>투명 객체(Transparent)에는 투영 불가</li>
+                    <li>물, 유리 등에는 Decal 표시 안 됨</li>
+                    <li>Opaque 객체에만 투영 가능</li>
+                </ul>
+            </div>
+
+            <div class="project-application">
+                <h3>🎮 노바1492 프로젝트 적용 포인트</h3>
+
+                <h4>렌더링 레이어 활용</h4>
+                <ul class="content-list">
+                    <li><strong>팀 구분 Decal</strong>:
+                        <ul>
+                            <li>Team1Floor, Team2Floor 레이어 추가</li>
+                            <li>아군/적군 다른 색상 Decal 표시</li>
+                        </ul>
+                    </li>
+                    <li><strong>전투 이펙트</strong>: 폭발 Decal은 모든 객체에 투영</li>
+                    <li><strong>최적화</strong>: 레이어 분리로 렌더링 부하 감소</li>
+                </ul>
+
+                <h4>피직스 레이어 체계</h4>
+                <ul class="content-list">
+                    <li><strong>Units</strong>: 모든 로봇 유닛</li>
+                    <li><strong>Buildings</strong>: 기지, 터렛 등</li>
+                    <li><strong>Projectiles</strong>: 미사일, 총알 (Units/Buildings와만 충돌)</li>
+                    <li><strong>Team1/Team2</strong>: 팀별 레이어로 아군 오인 사격 방지</li>
+                </ul>
+
+                <h4>4:4 팀전 최적화</h4>
+                <ul class="content-list">
+                    <li><strong>Raycast 정밀도</strong>: 유닛 선택 시 바닥/벽 무시</li>
+                    <li><strong>충돌 최소화</strong>: 같은 팀 로봇끼리 충돌 방지</li>
+                    <li><strong>Layer 수 제한</strong>: 8개 이하 유지 (성능)</li>
+                </ul>
+            </div>
+
+            <div class="tech-stack">
+                <h3>🔧 핵심 기술</h3>
+
+                <h4>주요 설정 파일</h4>
+                <div class="code-block">TagManager.asset (Layers, Rendering Layers)
+DynamicsManager.asset (Layer Collision Matrix)
+Assets/Scripts/Player/PlayerInput.cs (수정)
+Assets/Units/Worker/Worker.prefab (수정)</div>
+
+                <h4>검증 체크리스트</h4>
+                <ul class="content-list">
+                    <li>✓ Decal이 다른 유닛 위에 렌더링되지 않음</li>
+                    <li>✓ Decal이 Terrain에만 표시됨</li>
+                    <li>✓ 유닛 클릭 선택이 정상 작동</li>
+                    <li>✓ 유닛이 카메라 바운더리와 충돌하지 않음</li>
+                </ul>
+
+                <h4>다음 단계</h4>
+                <ul class="content-list">
+                    <li>다중 유닛 선택 (박스 드래그)</li>
+                    <li>유닛 그룹 관리</li>
+                    <li>명령 시스템 (이동, 공격)</li>
+                </ul>
+            </div>
+        </div>
+
         <div class="summary-section" id="summary">
             <h2>🎯 노바1492 프로젝트 종합 적용 방안</h2>
             
@@ -1080,7 +1353,7 @@ Assets/Units/Worker/Worker.prefab (수정)</div>
             <p><strong>멀티플레이어 준비</strong>: Photon 또는 Mirror로 4:4 팀 매칭 시스템</p>
             
             <h3>📊 강의 통계</h3>
-            <p><strong>총 10개 강의</strong> | <strong>6-7시간</strong> | <strong>난이도: ⭐⭐⭐☆☆</strong></p>
+            <p><strong>총 11개 강의</strong> | <strong>7-8시간</strong> | <strong>난이도: ⭐⭐⭐☆☆</strong></p>
             
             <h3>🚀 다음 단계</h3>
             <p>유닛 시스템 구현 → 전투 시스템 구현 → UI 시스템 구현 → 멀티플레이어 구현</p>
