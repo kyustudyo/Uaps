@@ -769,6 +769,304 @@ namespace GameDev.Units
             </div>
         </div>
 
+        <!-- 강의 10: Unit Selection -->
+        <div class="lecture-section" id="lecture-10">
+            <h2 class="lecture-title">📚 강의 10: Unit Selection (유닛 선택)</h2>
+
+            <div class="lecture-goal">
+                <h3>🎯 학습 목표</h3>
+                <ul class="content-list">
+                    <li>마우스 좌클릭으로 유닛 선택 구현</li>
+                    <li>Decal Projector를 사용한 선택 표시</li>
+                    <li>Interface를 활용한 확장 가능한 선택 시스템</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>📝 핵심 개념</h3>
+
+                <h4>1. URP Decal Projector</h4>
+                <p><strong>선택된 유닛 시각적 표시</strong></p>
+                <ul class="content-list">
+                    <li>Hierarchy → 우클릭 → Rendering → URP → Decal Projector</li>
+                    <li>유닛 위에 원형 표시를 투영하는 방식</li>
+                </ul>
+
+                <div class="step-guide">
+                    <h5>⚙️ Decal 설정 단계</h5>
+                    <ol>
+                        <li>Worker Prefab에 Decal Projector 추가</li>
+                        <li>URP Renderer에 Decal Feature 추가
+                            <ul>
+                                <li>Project Settings → Graphics → URP Renderer</li>
+                                <li>Add Renderer Feature → Decal</li>
+                                <li>Use Rendering Layers 체크</li>
+                            </ul>
+                        </li>
+                        <li>Selection Decal Material 생성
+                            <ul>
+                                <li>Shader: Shader Graphs/Decal</li>
+                                <li>Base Map: Selection Ring 텍스처</li>
+                            </ul>
+                        </li>
+                        <li>Size 조정: Width 1.5, Height 1.5, Projection Depth 8</li>
+                    </ol>
+                </div>
+
+                <h4>2. Raycast를 통한 유닛 감지</h4>
+                <p><strong>Physics Raycast 개념</strong></p>
+                <ul class="content-list">
+                    <li>원점에서 방향으로 무한히 얇은 선을 쏘는 Physics API</li>
+                    <li>충돌 시 true 반환 및 RaycastHit 정보 제공</li>
+                    <li>LayerMask로 특정 레이어만 감지 가능</li>
+                </ul>
+
+                <p><strong>Camera ScreenPointToRay</strong></p>
+                <div class="code-block">Ray cameraRay = camera.ScreenPointToRay(Mouse.current.position.ReadValue());</div>
+                <ul class="content-list">
+                    <li>마우스 화면 좌표를 카메라 관점의 Ray로 변환</li>
+                    <li>3D 공간에서 클릭 위치 계산</li>
+                </ul>
+
+                <h4>3. Interface를 통한 확장성</h4>
+                <p><strong>ISelectable Interface</strong></p>
+                <ul class="content-list">
+                    <li>다양한 선택 가능 객체(유닛, 건물 등)에 대응</li>
+                    <li>각 클래스가 독립적으로 선택/해제 동작 구현</li>
+                </ul>
+
+                <div class="code-block">public interface ISelectable
+{
+    void Select();
+    void Deselect();
+}</div>
+
+                <p><strong>Interface 장점</strong></p>
+                <ul class="content-list">
+                    <li><code>GetComponent&lt;ISelectable&gt;()</code> 동작</li>
+                    <li>Worker, Building 등 다양한 타입에 적용 가능</li>
+                    <li>확장성 높은 설계</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>💻 구현 코드</h3>
+
+                <h4>PlayerInput.cs</h4>
+                <div class="code-block">using GameDevTV.RTS.Units;
+
+public class PlayerInput : MonoBehaviour
+{
+    [SerializeField] private new Camera camera;
+    private ISelectable selectedUnit;
+
+    private void Update()
+    {
+        HandlePanning();
+        HandleZooming();
+        HandleRotation();
+        HandleLeftClick();
+    }
+
+    private void HandleLeftClick()
+    {
+        if (camera == null) return;
+
+        Ray cameraRay = camera.ScreenPointToRay(Mouse.current.position.ReadValue());
+
+        if (Mouse.current.leftButton.wasReleasedThisFrame)
+        {
+            // 기존 선택 해제
+            if (selectedUnit != null)
+            {
+                selectedUnit.Deselect();
+                selectedUnit = null;
+            }
+
+            // 새 유닛 선택
+            if (Physics.Raycast(cameraRay, out RaycastHit hit, float.MaxValue, LayerMask.GetMask("Default"))
+                && hit.collider.TryGetComponent(out ISelectable selectable))
+            {
+                selectable.Select();
+                selectedUnit = selectable;
+            }
+        }
+    }
+}</div>
+
+                <h4>ISelectable.cs</h4>
+                <div class="code-block">namespace GameDevTV.RTS.Units
+{
+    public interface ISelectable
+    {
+        void Select();
+        void Deselect();
+    }
+}</div>
+
+                <h4>Worker.cs</h4>
+                <div class="code-block">using UnityEngine.Rendering.Universal;
+
+[RequireComponent(typeof(NavMeshAgent))]
+public class Worker : MonoBehaviour, ISelectable
+{
+    [SerializeField] private DecalProjector decalProjector;
+
+    public void Select()
+    {
+        if (decalProjector != null)
+        {
+            decalProjector.gameObject.SetActive(true);
+        }
+    }
+
+    public void Deselect()
+    {
+        if (decalProjector != null)
+        {
+            decalProjector.gameObject.SetActive(false);
+        }
+    }
+}</div>
+            </div>
+
+            <div class="content-section">
+                <h3>⚙️ Unity 설정</h3>
+
+                <h4>Decal Projector 설정</h4>
+                <div class="code-block">Width: 1.5
+Height: 1.5
+Projection Depth: 8
+Material: Selection Decal
+기본 상태: Disabled (선택되지 않음)</div>
+
+                <h4>Worker Prefab 설정</h4>
+                <ol>
+                    <li>Capsule Collider 추가
+                        <ul>
+                            <li>Center Y: 1</li>
+                            <li>Height: 2</li>
+                        </ul>
+                    </li>
+                    <li>Decal Projector 컴포넌트 참조 연결</li>
+                    <li>Prefab Overrides → Apply All</li>
+                </ol>
+
+                <h4>PlayerInput 설정</h4>
+                <ul class="content-list">
+                    <li>Camera 참조 연결 (Main Camera)</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>🐛 버그 수정</h3>
+
+                <div class="problem-solution">
+                    <h5>❌ 문제: 같은 유닛 두 번 클릭 시 선택 해제</h5>
+
+                    <p><strong>원인:</strong></p>
+                    <div class="code-block">// 잘못된 순서
+if (raycast hit && TryGetComponent)
+{
+    selectable.Select();
+    selectedUnit = selectable;
+}
+
+if (selectedUnit != null)
+{
+    selectedUnit.Deselect();
+    selectedUnit = null;
+}</div>
+
+                    <p><strong>해결:</strong></p>
+                    <div class="code-block">// 올바른 순서: 먼저 해제, 그 다음 선택
+if (Mouse.current.leftButton.wasReleasedThisFrame)
+{
+    if (selectedUnit != null)
+    {
+        selectedUnit.Deselect();
+        selectedUnit = null;
+    }
+
+    if (raycast hit && TryGetComponent)
+    {
+        selectable.Select();
+        selectedUnit = selectable;
+    }
+}</div>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎓 학습 포인트</h3>
+
+                <h4>1. URP Decal System</h4>
+                <ul class="content-list">
+                    <li>지형에 관계없이 투영되는 시각적 표시</li>
+                    <li>Rendering Layers로 최적화 가능</li>
+                    <li>높이 조정으로 지형 돌출 방지</li>
+                </ul>
+
+                <h4>2. Raycast 활용</h4>
+                <ul class="content-list">
+                    <li>ScreenPointToRay로 2D → 3D 변환</li>
+                    <li>float.MaxValue로 무한 거리 감지</li>
+                    <li>LayerMask로 필요한 객체만 감지</li>
+                </ul>
+
+                <h4>3. Interface 패턴</h4>
+                <ul class="content-list">
+                    <li>다형성을 통한 확장 가능한 설계</li>
+                    <li>유닛/건물 등 다양한 타입 지원</li>
+                    <li>GetComponent/TryGetComponent 호환</li>
+                </ul>
+
+                <h4>4. 상태 관리</h4>
+                <ul class="content-list">
+                    <li>selectedUnit으로 현재 선택 추적</li>
+                    <li>선택 해제 후 새 선택 방식</li>
+                    <li>null 체크로 안전성 보장</li>
+                </ul>
+            </div>
+
+            <div class="project-application">
+                <h3>🎮 노바1492 프로젝트 적용 포인트</h3>
+
+                <h4>로봇 선택 시스템</h4>
+                <ul class="content-list">
+                    <li><strong>3개 파츠 로봇</strong>: WorkerThreeRobot도 ISelectable 구현</li>
+                    <li><strong>팀 구분 표시</strong>: 아군/적군 색상 다른 Decal 사용</li>
+                    <li><strong>선택 피드백</strong>: 로봇 선택 시 UI에 정보 표시</li>
+                </ul>
+
+                <h4>4:4 팀전 활용</h4>
+                <ul class="content-list">
+                    <li><strong>다중 선택</strong>: Shift 클릭으로 여러 로봇 선택</li>
+                    <li><strong>드래그 선택</strong>: 박스 드래그로 영역 선택</li>
+                    <li><strong>팀 전체 선택</strong>: 단축키로 팀 전체 선택</li>
+                </ul>
+            </div>
+
+            <div class="tech-stack">
+                <h3>🔧 핵심 기술</h3>
+
+                <h4>주요 변경 파일</h4>
+                <div class="code-block">Assets/Materials/Selection Decal.mat (신규)
+Assets/Scripts/Player/PlayerInput.cs (수정)
+Assets/Scripts/Units/ISelectable.cs (신규)
+Assets/Scripts/Units/Worker.cs (수정)
+Assets/Settings/PC_Renderer.asset (수정)
+Assets/Units/Worker/Worker.prefab (수정)</div>
+
+                <h4>다음 단계</h4>
+                <ul class="content-list">
+                    <li>다중 유닛 선택</li>
+                    <li>드래그 박스 선택</li>
+                    <li>선택된 유닛 그룹 관리</li>
+                </ul>
+            </div>
+        </div>
+
         <div class="summary-section" id="summary">
             <h2>🎯 노바1492 프로젝트 종합 적용 방안</h2>
             
@@ -782,7 +1080,7 @@ namespace GameDev.Units
             <p><strong>멀티플레이어 준비</strong>: Photon 또는 Mirror로 4:4 팀 매칭 시스템</p>
             
             <h3>📊 강의 통계</h3>
-            <p><strong>총 7개 강의</strong> | <strong>4-5시간</strong> | <strong>난이도: ⭐⭐⭐☆☆</strong></p>
+            <p><strong>총 10개 강의</strong> | <strong>6-7시간</strong> | <strong>난이도: ⭐⭐⭐☆☆</strong></p>
             
             <h3>🚀 다음 단계</h3>
             <p>유닛 시스템 구현 → 전투 시스템 구현 → UI 시스템 구현 → 멀티플레이어 구현</p>
