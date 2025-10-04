@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URTS Scripts Architecture Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #4a5568;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .section h3 {
+            color: #2d3748;
+            font-size: 1.5rem;
+            margin: 20px 0 15px 0;
+        }
+
+        .architecture-diagram {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .namespace-box {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .class-box {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .class-box.implement {
+            background: #e8f5e8;
+            border-color: #4caf50;
+        }
+
+        .class-box.event {
+            background: #fff3e0;
+            border-color: #ff9800;
+        }
+
+        .class-box.config {
+            background: #f3e5f5;
+            border-color: #9c27b0;
+        }
+
+        .class-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #1976d2;
+            margin-bottom: 8px;
+        }
+
+        .class-title.implement {
+            color: #388e3c;
+        }
+
+        .class-title.event {
+            color: #f57c00;
+        }
+
+        .class-title.config {
+            color: #7b1fa2;
+        }
+
+        .class-description {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .class-methods {
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        .method {
+            background: #f5f5f5;
+            padding: 5px 8px;
+            margin: 3px 0;
+            border-radius: 4px;
+            border-left: 3px solid #2196f3;
+        }
+
+        .flow-diagram {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .flow-step {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: inline-block;
+            min-width: 200px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .flow-arrow {
+            font-size: 2rem;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre;
+            line-height: 1.8;
+        }
+
+        .code-block .keyword {
+            color: #81c784;
+        }
+
+        .code-block .class-name {
+            color: #64b5f6;
+        }
+
+        .code-block .method-name {
+            color: #ffb74d;
+        }
+
+        .code-block .comment {
+            color: #a0aec0;
+        }
+
+        .relationship-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .relationship-table th,
+        .relationship-table td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .relationship-table th {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        .relationship-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .warning::before {
+            content: "⚠️ ";
+            font-size: 1.2rem;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .info::before {
+            content: "ℹ️ ";
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 URTS Scripts Architecture</h1>
+            <p>Unity RTS 게임의 스크립트 구조와 상호작용 관계 분석</p>
+        </div>
+
+        <!-- 개요 섹션 -->
+        <div class="section">
+            <h2>📋 프로젝트 개요</h2>
+            <p>이 문서는 Unity RTS(Real-Time Strategy) 게임의 스크립트 아키텍처를 분석합니다. 
+            <span class="highlight">Event Bus 패턴</span>을 중심으로 한 컴포넌트 간 상호작용과 
+            <span class="highlight">모듈화된 설계</span>를 다룹니다.</p>
+            
+            <div class="info">
+                <strong>주요 특징:</strong>
+                <ul>
+                    <li>🎯 Event Bus 패턴으로 느슨한 결합 구현</li>
+                    <li>🤖 모듈화된 로봇 파츠 시스템</li>
+                    <li>🎮 직관적인 플레이어 입력 처리</li>
+                    <li>📷 동적 카메라 제어</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 네임스페이스 구조 -->
+        <div class="section">
+            <h2>🏗️ 네임스페이스 구조</h2>
+            <div class="architecture-diagram">
+                <div class="namespace-box">GameDevTV.RTS.EventBus</div>
+                <div class="namespace-box">GameDevTV.RTS.Events</div>
+                <div class="namespace-box">GameDevTV.RTS.Player</div>
+                <div class="namespace-box">GameDevTV.RTS.Units</div>
+            </div>
+        </div>
+
+        <!-- 클래스 다이어그램 -->
+        <div class="section">
+            <h2>📊 클래스 다이어그램</h2>
+            
+            <h3>🎯 Event Bus 시스템</h3>
+            <div class="class-box event">
+                <div class="class-title event">Bus&lt;T&gt;</div>
+                <div class="class-description">제네릭 이벤트 버스 클래스</div>
+                <div class="class-methods">
+                    <div class="method">Raise(T evt) - 이벤트 발행</div>
+                    <div class="method">OnEvent - 이벤트 구독</div>
+                </div>
+            </div>
+
+            <div class="class-box event">
+                <div class="class-title event">IEvent</div>
+                <div class="class-description">이벤트 인터페이스 (마커 인터페이스)</div>
+            </div>
+
+            <div class="class-box event">
+                <div class="class-title event">UnitSelectedEvent</div>
+                <div class="class-description">유닛 선택 이벤트 데이터</div>
+                <div class="class-methods">
+                    <div class="method">Unit (ISelectable) - 선택된 유닛</div>
+                </div>
+            </div>
+
+            <h3>🎮 Player 시스템</h3>
+            <div class="class-box">
+                <div class="class-title">PlayerInput</div>
+                <div class="class-description">플레이어 입력 처리 및 카메라 제어</div>
+                <div class="class-methods">
+                    <div class="method">HandleLeftClick() - 유닛 선택</div>
+                    <div class="method">HandleRightClick() - 이동 명령</div>
+                    <div class="method">HandlePanning() - 카메라 이동</div>
+                    <div class="method">HandleZooming() - 카메라 줌</div>
+                    <div class="method">HandleRotation() - 카메라 회전</div>
+                </div>
+            </div>
+
+            <div class="class-box config">
+                <div class="class-title config">CameraConfig</div>
+                <div class="class-description">카메라 설정 데이터 클래스</div>
+                <div class="class-methods">
+                    <div class="method">PanSpeed - 이동 속도</div>
+                    <div class="method">ZoomSpeed - 줌 속도</div>
+                    <div class="method">RotationSpeed - 회전 속도</div>
+                </div>
+            </div>
+
+            <h3>🤖 Units 시스템</h3>
+            <div class="class-box implement">
+                <div class="class-title implement">ISelectable</div>
+                <div class="class-description">선택 가능한 객체 인터페이스</div>
+                <div class="class-methods">
+                    <div class="method">Select() - 선택</div>
+                    <div class="method">Deselect() - 선택 해제</div>
+                </div>
+            </div>
+
+            <div class="class-box implement">
+                <div class="class-title implement">IMoveable</div>
+                <div class="class-description">이동 가능한 객체 인터페이스</div>
+                <div class="class-methods">
+                    <div class="method">MoveTo(Vector3) - 이동</div>
+                </div>
+            </div>
+
+            <div class="class-box">
+                <div class="class-title">Worker</div>
+                <div class="class-description">기본 작업자 유닛</div>
+                <div class="class-methods">
+                    <div class="method">Select() - 선택 (이벤트 발행)</div>
+                    <div class="method">Deselect() - 선택 해제</div>
+                    <div class="method">MoveTo() - NavMeshAgent 이동</div>
+                </div>
+            </div>
+
+            <div class="class-box">
+                <div class="class-title">WorkerThreeRobot</div>
+                <div class="class-description">3파츠 조립 로봇 (Nova 1492 스타일)</div>
+                <div class="class-methods">
+                    <div class="method">RotateParts() - 독립적 파츠 회전</div>
+                    <div class="method">SetRobotPart() - 런타임 파츠 교체</div>
+                    <div class="method">Select() - 선택 (이벤트 발행)</div>
+                </div>
+            </div>
+
+            <div class="class-box">
+                <div class="class-title">RobotPart</div>
+                <div class="class-description">개별 로봇 파츠 회전 제어</div>
+                <div class="class-methods">
+                    <div class="method">RotateTowards() - 방향 회전</div>
+                    <div class="method">SetRotationSpeed() - 회전 속도 설정</div>
+                </div>
+            </div>
+
+            <div class="class-box">
+                <div class="class-title">HoldGunIK</div>
+                <div class="class-description">총기 잡기 IK 애니메이션</div>
+                <div class="class-methods">
+                    <div class="method">OnAnimatorIK() - IK 가중치 설정</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 상호작용 플로우 -->
+        <div class="section">
+            <h2>🔄 상호작용 플로우</h2>
+            
+            <h3>유닛 선택 플로우</h3>
+            <div class="flow-diagram">
+                <div class="flow-step">1. 플레이어 마우스 클릭</div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-step">2. PlayerInput.HandleLeftClick()</div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-step">3. Physics.Raycast() - 충돌 검사</div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-step">4. Worker.Select() 호출</div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-step">5. Bus&lt;UnitSelectedEvent&gt;.Raise()</div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-step">6. PlayerInput.HandleUnitSelected()</div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-step">7. selectedUnit 업데이트</div>
+            </div>
+
+            <h3>유닛 이동 플로우</h3>
+            <div class="flow-diagram">
+                <div class="flow-step">1. 플레이어 우클릭</div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-step">2. PlayerInput.HandleRightClick()</div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-step">3. Physics.Raycast() - 바닥 검사</div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-step">4. moveable.MoveTo(hit.point)</div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-step">5. NavMeshAgent.SetDestination()</div>
+            </div>
+        </div>
+
+        <!-- 코드 예시 -->
+        <div class="section">
+            <h2>💻 핵심 코드 예시</h2>
+            
+            <h3>Event Bus 시스템</h3>
+            <div class="code-block"><span class="keyword">namespace</span> GameDevTV.RTS.EventBus
+<span class="keyword">{</span>
+    <span class="keyword">public static class</span> <span class="class-name">Bus</span>&lt;T&gt; <span class="keyword">where</span> T : IEvent
+    <span class="keyword">{</span>
+        <span class="keyword">public delegate void</span> <span class="method-name">Event</span>(T args);
+        <span class="keyword">public static event</span> Event OnEvent;
+
+        <span class="keyword">public static void</span> <span class="method-name">Raise</span>(T evt)
+        <span class="keyword">{</span>
+            OnEvent?.Invoke(evt);
+        <span class="keyword">}</span>
+    <span class="keyword">}</span>
+<span class="keyword">}</span></div>
+
+            <h3>유닛 선택 이벤트 발행</h3>
+            <div class="code-block"><span class="keyword">public void</span> <span class="method-name">Select</span>()
+<span class="keyword">{</span>
+    <span class="comment">// 시각적 피드백</span>
+    <span class="keyword">if</span> (decalProjector != <span class="keyword">null</span>)
+    <span class="keyword">{</span>
+        decalProjector.gameObject.SetActive(<span class="keyword">true</span>);
+    <span class="keyword">}</span>
+
+    <span class="comment">// 이벤트 발행</span>
+    Bus&lt;UnitSelectedEvent&gt;.Raise(<span class="keyword">new</span> UnitSelectedEvent(<span class="keyword">this</span>));
+<span class="keyword">}</span></div>
+
+            <h3>이벤트 구독 및 처리</h3>
+            <div class="code-block"><span class="keyword">private void</span> <span class="method-name">Awake</span>()
+<span class="keyword">{</span>
+    <span class="comment">// 이벤트 구독</span>
+    Bus&lt;UnitSelectedEvent&gt;.OnEvent += HandleUnitSelected;
+<span class="keyword">}</span>
+
+<span class="keyword">private void</span> <span class="method-name">HandleUnitSelected</span>(UnitSelectedEvent evt)
+<span class="keyword">{</span>
+    <span class="comment">// 기존 선택 해제</span>
+    <span class="keyword">if</span> (selectedUnit != <span class="keyword">null</span>)
+    <span class="keyword">{</span>
+        selectedUnit.Deselect();
+    <span class="keyword">}</span>
+
+    <span class="comment">// 새 유닛 선택</span>
+    selectedUnit = evt.Unit;
+<span class="keyword">}</span></div>
+        </div>
+
+        <!-- 관계 다이어그램 -->
+        <div class="section">
+            <h2>🔗 클래스 간 관계 다이어그램</h2>
+
+            <div class="info">
+                <strong>PlantUML 다이어그램:</strong> 아래 코드를 <a href="https://www.plantuml.com/plantuml/uml/" target="_blank">PlantUML Online Editor</a>에 붙여넣어 시각화할 수 있습니다.
+            </div>
+
+            <div class="code-block" style="background: #f8f9fa; color: #333; border: 2px solid #e9ecef;">@startuml URTS_Architecture
+
+' Event Bus System
+package "EventBus" {
+    interface IEvent
+    class "Bus&lt;T&gt;" as Bus {
+        +{static} OnEvent : event
+        +{static} Raise(T evt)
+    }
+}
+
+package "Events" {
+    class UnitSelectedEvent {
+        +Unit : ISelectable
+        +UnitSelectedEvent(ISelectable)
+    }
+}
+
+' Interfaces
+package "Units" {
+    interface ISelectable {
+        +Select()
+        +Deselect()
+    }
+
+    interface IMoveable {
+        +MoveTo(Vector3)
+    }
+
+    class Worker {
+        -agent : NavMeshAgent
+        -decalProjector : DecalProjector
+        +Select()
+        +Deselect()
+        +MoveTo(Vector3)
+    }
+
+    class WorkerThreeRobot {
+        -headPart : GameObject
+        -bodyPart : GameObject
+        -legsPart : GameObject
+        -agent : NavMeshAgent
+        +RotateParts(Vector3)
+        +SetRobotPart(RobotPartType, GameObject)
+        +Select()
+        +Deselect()
+        +MoveTo(Vector3)
+    }
+
+    class RobotPart {
+        -rotationSpeed : float
+        +RotateTowards(Vector3)
+        +SetRotationSpeed(float)
+    }
+}
+
+package "Player" {
+    class PlayerInput {
+        -selectedUnit : ISelectable
+        -cameraConfig : CameraConfig
+        +HandleLeftClick()
+        +HandleRightClick()
+        +HandlePanning()
+        +HandleZooming()
+        -HandleUnitSelected(UnitSelectedEvent)
+    }
+
+    class CameraConfig {
+        +PanSpeed : float
+        +ZoomSpeed : float
+        +RotationSpeed : float
+    }
+}
+
+' Relationships
+UnitSelectedEvent ..|> IEvent
+Worker ..|> ISelectable
+Worker ..|> IMoveable
+WorkerThreeRobot ..|> ISelectable
+WorkerThreeRobot ..|> IMoveable
+WorkerThreeRobot *-- RobotPart : contains 3
+
+PlayerInput --> ISelectable : uses
+PlayerInput --> IMoveable : uses
+PlayerInput --> CameraConfig : uses
+PlayerInput ..> Bus : subscribes
+Worker ..> Bus : publishes
+WorkerThreeRobot ..> Bus : publishes
+
+note right of Bus
+  Generic Event Bus
+  Decouples components
+end note
+
+note right of PlayerInput
+  Handles all player input
+  and camera control
+end note
+
+@enduml</div>
+
+            <h3>📊 관계 테이블</h3>
+            <table class="relationship-table">
+                <thead>
+                    <tr>
+                        <th>클래스</th>
+                        <th>의존성</th>
+                        <th>관계 유형</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>PlayerInput</td>
+                        <td>ISelectable, IMoveable</td>
+                        <td>인터페이스 의존</td>
+                        <td>유닛 선택 및 이동 명령</td>
+                    </tr>
+                    <tr>
+                        <td>PlayerInput</td>
+                        <td>CameraConfig</td>
+                        <td>구성 의존</td>
+                        <td>카메라 설정 데이터</td>
+                    </tr>
+                    <tr>
+                        <td>Worker</td>
+                        <td>ISelectable, IMoveable</td>
+                        <td>인터페이스 구현</td>
+                        <td>선택 및 이동 기능</td>
+                    </tr>
+                    <tr>
+                        <td>WorkerThreeRobot</td>
+                        <td>RobotPart</td>
+                        <td>컴포지션</td>
+                        <td>3개 파츠로 구성</td>
+                    </tr>
+                    <tr>
+                        <td>WorkerThreeRobot</td>
+                        <td>Bus&lt;UnitSelectedEvent&gt;</td>
+                        <td>이벤트 발행</td>
+                        <td>선택 이벤트 발행</td>
+                    </tr>
+                    <tr>
+                        <td>PlayerInput</td>
+                        <td>Bus&lt;UnitSelectedEvent&gt;</td>
+                        <td>이벤트 구독</td>
+                        <td>선택 이벤트 수신</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 설계 원칙 -->
+        <div class="section">
+            <h2>🎯 설계 원칙</h2>
+            
+            <h3>1. 느슨한 결합 (Loose Coupling)</h3>
+            <p>Event Bus 패턴을 통해 컴포넌트 간 직접 참조를 최소화하고, 이벤트를 통한 통신으로 유연성을 확보했습니다.</p>
+
+            <h3>2. 단일 책임 원칙 (SRP)</h3>
+            <p>각 클래스는 명확한 단일 책임을 가집니다:</p>
+            <ul>
+                <li><strong>PlayerInput:</strong> 입력 처리 및 카메라 제어</li>
+                <li><strong>Worker:</strong> 기본 유닛 동작</li>
+                <li><strong>WorkerThreeRobot:</strong> 복합 로봇 동작</li>
+                <li><strong>RobotPart:</strong> 개별 파츠 회전</li>
+            </ul>
+
+            <h3>3. 인터페이스 분리 원칙 (ISP)</h3>
+            <p>ISelectable과 IMoveable 인터페이스로 기능을 분리하여 필요한 기능만 구현할 수 있도록 했습니다.</p>
+
+            <h3>4. 개방-폐쇄 원칙 (OCP)</h3>
+            <p>새로운 유닛 타입을 추가할 때 기존 코드 수정 없이 인터페이스만 구현하면 됩니다.</p>
+        </div>
+
+        <!-- 주의사항 -->
+        <div class="section">
+            <h2>⚠️ 주의사항 및 개선점</h2>
+            
+            <div class="warning">
+                <strong>메모리 누수 방지:</strong> OnDestroy()에서 이벤트 구독을 해제해야 합니다.
+            </div>
+
+            <div class="warning">
+                <strong>레이어 충돌 매트릭스:</strong> World Bounds와 Floor 레이어 충돌을 비활성화해야 정상 작동합니다.
+            </div>
+
+            <div class="info">
+                <strong>확장 가능성:</strong>
+                <ul>
+                    <li>새로운 이벤트 타입 추가 (UnitMovedEvent, UnitAttackedEvent 등)</li>
+                    <li>다양한 로봇 파츠 타입 지원</li>
+                    <li>AI 시스템과의 통합</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 결론 -->
+        <div class="section">
+            <h2>🎉 결론</h2>
+            <p>이 URTS 프로젝트는 <span class="highlight">Event Bus 패턴</span>을 중심으로 한 잘 설계된 아키텍처를 보여줍니다. 
+            모듈화된 구조와 명확한 책임 분리로 유지보수성과 확장성을 확보했으며, 
+            특히 <span class="highlight">Nova 1492 스타일의 로봇 파츠 시스템</span>은 독창적인 구현입니다.</p>
+            
+            <p>이 문서를 통해 새로운 개발자도 프로젝트의 전체적인 구조와 각 컴포넌트의 역할을 쉽게 이해할 수 있을 것입니다.</p>
+        </div>
+    </div>
+</body>
+</html>

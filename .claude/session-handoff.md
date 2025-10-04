@@ -98,53 +98,20 @@ Layer Collision Matrix:
 
 ---
 
-## 📝 작업 규칙 (.claude/code-rules.md)
+## 📝 작업 규칙
 
-### Rule 1: CODE_MODIFICATION_RULE
-- 코드 수정 시 의도가 모호하면 **반드시 사용자에게 물어보기**
+**필수 읽기:**
+- `lecture/urts-course/.claude/rules-summary.md` ⭐ (핵심 요약, 50줄)
+- `lecture/urts-course/.claude/code-rules.md` (상세 룰, 597줄)
 
-### Rule 2: CODE_IMPROVEMENT_RULE
-- 코드 개선 기회 발견 시 **적극적으로 제안**
-
-### Rule 3: PERFORMANCE_OPTIMIZATION_RULE
-- 50개 이상 유닛 대응 최적화
-- 캐싱, 중복 계산 제거, 메모리 할당 최소화
-
-### Rule 4: LECTURE_NOTES_DOCUMENTATION_RULE
-**중요: 강의 노트는 반드시 HTML 파일에 추가**
-- 파일: `lecture/lecture-notes/complete-lecture-notes.html`
-- 형식: Toss 스타일 (토스 기술 블로그)
-- **강의는 맨 아래에 APPEND** (번호 순서대로)
-- 섹션 구조:
-  - 🎯 학습 목표
-  - 📝 핵심 개념
-  - 💻 구현 코드
-  - ⚙️ Unity 설정
-  - 🐛 버그 수정 (있을 경우)
-  - 🎓 학습 포인트
-  - 🎮 노바1492 프로젝트 적용 포인트
-  - 🔧 핵심 기술
-
-### Rule 5: GIT_COMMIT_MESSAGE_RULE
-**양식:**
-```
-type: English title (한글 제목)
-
-한글 상세 설명:
-- 변경사항 1
-- 변경사항 2
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-```
-
-**Type 종류:**
-- `feat`: 새 기능
-- `fix`: 버그 수정
-- `docs`: 문서 (강의 노트)
-- `perf`: 성능 개선
-- `chore`: 기타 (서브모듈 업데이트 등)
+**핵심 룰 7개:**
+- **Rule 7**: 서버 통합 대비 → 모듈화, Event Bus, 정확한 네이밍
+- **Rule 6**: Worker → WorkerThreeRobot 적용 시 충돌 체크
+- **Rule 5**: 커밋 메시지 영어+한글
+- **Rule 4**: 강의 노트 HTML 추가 (Toss 스타일)
+- **Rule 3**: 50+ 유닛 성능 최적화
+- **Rule 2**: 적극적 코드 개선 제안
+- **Rule 1**: 애매한 요청은 질문 먼저
 
 ---
 
@@ -172,9 +139,13 @@ lecture <커밋해시>
    - 🔧 핵심 기술
 4. ✅ WorkerThreeRobot에도 동일 기능 적용 (필요시)
    - **Rule 6 준수**: Update() 충돌 체크, 전체 파일 읽고 분석
-5. ✅ urts-course 커밋: `docs: Add lecture N - <제목>`
-6. ✅ Uaps 서브모듈 업데이트 커밋: `chore: Update urts-course submodule`
-7. ✅ 강의 통계 업데이트 (총 X개 강의, Y-Z시간)
+5. ✅ `urts-scripts-architecture.html` 업데이트 ⭐ NEW
+   - 새로운 클래스/메서드 추가
+   - 상호작용 플로우 업데이트
+   - 관계 테이블 업데이트
+6. ✅ urts-course 커밋: `docs: Add lecture N - <제목>`
+7. ✅ Uaps 서브모듈 업데이트 커밋: `chore: Update urts-course submodule`
+8. ✅ 강의 통계 업데이트 (총 X개 강의, Y-Z시간)
 
 **예시:**
 ```
@@ -190,8 +161,9 @@ In this lecture, we're going to set up where we can click and drag...
 2. 커밋 체리픽 또는 분석
 3. HTML에 강의 내용 추가 (Toss 스타일)
 4. Worker에 적용된 내용을 WorkerThreeRobot에도 적용
-5. 커밋 (docs: Add lecture X - ...)
-6. 강의 통계 업데이트 (총 X개 강의, Y시간)
+5. **urts-scripts-architecture.html 업데이트** (새 클래스/메서드 추가)
+6. 커밋 (docs: Add lecture X - ...)
+7. 강의 통계 업데이트 (총 X개 강의, Y시간)
 
 ### 최근 완료한 강의
 **강의 11 (59ae39e)**: Unit & Decal Rendering Layers
