@@ -1647,7 +1647,7 @@ ProjectSettings/DynamicsManager.asset (충돌 매트릭스 수정)</div>
             <p><strong>멀티플레이어 준비</strong>: Photon 또는 Mirror로 4:4 팀 매칭 시스템</p>
             
             <h3>📊 강의 통계</h3>
-            <p><strong>총 13개 강의</strong> | <strong>9-10시간</strong> | <strong>난이도: ⭐⭐⭐☆☆</strong></p>
+            <p><strong>총 14개 강의</strong> | <strong>10-11시간</strong> | <strong>난이도: ⭐⭐⭐☆☆</strong></p>
 
             <h3>🚀 다음 단계</h3>
             <p>유닛 시스템 구현 → 전투 시스템 구현 → UI 시스템 구현 → 멀티플레이어 구현</p>
@@ -1849,6 +1849,229 @@ namespace GameDevTV.RTS.Player
                 <li><strong>Input System</strong>: wasPressedThisFrame, isPressed, wasReleasedThisFrame</li>
                 <li><strong>Vector2 연산</strong>: 마우스 시작/종료 좌표로 박스 크기 계산</li>
                 <li><strong>Mathf.Abs()</strong>: 음수 드래그 대응</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ==================== 강의 14 ==================== -->
+    <div class="lecture-section" id="lecture-14">
+        <h2 class="lecture-title">강의 14: The Event Bus (이벤트 버스 디자인 패턴)</h2>
+
+        <div class="lecture-goal">
+            <h3>🎯 학습 목표</h3>
+            <ul class="content-list">
+                <li>**Event Bus** 디자인 패턴으로 컴포넌트 간 **느슨한 결합(Loose Coupling)** 구현</li>
+                <li>**Generic Type**과 **Delegate**를 사용한 타입 안전 이벤트 시스템</li>
+                <li>**Publisher-Consumer** 패턴으로 컴포넌트 간 통신 분리</li>
+                <li>Singleton을 대체하는 **상태 없는 정적 클래스** 설계</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h3>📝 핵심 개념</h3>
+
+            <h4>1. Event Bus란?</h4>
+            <p>Event Bus는 **Publisher(발행자)**와 **Consumer(구독자)** 간 통신을 **중개**하는 디자인 패턴입니다:</p>
+            <div class="code-block">Publisher (발행자)          Event Bus (중개자)         Consumer (구독자)
+     Worker                       ↓                    PlayerInput
+        |                         |                         ↑
+        | Raise(UnitSelectedEvent) → Bus.OnEvent ──────────┘
+        |                         |
+        └─────────────────────────┴── 서로를 몰라도 통신 가능</div>
+
+            <h4>2. 느슨한 결합(Loose Coupling)의 장점</h4>
+            <ul class="content-list">
+                <li>**Publisher와 Consumer가 서로를 모름** → 의존성 제거</li>
+                <li>**Singleton 패턴 회피** → 전역 상태(Global State) 없음</li>
+                <li>**변경 격리** → 한 시스템 변경이 다른 시스템에 영향 없음</li>
+                <li>**테스트 용이** → 각 컴포넌트를 독립적으로 테스트 가능</li>
+            </ul>
+
+            <h4>3. Generic Type과 Delegate</h4>
+            <p>**Generic Type `<T>`**: 어떤 타입이든 받을 수 있는 재사용 가능 클래스</p>
+            <div class="code-block">// T는 임의의 타입 (UnitSelectedEvent, UnitDeselectedEvent 등)
+public static class Bus<T> where T : IEvent
+{
+    // delegate: 특정 함수 시그니처를 정의하는 타입
+    public delegate void Event(T args);
+
+    // event 키워드: 외부에서 직접 Invoke 불가, Raise()만 호출 가능
+    public static event Event OnEvent;
+}</div>
+
+            <h4>4. Subscribe / Unsubscribe 패턴</h4>
+            <div class="code-block">// 구독 (+=)
+Bus<UnitSelectedEvent>.OnEvent += HandleUnitSelected;
+
+// 구독 해제 (-=)
+Bus<UnitSelectedEvent>.OnEvent -= HandleUnitSelected;
+
+// ⚠️ 중요: 구독 해제를 안 하면 메모리 누수 발생!</div>
+        </div>
+
+        <div class="content-section">
+            <h3>💻 구현 코드</h3>
+
+            <h4>1. IEvent.cs (이벤트 마커 인터페이스)</h4>
+            <div class="code-block">using GameDevTV.RTS.EventBus;
+
+namespace GameDevTV.RTS.EventBus
+{
+    public interface IEvent
+    {
+        // 마커 인터페이스: 이벤트 버스를 통과할 타입을 제한
+    }
+}</div>
+
+            <h4>2. Bus.cs (Generic Event Bus)</h4>
+            <div class="code-block">using GameDevTV.RTS.EventBus;
+
+namespace GameDevTV.RTS.EventBus
+{
+    public static class Bus<T> where T : IEvent
+    {
+        // Delegate: 함수 시그니처 정의 (T를 인자로 받는 함수)
+        public delegate void Event(T args);
+
+        // event 키워드: 외부에서 OnEvent?.Invoke() 직접 호출 불가
+        public static event Event OnEvent;
+
+        // Raise: 이벤트 발행 (Publisher가 호출)
+        public static void Raise(T evt) => OnEvent?.Invoke(evt);
+
+        // ?: Null-conditional operator (OnEvent가 null이면 호출 안 함)
+    }
+}</div>
+
+            <h4>3. UnitSelectedEvent.cs (구체적 이벤트 타입)</h4>
+            <div class="code-block">using GameDevTV.RTS.EventBus;
+using GameDevTV.RTS.Units;
+
+namespace GameDevTV.RTS.Events
+{
+    public struct UnitSelectedEvent : IEvent
+    {
+        // Immutable: 외부에서 변경 불가
+        public ISelectable Unit { get; private set; }
+
+        public UnitSelectedEvent(ISelectable unit)
+        {
+            Unit = unit;
+        }
+    }
+}</div>
+
+            <h4>4. Worker.cs (Publisher 역할)</h4>
+            <div class="code-block">using GameDevTV.RTS.EventBus;
+using GameDevTV.RTS.Events;
+
+public class Worker : MonoBehaviour, ISelectable, IMoveable
+{
+    public void Select()
+    {
+        if (decalProjector != null)
+        {
+            decalProjector.gameObject.SetActive(true);
+        }
+
+        // ✅ 이벤트 발행 (Publisher)
+        Bus<UnitSelectedEvent>.Raise(new UnitSelectedEvent(this));
+    }
+}</div>
+
+            <h4>5. PlayerInput.cs (Consumer 역할)</h4>
+            <div class="code-block">using GameDevTV.RTS.EventBus;
+using GameDevTV.RTS.Events;
+
+public class PlayerInput : MonoBehaviour
+{
+    private ISelectable selectedUnit;
+
+    private void Awake()
+    {
+        // ✅ 이벤트 구독 (Consumer)
+        Bus<UnitSelectedEvent>.OnEvent += HandleUnitSelected;
+    }
+
+    private void OnDestroy()
+    {
+        // ✅ 이벤트 구독 해제 (메모리 누수 방지)
+        Bus<UnitSelectedEvent>.OnEvent -= HandleUnitSelected;
+    }
+
+    private void HandleUnitSelected(UnitSelectedEvent evt)
+    {
+        // 기존 선택 유닛 해제
+        if (selectedUnit != null)
+        {
+            selectedUnit.Deselect();
+        }
+
+        // 새 유닛 선택
+        selectedUnit = evt.Unit;
+    }
+
+    private void HandleLeftClick()
+    {
+        // ... (Raycast로 유닛 클릭 감지)
+        if (Physics.Raycast(..., out ISelectable selectable))
+        {
+            selectable.Select(); // → Worker.Select() → Bus.Raise()
+            // selectedUnit = selectable; ❌ 제거 (이벤트 핸들러에서 처리)
+        }
+    }
+}</div>
+        </div>
+
+        <div class="content-section">
+            <h3>⚙️ 실행 흐름</h3>
+
+            <div class="step-guide">
+                <h5>📌 이벤트 발행 → 구독 → 처리 흐름</h5>
+                <ol>
+                    <li><strong>Awake()</strong>: PlayerInput이 <code>Bus&lt;UnitSelectedEvent&gt;.OnEvent</code>에 구독</li>
+                    <li><strong>좌클릭</strong>: Raycast로 Worker 클릭 감지</li>
+                    <li><strong>Worker.Select()</strong>: <code>Bus&lt;UnitSelectedEvent&gt;.Raise(new UnitSelectedEvent(this))</code> 호출</li>
+                    <li><strong>Bus.Raise()</strong>: <code>OnEvent?.Invoke(evt)</code> → 모든 구독자에게 알림</li>
+                    <li><strong>HandleUnitSelected()</strong>: PlayerInput이 이벤트 받아서 <code>selectedUnit</code> 업데이트</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>🎓 학습 포인트</h3>
+            <ul class="content-list">
+                <li><strong>Generic Type `<T>`</strong>: 타입 파라미터로 재사용 가능한 클래스 작성</li>
+                <li><strong>where T : IEvent</strong>: Generic 제약 조건 (IEvent만 허용)</li>
+                <li><strong>Delegate</strong>: 함수 시그니처를 타입으로 정의 (<code>delegate void Event(T args)</code>)</li>
+                <li><strong>event 키워드</strong>: 외부에서 직접 Invoke 불가, Raise()만 호출 가능</li>
+                <li><strong>?. (Null-conditional)</strong>: <code>OnEvent?.Invoke(evt)</code> → OnEvent가 null이면 호출 안 함</li>
+                <li><strong>Expression-bodied function</strong>: <code>public static void Raise(T evt) => OnEvent?.Invoke(evt);</code></li>
+                <li><strong>+=/-= 연산자</strong>: 이벤트 구독/구독 해제</li>
+                <li><strong>Awake/OnDestroy 쌍</strong>: 구독은 Awake, 해제는 OnDestroy에서 (메모리 누수 방지)</li>
+            </ul>
+        </div>
+
+        <div class="project-application">
+            <h3>🎮 노바1492 프로젝트 적용 포인트</h3>
+            <ul class="content-list">
+                <li><strong>다중 이벤트 시스템</strong>: UnitDied, RobotDamaged, TeamScoreChanged 등</li>
+                <li><strong>UI 업데이트 분리</strong>: 게임 로직과 UI를 이벤트로 분리 (체력바, 점수판)</li>
+                <li><strong>멀티플레이어 대응</strong>: 네트워크 이벤트와 로컬 이벤트 분리</li>
+                <li><strong>시스템 간 통신</strong>: 전투 시스템 ↔ 경제 시스템 ↔ UI 시스템 느슨한 결합</li>
+                <li><strong>디버깅 용이</strong>: 이벤트 로그로 시스템 간 상호작용 추적</li>
+            </ul>
+        </div>
+
+        <div class="tech-stack">
+            <h3>🔧 핵심 기술</h3>
+            <ul class="content-list">
+                <li><strong>Generic Type</strong>: <code>Bus&lt;T&gt; where T : IEvent</code></li>
+                <li><strong>Delegate</strong>: 함수 시그니처 타입 정의</li>
+                <li><strong>Event 키워드</strong>: 캡슐화된 이벤트 발행</li>
+                <li><strong>Null-conditional (?.)  </strong>: 안전한 메서드 호출</li>
+                <li><strong>Expression-bodied members</strong>: 한 줄 함수 간결 표현</li>
+                <li><strong>Publisher-Consumer 패턴</strong>: 이벤트 기반 아키텍처</li>
             </ul>
         </div>
     </div>
