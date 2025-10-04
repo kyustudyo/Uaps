@@ -1647,12 +1647,211 @@ ProjectSettings/DynamicsManager.asset (충돌 매트릭스 수정)</div>
             <p><strong>멀티플레이어 준비</strong>: Photon 또는 Mirror로 4:4 팀 매칭 시스템</p>
             
             <h3>📊 강의 통계</h3>
-            <p><strong>총 12개 강의</strong> | <strong>8-9시간</strong> | <strong>난이도: ⭐⭐⭐☆☆</strong></p>
-            
+            <p><strong>총 13개 강의</strong> | <strong>9-10시간</strong> | <strong>난이도: ⭐⭐⭐☆☆</strong></p>
+
             <h3>🚀 다음 단계</h3>
             <p>유닛 시스템 구현 → 전투 시스템 구현 → UI 시스템 구현 → 멀티플레이어 구현</p>
             <p>각 강의에서 학습한 내용을 <strong>노바1492 스타일 로봇 대전 게임</strong>에 적용하여 3개월 내에 MVP를 완성할 수 있을 것입니다! 🎮</p>
         </div>
     </div>
+
+    <!-- ==================== 강의 13 ==================== -->
+    <div class="lecture-section" id="lecture-13">
+        <h2 class="lecture-title">강의 13: Drag Selection UI (드래그 선택 UI 구현)</h2>
+
+        <div class="lecture-goal">
+            <h3>🎯 학습 목표</h3>
+            <ul class="content-list">
+                <li>마우스 드래그로 다중 유닛 선택을 위한 **UI 박스** 구현</li>
+                <li>**RectTransform**을 사용한 UI 동적 크기 조정</li>
+                <li>드래그 선택의 3단계 상태 관리 (시작, 드래그 중, 종료)</li>
+                <li>UI Canvas 설정과 Pixel Perfect 렌더링</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h3>📝 핵심 개념</h3>
+
+            <h4>1. 드래그 선택 상태 관리</h4>
+            <p>드래그 선택은 3가지 상태로 나뉩니다:</p>
+            <div class="code-block">// 1. 마우스 왼쪽 버튼 **처음 눌렀을 때** (wasPressedThisFrame)
+- Selection Box UI 활성화
+- 시작 위치 저장
+
+// 2. 마우스 왼쪽 버튼 **누르고 있는 동안** (isPressed && !wasPressedThisFrame)
+- Selection Box 크기 조정 (ResizeSelectionBox)
+
+// 3. 마우스 왼쪽 버튼 **놓았을 때** (wasReleasedThisFrame)
+- 박스 안의 유닛 선택 (다음 강의에서 구현)
+- 박스 밖의 유닛 선택 해제
+- Selection Box UI 비활성화</div>
+
+            <h4>2. RectTransform UI 위치/크기 조정</h4>
+            <p>UI는 Transform이 아닌 **RectTransform**을 사용합니다:</p>
+            <div class="code-block">// anchoredPosition: Anchor 기준 상대 위치
+selectionBox.anchoredPosition = startingMousePosition + new Vector2(width / 2, height / 2);
+
+// sizeDelta: UI 요소의 크기
+selectionBox.sizeDelta = new Vector2(Mathf.Abs(width), Mathf.Abs(height));</div>
+
+            <h4>3. UI Pivot과 Anchor</h4>
+            <p>**Pivot (0.5, 0.5)**: UI 중심점이 중앙에 있음 → 크기 변경 시 양쪽으로 확장</p>
+            <p>**Anchor (0, 0)**: UI 좌표 원점이 좌하단 → 마우스 좌표와 일치</p>
+            <div class="code-block">// Pivot이 중앙이므로 위치를 width/2, height/2만큼 이동
+// 마우스 시작점 + (현재점 - 시작점) / 2 = 박스 중심
+anchoredPosition = start + (current - start) / 2
+
+// 크기는 절댓값으로 설정 (음수 방향 드래그 대응)
+sizeDelta = new Vector2(Mathf.Abs(width), Mathf.Abs(height))</div>
+        </div>
+
+        <div class="content-section">
+            <h3>💻 구현 코드</h3>
+
+            <h4>PlayerInput.cs 수정</h4>
+            <div class="code-block">using GameDevTV.RTS.Units;
+using Unity.Cinemachine;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+namespace GameDevTV.RTS.Player
+{
+    public class PlayerInput : MonoBehaviour
+    {
+        [SerializeField] private RectTransform selectionBox;  // ✅ 추가
+
+        private Vector2 startingMousePosition;  // ✅ 추가
+        private ISelectable selectedUnit;
+
+        private void Update()
+        {
+            HandlePanning();
+            HandleZooming();
+            HandleRotation();
+            HandleLeftClick();
+            HandleRightClick();
+            HandleDragSelect();  // ✅ 추가
+        }
+
+        private void HandleDragSelect()
+        {
+            if (selectionBox == null) { return; }  // Guardian Pattern
+
+            // 1️⃣ 마우스 왼쪽 버튼 처음 눌렀을 때
+            if (Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                selectionBox.gameObject.SetActive(true);
+                startingMousePosition = Mouse.current.position.ReadValue();
+            }
+            // 2️⃣ 드래그 중 (누르고 있는 동안)
+            else if (Mouse.current.leftButton.isPressed && !Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                ResizeSelectionBox();
+            }
+            // 3️⃣ 마우스 왼쪽 버튼 놓았을 때
+            else if (Mouse.current.leftButton.wasReleasedThisFrame)
+            {
+                // TODO: select new units
+                // TODO: deselect non-included units
+                selectionBox.gameObject.SetActive(false);
+            }
+        }
+
+        private void ResizeSelectionBox()
+        {
+            Vector2 mousePosition = Mouse.current.position.ReadValue();
+
+            float width = mousePosition.x - startingMousePosition.x;
+            float height = mousePosition.y - startingMousePosition.y;
+
+            // Pivot이 중앙이므로 width/2, height/2만큼 이동
+            selectionBox.anchoredPosition = startingMousePosition + new Vector2(width / 2, height / 2);
+
+            // 음수 방향 드래그를 위해 절댓값 사용
+            selectionBox.sizeDelta = new Vector2(Mathf.Abs(width), Mathf.Abs(height));
+        }
+    }
+}</div>
+        </div>
+
+        <div class="content-section">
+            <h3>⚙️ Unity 설정</h3>
+
+            <div class="step-guide">
+                <h5>📌 Selection Canvas 생성</h5>
+                <ol>
+                    <li>Hierarchy 우클릭 → UI → Canvas → 이름: <code>Selection Canvas</code></li>
+                    <li>Canvas Scaler 설정:
+                        <ul>
+                            <li>UI Scale Mode: <code>Constant Pixel Size</code> ⚠️ 중요</li>
+                            <li>Scale Factor: <code>1</code></li>
+                            <li>Reference Pixels Per Unit: <code>100</code></li>
+                        </ul>
+                    </li>
+                    <li>이유: 다른 UI Scale Mode는 마우스 좌표와 매칭이 안 됨</li>
+                </ol>
+            </div>
+
+            <div class="step-guide">
+                <h5>📌 Selection Box UI 생성</h5>
+                <ol>
+                    <li>Selection Canvas 우클릭 → UI → Image → 이름: <code>Selection Box</code></li>
+                    <li>Inspector 설정:
+                        <ul>
+                            <li>Color: <code>#68BBFC</code>, Alpha: <code>0.2</code> (반투명 파랑)</li>
+                            <li>Rect Transform → Anchors: <code>Bottom Left (0, 0)</code> ⚠️ 중요</li>
+                            <li>Width: <code>0</code>, Height: <code>0</code></li>
+                            <li>GameObject: <code>비활성화</code> (기본 숨김)</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <div class="step-guide">
+                <h5>📌 PlayerInput 연결</h5>
+                <ol>
+                    <li>Hierarchy → Main Camera 선택</li>
+                    <li>PlayerInput 컴포넌트 → Selection Box 필드에 <code>Selection Box</code> 드래그</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>🎓 학습 포인트</h3>
+            <ul class="content-list">
+                <li><strong>Canvas Scaler의 중요성</strong>: Constant Pixel Size가 아니면 마우스 좌표 계산이 틀어짐</li>
+                <li><strong>RectTransform.anchoredPosition</strong>: Anchor 기준 상대 위치 (Transform.position과 다름)</li>
+                <li><strong>RectTransform.sizeDelta</strong>: UI 크기 직접 설정</li>
+                <li><strong>Pivot 중앙 (0.5, 0.5)</strong>: 크기 변경 시 중심에서 양쪽으로 확장</li>
+                <li><strong>Mathf.Abs()</strong>: 음수 방향 드래그 (오른쪽→왼쪽, 위→아래)도 정상 작동</li>
+                <li><strong>Guardian Pattern</strong>: <code>if (selectionBox == null) return;</code>으로 null 체크</li>
+                <li><strong>상태 기반 로직</strong>: wasPressedThisFrame → isPressed → wasReleasedThisFrame 순서 중요</li>
+            </ul>
+        </div>
+
+        <div class="project-application">
+            <h3>🎮 노바1492 프로젝트 적용 포인트</h3>
+            <ul class="content-list">
+                <li><strong>다중 로봇 선택</strong>: 4:4 팀전에서 여러 로봇을 한 번에 선택하여 명령</li>
+                <li><strong>팀 단위 작전</strong>: 드래그로 로봇 그룹 선택 후 포메이션 이동</li>
+                <li><strong>선택 UI 커스터마이징</strong>: 팀 색상에 맞춘 Selection Box (파랑/빨강)</li>
+                <li><strong>선택 제한</strong>: 아군 로봇만 선택 가능하도록 LayerMask 필터링</li>
+                <li><strong>선택 피드백</strong>: Selection Box 테두리 애니메이션 또는 그라디언트 효과</li>
+            </ul>
+        </div>
+
+        <div class="tech-stack">
+            <h3>🔧 핵심 기술</h3>
+            <ul class="content-list">
+                <li><strong>RectTransform</strong>: UI 위치/크기 동적 조정</li>
+                <li><strong>Canvas Scaler</strong>: Constant Pixel Size로 픽셀 좌표 매칭</li>
+                <li><strong>Anchor & Pivot</strong>: UI 좌표계 이해</li>
+                <li><strong>Input System</strong>: wasPressedThisFrame, isPressed, wasReleasedThisFrame</li>
+                <li><strong>Vector2 연산</strong>: 마우스 시작/종료 좌표로 박스 크기 계산</li>
+                <li><strong>Mathf.Abs()</strong>: 음수 드래그 대응</li>
+            </ul>
+        </div>
+    </div>
+
 </body>
 </html>
