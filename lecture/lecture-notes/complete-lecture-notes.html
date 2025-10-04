@@ -2076,5 +2076,264 @@ public class PlayerInput : MonoBehaviour
         </div>
     </div>
 
+    <!-- 강의 15: Deselecting Units with Event Bus -->
+    <div class="lecture-card">
+        <div class="lecture-header">
+            <h2>강의 15: Deselecting Units with Event Bus</h2>
+            <p class="lecture-subtitle">이벤트 버스로 유닛 선택 해제 구현</p>
+        </div>
+
+        <div class="content-section">
+            <h3>🎯 학습 목표</h3>
+            <ul class="content-list">
+                <li>UnitDeselectedEvent 생성하여 선택 해제 이벤트 구현</li>
+                <li>Event Bus 패턴 확장하여 여러 이벤트 타입 관리</li>
+                <li>상태 관리 로직을 이벤트 핸들러로 분리</li>
+                <li>OnDestroy에서 이벤트 구독 해제하여 메모리 누수 방지</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h3>📝 핵심 개념</h3>
+
+            <h4>1. Discrete Event Structs (개별 이벤트 구조체)</h4>
+            <p>각 이벤트마다 별도의 struct를 생성하는 이유:</p>
+            <div class="code-block">
+<span class="comment">// ❌ Bad: 하나의 이벤트에 여러 상태 포함</span>
+<span class="keyword">public struct</span> <span class="class-name">UnitSelectionEvent</span> : IEvent
+<span class="keyword">{</span>
+    <span class="keyword">public</span> ISelectable Unit;
+    <span class="keyword">public bool</span> WasSelected;  <span class="comment">// 선택/해제를 bool로 구분 (복잡함)</span>
+<span class="keyword">}</span>
+
+<span class="comment">// ✅ Good: 각 이벤트는 명확한 단일 목적</span>
+<span class="keyword">public struct</span> <span class="class-name">UnitSelectedEvent</span> : IEvent
+<span class="keyword">{</span>
+    <span class="keyword">public</span> ISelectable Unit { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+<span class="keyword">}</span>
+
+<span class="keyword">public struct</span> <span class="class-name">UnitDeselectedEvent</span> : IEvent
+<span class="keyword">{</span>
+    <span class="keyword">public</span> ISelectable Unit { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+<span class="keyword">}</span>
+            </div>
+
+            <h4>2. 이벤트 핸들러 분리</h4>
+            <p>상태 관리를 직접 하지 않고 이벤트 핸들러에 위임:</p>
+            <div class="code-block">
+<span class="comment">// Before (강의 14): HandleLeftClick에서 selectedUnit 직접 관리</span>
+<span class="keyword">if</span> (selectedUnit != <span class="keyword">null</span>)
+<span class="keyword">{</span>
+    selectedUnit.Deselect();
+    selectedUnit = <span class="keyword">null</span>;  <span class="comment">// 직접 null 설정</span>
+<span class="keyword">}</span>
+
+<span class="comment">// After (강의 15): 이벤트 발행만 하고, 핸들러가 상태 관리</span>
+<span class="keyword">if</span> (selectedUnit != <span class="keyword">null</span>)
+<span class="keyword">{</span>
+    selectedUnit.Deselect();  <span class="comment">// UnitDeselectedEvent 발행</span>
+    <span class="comment">// HandleUnitDeselected()가 selectedUnit = null 처리</span>
+<span class="keyword">}</span>
+            </div>
+
+            <h4>3. 메모리 누수 방지 (Unsubscribe)</h4>
+            <div class="code-block">
+<span class="keyword">private void</span> <span class="method-name">Awake</span>()
+<span class="keyword">{</span>
+    Bus&lt;UnitSelectedEvent&gt;.OnEvent += HandleUnitSelected;
+    Bus&lt;UnitDeselectedEvent&gt;.OnEvent += HandleUnitDeselected;
+<span class="keyword">}</span>
+
+<span class="keyword">private void</span> <span class="method-name">OnDestroy</span>()
+<span class="keyword">{</span>
+    <span class="comment">// 반드시 구독 해제! 안 하면 메모리 누수</span>
+    Bus&lt;UnitSelectedEvent&gt;.OnEvent -= HandleUnitSelected;
+    Bus&lt;UnitDeselectedEvent&gt;.OnEvent -= HandleUnitDeselected;
+<span class="keyword">}</span>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>💻 구현 코드</h3>
+
+            <h4>UnitDeselectedEvent.cs</h4>
+            <div class="code-block">
+<span class="keyword">using</span> GameDevTV.RTS.EventBus;
+<span class="keyword">using</span> GameDevTV.RTS.Units;
+
+<span class="keyword">namespace</span> GameDevTV.RTS.Events
+<span class="keyword">{</span>
+    <span class="keyword">public struct</span> <span class="class-name">UnitDeselectedEvent</span> : IEvent
+    <span class="keyword">{</span>
+        <span class="keyword">public</span> ISelectable Unit { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+
+        <span class="keyword">public</span> <span class="method-name">UnitDeselectedEvent</span>(ISelectable unit)
+        <span class="keyword">{</span>
+            Unit = unit;
+        <span class="keyword">}</span>
+    <span class="keyword">}</span>
+<span class="keyword">}</span>
+            </div>
+
+            <h4>Worker.cs - Deselect() 이벤트 발행 (강의에서는 변경 없음)</h4>
+            <p><strong>주의:</strong> Worker.cs는 이번 강의에서 수정되지 않았습니다. Deselect()는 시각적 피드백만 처리하고, 이벤트 발행은 하지 않습니다.</p>
+            <div class="code-block">
+<span class="keyword">public void</span> <span class="method-name">Deselect</span>()
+<span class="keyword">{</span>
+    <span class="keyword">if</span> (decalProjector != <span class="keyword">null</span>)
+    <span class="keyword">{</span>
+        decalProjector.gameObject.SetActive(<span class="keyword">false</span>);
+    <span class="keyword">}</span>
+    <span class="comment">// 이벤트 발행 없음 (강의 내용과 다를 수 있음)</span>
+<span class="keyword">}</span>
+            </div>
+
+            <h4>PlayerInput.cs - 이벤트 구독 및 핸들러</h4>
+            <div class="code-block">
+<span class="keyword">private</span> ISelectable selectedUnit;
+
+<span class="keyword">private void</span> <span class="method-name">Awake</span>()
+<span class="keyword">{</span>
+    <span class="comment">// 기존 코드...</span>
+    Bus&lt;UnitSelectedEvent&gt;.OnEvent += HandleUnitSelected;
+    Bus&lt;UnitDeselectedEvent&gt;.OnEvent += HandleUnitDeselected;  <span class="comment">// 새 이벤트 구독</span>
+<span class="keyword">}</span>
+
+<span class="keyword">private void</span> <span class="method-name">OnDestroy</span>()
+<span class="keyword">{</span>
+    Bus&lt;UnitSelectedEvent&gt;.OnEvent -= HandleUnitSelected;
+    Bus&lt;UnitDeselectedEvent&gt;.OnEvent -= HandleUnitDeselected;  <span class="comment">// 구독 해제 추가</span>
+<span class="keyword">}</span>
+
+<span class="keyword">private void</span> <span class="method-name">HandleUnitSelected</span>(UnitSelectedEvent evt)
+<span class="keyword">{</span>
+    selectedUnit = evt.Unit;  <span class="comment">// 간결해짐 (이전 선택 해제는 HandleLeftClick에서)</span>
+<span class="keyword">}</span>
+
+<span class="keyword">private void</span> <span class="method-name">HandleUnitDeselected</span>(UnitDeselectedEvent evt)
+<span class="keyword">{</span>
+    selectedUnit = <span class="keyword">null</span>;  <span class="comment">// 선택 해제 상태 관리</span>
+<span class="keyword">}</span>
+
+<span class="keyword">private void</span> <span class="method-name">HandleLeftClick</span>()
+<span class="keyword">{</span>
+    <span class="keyword">if</span> (camera == <span class="keyword">null</span>) { <span class="keyword">return</span>; }
+
+    Ray cameraRay = camera.ScreenPointToRay(Mouse.current.position.ReadValue());
+
+    <span class="keyword">if</span> (Mouse.current.leftButton.wasReleasedThisFrame)
+    <span class="keyword">{</span>
+        <span class="comment">// 기존 선택 해제 (이벤트 발행)</span>
+        <span class="keyword">if</span> (selectedUnit != <span class="keyword">null</span>)
+        <span class="keyword">{</span>
+            selectedUnit.Deselect();  <span class="comment">// UnitDeselectedEvent 발행 예상</span>
+        <span class="keyword">}</span>
+
+        <span class="comment">// 새 유닛 선택</span>
+        <span class="keyword">if</span> (Physics.Raycast(cameraRay, <span class="keyword">out</span> RaycastHit hit, <span class="keyword">float</span>.MaxValue, selectableUnitsLayers)
+            && hit.collider.TryGetComponent(<span class="keyword">out</span> ISelectable selectable))
+        <span class="keyword">{</span>
+            selectable.Select();  <span class="comment">// UnitSelectedEvent 발행</span>
+        <span class="keyword">}</span>
+    <span class="keyword">}</span>
+<span class="keyword">}</span>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>⚙️ Unity 설정</h3>
+            <p>이번 강의에서는 Unity 에디터 설정 변경이 없습니다. 모든 변경사항은 스크립트에서만 발생합니다.</p>
+        </div>
+
+        <div class="bug-fix">
+            <h3>🐛 주의사항</h3>
+            <div class="warning-box">
+                <h4>⚠️ 강의와 실제 코드 차이점</h4>
+                <p><strong>강의 내용:</strong> Worker.Deselect()에서 <code>Bus&lt;UnitDeselectedEvent&gt;.Raise()</code> 호출</p>
+                <p><strong>실제 커밋:</strong> Worker.cs는 수정되지 않았고, Deselect()는 이벤트를 발행하지 않음</p>
+                <p><strong>이유:</strong> 강의 진행 중 구현 방식이 변경되었을 가능성. PlayerInput에서 직접 Deselect() 호출 후 별도로 상태 관리하는 방식으로 보임.</p>
+            </div>
+
+            <div class="warning-box">
+                <h4>⚠️ OnDestroy에서 구독 해제 필수</h4>
+                <p>이벤트 구독을 해제하지 않으면 GameObject가 파괴되어도 이벤트 핸들러가 남아있어 메모리 누수 및 NullReferenceException 발생 가능.</p>
+                <div class="code-block">
+<span class="comment">// ✅ Good: Awake와 OnDestroy 쌍으로 관리</span>
+<span class="keyword">private void</span> <span class="method-name">Awake</span>()
+<span class="keyword">{</span>
+    Bus&lt;UnitDeselectedEvent&gt;.OnEvent += HandleUnitDeselected;
+<span class="keyword">}</span>
+
+<span class="keyword">private void</span> <span class="method-name">OnDestroy</span>()
+<span class="keyword">{</span>
+    Bus&lt;UnitDeselectedEvent&gt;.OnEvent -= HandleUnitDeselected;  <span class="comment">// 반드시 해제</span>
+<span class="keyword">}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>🔄 실행 흐름</h3>
+            <div class="flow-diagram">
+                <h5>📌 선택 해제 → 새 유닛 선택 흐름</h5>
+                <ol>
+                    <li><strong>좌클릭</strong>: HandleLeftClick() 호출</li>
+                    <li><strong>기존 유닛 해제</strong>: <code>selectedUnit.Deselect()</code> → Decal 비활성화</li>
+                    <li><strong>상태 업데이트</strong>: HandleUnitDeselected() → <code>selectedUnit = null</code></li>
+                    <li><strong>Raycast</strong>: 새 유닛 클릭 감지</li>
+                    <li><strong>새 유닛 선택</strong>: <code>selectable.Select()</code> → UnitSelectedEvent 발행</li>
+                    <li><strong>상태 업데이트</strong>: HandleUnitSelected() → <code>selectedUnit = evt.Unit</code></li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>🎓 학습 포인트</h3>
+            <ul class="content-list">
+                <li><strong>Discrete Events</strong>: 각 이벤트는 명확한 단일 목적 (UnitSelectedEvent vs UnitDeselectedEvent)</li>
+                <li><strong>상태 관리 분리</strong>: 이벤트 핸들러가 상태 관리, 호출자는 이벤트만 발행</li>
+                <li><strong>메모리 관리</strong>: OnDestroy에서 반드시 이벤트 구독 해제</li>
+                <li><strong>+=/-= 연산자</strong>: 이벤트 구독 추가/제거</li>
+                <li><strong>확장성</strong>: 새 이벤트 타입 추가가 쉬움 (UnitDied, UnitMoved 등)</li>
+            </ul>
+        </div>
+
+        <div class="project-application">
+            <h3>🎮 노바1492 프로젝트 적용 포인트</h3>
+            <ul class="content-list">
+                <li><strong>다중 유닛 선택</strong>: List&lt;ISelectable&gt; 관리, UnitDeselectedEvent로 리스트에서 제거</li>
+                <li><strong>팀 단위 작전</strong>: 그룹 선택/해제 이벤트 (GroupSelectedEvent, GroupDeselectedEvent)</li>
+                <li><strong>UI 업데이트</strong>: 선택 해제 시 UI 패널 닫기, 정보 초기화</li>
+                <li><strong>사운드 효과</strong>: 이벤트 리스너로 선택/해제 사운드 재생</li>
+                <li><strong>디버그 로그</strong>: 이벤트 발생 추적으로 상태 변화 모니터링</li>
+            </ul>
+        </div>
+
+        <div class="tech-stack">
+            <h3>🔧 핵심 기술</h3>
+            <ul class="content-list">
+                <li><strong>Event Bus 확장</strong>: 여러 이벤트 타입 동시 관리</li>
+                <li><strong>+=/-= 연산자</strong>: 이벤트 구독/해제</li>
+                <li><strong>OnDestroy</strong>: GameObject 파괴 시 정리 작업</li>
+                <li><strong>Discrete Event Structs</strong>: 명확한 단일 책임 이벤트</li>
+                <li><strong>Null 체크</strong>: <code>if (selectedUnit != null)</code> 패턴</li>
+            </ul>
+        </div>
+
+        <div class="file-changes">
+            <h3>📌 주요 변경 파일</h3>
+            <ul class="content-list">
+                <li><strong>Assets/Scripts/Events/UnitDeselectedEvent.cs</strong> (신규): 선택 해제 이벤트 정의</li>
+                <li><strong>Assets/Scripts/Player/PlayerInput.cs</strong>: 이벤트 구독/해제, 핸들러 추가</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 40px;">
+        <h2>🎉 총 15개 강의 완료!</h2>
+        <p style="font-size: 1.2rem; margin-top: 10px;">예상 학습 시간: 11-12시간</p>
+        <p style="margin-top: 20px; opacity: 0.9;">다음 강의에서는 다중 유닛 선택 기능을 구현합니다.</p>
+    </footer>
+
 </body>
 </html>

@@ -335,16 +335,27 @@
                 </div>
             </div>
 
+            <div class="class-box event">
+                <div class="class-title event">UnitDeselectedEvent</div>
+                <div class="class-description">유닛 선택 해제 이벤트 데이터</div>
+                <div class="class-methods">
+                    <div class="method">Unit (ISelectable) - 해제된 유닛</div>
+                </div>
+            </div>
+
             <h3>🎮 Player 시스템</h3>
             <div class="class-box">
                 <div class="class-title">PlayerInput</div>
                 <div class="class-description">플레이어 입력 처리 및 카메라 제어</div>
                 <div class="class-methods">
-                    <div class="method">HandleLeftClick() - 유닛 선택</div>
+                    <div class="method">HandleLeftClick() - 유닛 선택/해제</div>
                     <div class="method">HandleRightClick() - 이동 명령</div>
+                    <div class="method">HandleUnitSelected() - 선택 이벤트 핸들러</div>
+                    <div class="method">HandleUnitDeselected() - 해제 이벤트 핸들러</div>
                     <div class="method">HandlePanning() - 카메라 이동</div>
                     <div class="method">HandleZooming() - 카메라 줌</div>
                     <div class="method">HandleRotation() - 카메라 회전</div>
+                    <div class="method">HandleDragSelect() - 드래그 선택 UI</div>
                 </div>
             </div>
 
@@ -525,6 +536,11 @@ package "Events" {
         +Unit : ISelectable
         +UnitSelectedEvent(ISelectable)
     }
+
+    class UnitDeselectedEvent {
+        +Unit : ISelectable
+        +UnitDeselectedEvent(ISelectable)
+    }
 }
 
 ' Interfaces
@@ -585,6 +601,7 @@ package "Player" {
 
 ' Relationships
 UnitSelectedEvent ..|> IEvent
+UnitDeselectedEvent ..|> IEvent
 Worker ..|> ISelectable
 Worker ..|> IMoveable
 WorkerThreeRobot ..|> ISelectable
@@ -594,9 +611,9 @@ WorkerThreeRobot *-- RobotPart : contains 3
 PlayerInput --> ISelectable : uses
 PlayerInput --> IMoveable : uses
 PlayerInput --> CameraConfig : uses
-PlayerInput ..> Bus : subscribes
-Worker ..> Bus : publishes
-WorkerThreeRobot ..> Bus : publishes
+PlayerInput ..> Bus : subscribes (Selected/Deselected)
+Worker ..> Bus : publishes (Selected)
+WorkerThreeRobot ..> Bus : publishes (Selected)
 
 note right of Bus
   Generic Event Bus
@@ -656,6 +673,24 @@ end note
                         <td>Bus&lt;UnitSelectedEvent&gt;</td>
                         <td>이벤트 구독</td>
                         <td>선택 이벤트 수신</td>
+                    </tr>
+                    <tr>
+                        <td>PlayerInput</td>
+                        <td>Bus&lt;UnitDeselectedEvent&gt;</td>
+                        <td>이벤트 구독</td>
+                        <td>선택 해제 이벤트 수신</td>
+                    </tr>
+                    <tr>
+                        <td>UnitSelectedEvent</td>
+                        <td>IEvent</td>
+                        <td>인터페이스 구현</td>
+                        <td>이벤트 타입 제약 조건</td>
+                    </tr>
+                    <tr>
+                        <td>UnitDeselectedEvent</td>
+                        <td>IEvent</td>
+                        <td>인터페이스 구현</td>
+                        <td>이벤트 타입 제약 조건</td>
                     </tr>
                 </tbody>
             </table>
