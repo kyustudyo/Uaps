@@ -1340,6 +1340,300 @@ Assets/Units/Worker/Worker.prefab (수정)</div>
             </div>
         </div>
 
+        <!-- 강의 12: Unit Movement -->
+        <div class="lecture-section" id="lecture-12">
+            <h2 class="lecture-title">📚 강의 12: Unit Movement (유닛 우클릭 이동)</h2>
+
+            <div class="lecture-goal">
+                <h3>🎯 학습 목표</h3>
+                <ul class="content-list">
+                    <li>마우스 우클릭으로 선택된 유닛을 이동시키기</li>
+                    <li>IMovable 인터페이스로 이동 가능한 객체 정의</li>
+                    <li>Floor 레이어로 이동 가능 영역 제한</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>📝 핵심 개념</h3>
+
+                <h4>1. 유닛 이동 시스템</h4>
+                <p><strong>동작 흐름</strong></p>
+                <ul class="content-list">
+                    <li>좌클릭으로 유닛 선택 (ISelectable)</li>
+                    <li>우클릭으로 이동 목표 지점 지정</li>
+                    <li>Raycast로 클릭 위치의 World 좌표 획득</li>
+                    <li>NavMeshAgent.SetDestination()으로 이동</li>
+                </ul>
+
+                <h4>2. IMovable 인터페이스</h4>
+                <p><strong>이동 가능 객체 추상화</strong></p>
+                <ul class="content-list">
+                    <li>ISelectable처럼 다형성 활용</li>
+                    <li>유닛, 차량 등 다양한 이동 객체에 적용 가능</li>
+                    <li><code>MoveTo(Vector3 position)</code> 메서드 정의</li>
+                </ul>
+
+                <div class="code-block">public interface IMovable
+{
+    void MoveTo(Vector3 position);
+}</div>
+
+                <p><strong>⚠️ 주의: Vector3 임포트</strong></p>
+                <ul class="content-list">
+                    <li>VS Code가 자동으로 <code>System.Numerics.Vector3</code> 임포트할 수 있음</li>
+                    <li>반드시 <code>UnityEngine.Vector3</code> 사용해야 함</li>
+                    <li>잘못된 임포트 시 컴파일 에러 발생</li>
+                </ul>
+
+                <h4>3. Pattern Matching (is 연산자)</h4>
+                <p><strong>타입 체크와 캐스팅 동시 수행</strong></p>
+                <div class="code-block">// 기존 방식
+if (selectedUnit != null)
+{
+    IMovable movable = selectedUnit as IMovable;
+    if (movable != null)
+    {
+        movable.MoveTo(position);
+    }
+}
+
+// Pattern Matching 방식 (간결)
+if (selectedUnit is IMovable movable)
+{
+    movable.MoveTo(position);
+}</div>
+
+                <h4>4. Floor Layer 분리</h4>
+                <p><strong>이동 가능 영역 제한</strong></p>
+                <ul class="content-list">
+                    <li>Terrain과 Water만 Floor 레이어로 설정</li>
+                    <li>미네랄, 가스, 건물 등은 클릭 불가</li>
+                    <li>Raycast 시 Floor 레이어만 감지</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>💻 구현 코드</h3>
+
+                <h4>IMovable.cs</h4>
+                <div class="code-block">using UnityEngine;
+
+namespace GameDevTV.RTS.Units
+{
+    public interface IMovable
+    {
+        void MoveTo(Vector3 position);
+    }
+}</div>
+
+                <h4>PlayerInput.cs - HandleRightClick 추가</h4>
+                <div class="code-block">public class PlayerInput : MonoBehaviour
+{
+    [SerializeField] private new Camera camera;
+    [SerializeField] private LayerMask selectableUnitsLayers;
+    [SerializeField] private LayerMask floorLayers;  // 추가
+    private ISelectable selectedUnit;
+
+    private void Update()
+    {
+        HandlePanning();
+        HandleZooming();
+        HandleRotation();
+        HandleLeftClick();
+        HandleRightClick();  // 추가
+    }
+
+    private void HandleRightClick()
+    {
+        // 선택된 유닛이 없거나 이동 불가능하면 리턴
+        if (selectedUnit == null || selectedUnit is not IMovable movable)
+        {
+            return;
+        }
+
+        Ray cameraRay = camera.ScreenPointToRay(Mouse.current.position.ReadValue());
+
+        // 우클릭 + Floor 레이어 Raycast
+        if (Mouse.current.rightButton.wasReleasedThisFrame
+            && Physics.Raycast(cameraRay, out RaycastHit hit, float.MaxValue, floorLayers))
+        {
+            // 클릭한 지점으로 이동
+            movable.MoveTo(hit.point);
+        }
+    }
+}</div>
+
+                <h4>Worker.cs - IMovable 구현</h4>
+                <div class="code-block">using UnityEngine.Rendering.Universal;
+
+[RequireComponent(typeof(NavMeshAgent))]
+public class Worker : MonoBehaviour, ISelectable, IMovable
+{
+    [SerializeField] private DecalProjector decalProjector;
+    private NavMeshAgent agent;
+
+    private void Awake()
+    {
+        agent = GetComponent&lt;NavMeshAgent&gt;();
+    }
+
+    // ISelectable 구현
+    public void Select()
+    {
+        if (decalProjector != null)
+        {
+            decalProjector.gameObject.SetActive(true);
+        }
+    }
+
+    public void Deselect()
+    {
+        if (decalProjector != null)
+        {
+            decalProjector.gameObject.SetActive(false);
+        }
+    }
+
+    // IMovable 구현
+    public void MoveTo(Vector3 position)
+    {
+        agent.SetDestination(position);
+    }
+}</div>
+            </div>
+
+            <div class="content-section">
+                <h3>⚙️ Unity 설정</h3>
+
+                <h4>1. Floor Layer 추가</h4>
+                <div class="step-guide">
+                    <h5>Layer 생성</h5>
+                    <ol>
+                        <li>Edit → Project Settings → Tags and Layers</li>
+                        <li>Layers 섹션 확장</li>
+                        <li>User Layer 8에 "Floor" 추가</li>
+                    </ol>
+                </div>
+
+                <h4>2. Terrain과 Water를 Floor 레이어로</h4>
+                <div class="step-guide">
+                    <h5>계층 구조에서 Floor 선택</h5>
+                    <ol>
+                        <li>Hierarchy에서 Floor GameObject 선택</li>
+                        <li>자식 Terrain과 Water 모두 선택 (Ctrl/Cmd + 클릭)</li>
+                        <li>Inspector 상단 Layer → Floor</li>
+                        <li>"No, this object only" 선택 (자식 객체는 변경 안 함)</li>
+                    </ol>
+                </div>
+
+                <h4>3. Physics Collision Matrix 설정</h4>
+                <div class="step-guide">
+                    <h5>⚠️ 중요: Floor와 World Bounds 충돌 제거</h5>
+                    <ol>
+                        <li>Edit → Project Settings → Physics</li>
+                        <li>Layer Collision Matrix (Shared 탭)</li>
+                        <li>Floor와 World Bounds 충돌 체크 해제</li>
+                    </ol>
+                    <p><strong>이유</strong>: 바닥이 카메라 경계와 충돌하면 안 됨</p>
+                </div>
+
+                <h4>4. PlayerInput LayerMask 설정</h4>
+                <div class="step-guide">
+                    <h5>Floor Layers 필드 설정</h5>
+                    <ol>
+                        <li>Main Camera (PlayerInput 컴포넌트) 선택</li>
+                        <li>Floor Layers 필드에 Floor만 체크</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎓 학습 포인트</h3>
+
+                <h4>1. RaycastHit.point</h4>
+                <ul class="content-list">
+                    <li>Raycast가 충돌한 World 좌표</li>
+                    <li>마우스 클릭 위치를 3D 좌표로 변환</li>
+                    <li>NavMeshAgent.SetDestination()에 직접 전달 가능</li>
+                </ul>
+
+                <h4>2. Pattern Matching (C# 7.0+)</h4>
+                <ul class="content-list">
+                    <li><code>is</code> 연산자로 타입 체크 + 변수 할당</li>
+                    <li><code>is not</code>으로 부정 체크 (C# 9.0+)</li>
+                    <li>코드 간결성 향상</li>
+                </ul>
+
+                <h4>3. Guardian Pattern</h4>
+                <ul class="content-list">
+                    <li>조기 리턴(Early Return)으로 중첩 if 방지</li>
+                    <li><code>if (condition) return;</code> 형태</li>
+                    <li>가독성과 유지보수성 향상</li>
+                </ul>
+
+                <h4>4. Layer 분리 전략</h4>
+                <ul class="content-list">
+                    <li><strong>Selectable Layers</strong>: 선택 가능한 객체 (Units, Buildings)</li>
+                    <li><strong>Floor Layers</strong>: 이동 가능한 지형 (Terrain, Water)</li>
+                    <li><strong>Rendering Layers</strong>: 렌더링 제어 (Floor Decal)</li>
+                    <li>각 용도에 맞는 레이어 분리로 정밀 제어</li>
+                </ul>
+            </div>
+
+            <div class="project-application">
+                <h3>🎮 노바1492 프로젝트 적용 포인트</h3>
+
+                <h4>로봇 이동 시스템</h4>
+                <ul class="content-list">
+                    <li><strong>3파츠 로봇</strong>: WorkerThreeRobot도 IMovable 구현</li>
+                    <li><strong>이동 애니메이션</strong>: MoveTo 호출 시 Walk 애니메이션 재생</li>
+                    <li><strong>이동 이펙트</strong>: 목표 지점에 링 이펙트 표시</li>
+                </ul>
+
+                <h4>4:4 팀전 명령 시스템</h4>
+                <ul class="content-list">
+                    <li><strong>다중 유닛 이동</strong>: 선택된 여러 유닛을 포메이션으로 이동</li>
+                    <li><strong>공격 이동</strong>: Shift + 우클릭으로 경로에 적 자동 공격</li>
+                    <li><strong>순찰 명령</strong>: Ctrl + 우클릭으로 순찰 경로 설정</li>
+                </ul>
+
+                <h4>Layer 체계 확장</h4>
+                <ul class="content-list">
+                    <li><strong>Floor</strong>: 일반 지형 (모든 유닛 이동 가능)</li>
+                    <li><strong>FlyingFloor</strong>: 공중 유닛만 이동 가능</li>
+                    <li><strong>RestrictedArea</strong>: 특정 팀만 이동 가능 (기지 내부)</li>
+                </ul>
+            </div>
+
+            <div class="tech-stack">
+                <h3>🔧 핵심 기술</h3>
+
+                <h4>주요 변경 파일</h4>
+                <div class="code-block">Assets/Scripts/Units/IMovable.cs (신규)
+Assets/Scripts/Player/PlayerInput.cs (수정)
+Assets/Scripts/Units/Worker.cs (수정)
+ProjectSettings/TagManager.asset (Floor 레이어 추가)
+ProjectSettings/DynamicsManager.asset (충돌 매트릭스 수정)</div>
+
+                <h4>검증 체크리스트</h4>
+                <ul class="content-list">
+                    <li>✓ 좌클릭으로 유닛 선택</li>
+                    <li>✓ 우클릭으로 유닛 이동</li>
+                    <li>✓ 지형(Terrain)만 클릭 가능</li>
+                    <li>✓ 미네랄/가스는 클릭 불가</li>
+                    <li>✓ 여러 유닛이 서로 회피하며 이동</li>
+                </ul>
+
+                <h4>다음 단계</h4>
+                <ul class="content-list">
+                    <li>다중 유닛 선택 (박스 드래그)</li>
+                    <li>유닛 포메이션 이동</li>
+                    <li>공격 명령 시스템</li>
+                    <li>건물 건설 시스템</li>
+                </ul>
+            </div>
+        </div>
+
         <div class="summary-section" id="summary">
             <h2>🎯 노바1492 프로젝트 종합 적용 방안</h2>
             
@@ -1353,7 +1647,7 @@ Assets/Units/Worker/Worker.prefab (수정)</div>
             <p><strong>멀티플레이어 준비</strong>: Photon 또는 Mirror로 4:4 팀 매칭 시스템</p>
             
             <h3>📊 강의 통계</h3>
-            <p><strong>총 11개 강의</strong> | <strong>7-8시간</strong> | <strong>난이도: ⭐⭐⭐☆☆</strong></p>
+            <p><strong>총 12개 강의</strong> | <strong>8-9시간</strong> | <strong>난이도: ⭐⭐⭐☆☆</strong></p>
             
             <h3>🚀 다음 단계</h3>
             <p>유닛 시스템 구현 → 전투 시스템 구현 → UI 시스템 구현 → 멀티플레이어 구현</p>
