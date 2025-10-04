@@ -2355,10 +2355,273 @@ Assets/Scripts/Player/PlayerInput.cs (수정)</div>
         </div>
     </div>
 
+    <div class="lecture-section">
+        <h2>📚 강의 16: Drag Select Multiple Units (드래그로 다중 유닛 선택)</h2>
+
+        <div class="lecture-goal">
+            <h3>🎯 학습 목표</h3>
+            <ul>
+                <li>다중 유닛 선택 시스템 구현</li>
+                <li>AbstractUnit 클래스 설계 및 상속 구조 이해</li>
+                <li>HashSet과 List의 차이점 및 성능 최적화</li>
+                <li>드래그 선택 박스 내 유닛 감지 알고리즘</li>
+                <li>Event Bus를 통한 유닛 스폰 추적</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h3>📝 핵심 개념</h3>
+
+            <h4>1. AbstractUnit 클래스 설계</h4>
+            <p>모든 유닛의 공통 기능을 추상 클래스로 통합:</p>
+            <div class="code-block">
+<span class="keyword">public abstract class</span> <span class="class-name">AbstractUnit</span> : MonoBehaviour, ISelectable, IMoveable
+<span class="keyword">{</span>
+    <span class="keyword">[SerializeField] private</span> DecalProjector decalProjector;
+    <span class="keyword">private</span> NavMeshAgent agent;
+
+    <span class="keyword">private void</span> <span class="method-name">Awake</span>()
+    <span class="keyword">{</span>
+        agent = GetComponent&lt;NavMeshAgent&gt;();
+    <span class="keyword">}</span>
+
+    <span class="keyword">private void</span> <span class="method-name">Start</span>()
+    <span class="keyword">{</span>
+        <span class="comment">// 유닛 스폰 시 이벤트 발행</span>
+        Bus&lt;UnitSpawnEvent&gt;.Raise(<span class="keyword">new</span> UnitSpawnEvent(<span class="keyword">this</span>));
+    <span class="keyword">}</span>
+
+    <span class="keyword">public void</span> <span class="method-name">Select</span>()
+    <span class="keyword">{</span>
+        <span class="keyword">if</span> (decalProjector != <span class="keyword">null</span>)
+        <span class="keyword">{</span>
+            decalProjector.gameObject.SetActive(<span class="keyword">true</span>);
+        <span class="keyword">}</span>
+        Bus&lt;UnitSelectedEvent&gt;.Raise(<span class="keyword">new</span> UnitSelectedEvent(<span class="keyword">this</span>));
+    <span class="keyword">}</span>
+
+    <span class="keyword">public void</span> <span class="method-name">Deselect</span>()
+    <span class="keyword">{</span>
+        <span class="keyword">if</span> (decalProjector != <span class="keyword">null</span>)
+        <span class="keyword">{</span>
+            decalProjector.gameObject.SetActive(<span class="keyword">false</span>);
+        <span class="keyword">}</span>
+        Bus&lt;UnitDeselectedEvent&gt;.Raise(<span class="keyword">new</span> UnitDeselectedEvent(<span class="keyword">this</span>));
+    <span class="keyword">}</span>
+
+    <span class="keyword">public void</span> <span class="method-name">MoveTo</span>(Vector3 position)
+    <span class="keyword">{</span>
+        agent.SetDestination(position);
+    <span class="keyword">}</span>
+<span class="keyword">}</span>
+            </div>
+
+            <h4>2. 다중 유닛 선택 알고리즘</h4>
+            <p>드래그 선택의 3단계 프로세스:</p>
+            <div class="code-block">
+<span class="comment">// 1단계: 드래그 시작 - 선택 박스 초기화</span>
+<span class="keyword">if</span> (Mouse.current.leftButton.wasPressedThisFrame)
+<span class="keyword">{</span>
+    selectionBox.sizeDelta = Vector2.zero;  <span class="comment">// 이전 크기 초기화</span>
+    selectionBox.gameObject.SetActive(<span class="keyword">true</span>);
+    startingMousePosition = Mouse.current.position.ReadValue();
+    addedUnits.Clear();  <span class="comment">// 이전 선택 초기화</span>
+<span class="keyword">}</span>
+
+<span class="comment">// 2단계: 드래그 중 - 박스 내 유닛 감지</span>
+<span class="keyword">else if</span> (Mouse.current.leftButton.isPressed)
+<span class="keyword">{</span>
+    Bounds selectionBoxBounds = ResizeSelectionBox();
+    <span class="keyword">foreach</span>(AbstractUnit unit <span class="keyword">in</span> aliveUnits)
+    <span class="keyword">{</span>
+        Vector2 unitPosition = camera.WorldToScreenPoint(unit.transform.position);
+        <span class="keyword">if</span> (selectionBoxBounds.Contains(unitPosition))
+        <span class="keyword">{</span>
+            addedUnits.Add(unit);
+        <span class="keyword">}</span>
+    <span class="keyword">}</span>
+<span class="keyword">}</span>
+
+<span class="comment">// 3단계: 드래그 종료 - 선택 적용</span>
+<span class="keyword">else if</span> (Mouse.current.leftButton.wasReleasedThisFrame)
+<span class="keyword">{</span>
+    DeselectAllUnits();  <span class="comment">// 기존 선택 해제</span>
+    <span class="keyword">foreach</span>(AbstractUnit unit <span class="keyword">in</span> addedUnits)
+    <span class="keyword">{</span>
+        unit.Select();  <span class="comment">// 새 유닛 선택</span>
+    <span class="keyword">}</span>
+    selectionBox.gameObject.SetActive(<span class="keyword">false</span>);
+<span class="keyword">}</span>
+            </div>
+
+            <h4>3. HashSet vs List 성능 최적화</h4>
+            <p>유닛 관리에 HashSet을 사용하는 이유:</p>
+            <div class="code-block">
+<span class="comment">// HashSet: 중복 없는 고성능 컬렉션</span>
+<span class="keyword">private</span> HashSet&lt;AbstractUnit&gt; aliveUnits = <span class="keyword">new</span>(100);
+<span class="keyword">private</span> HashSet&lt;AbstractUnit&gt; addedUnits = <span class="keyword">new</span>(24);
+
+<span class="comment">// List: 순서가 중요한 선택된 유닛</span>
+<span class="keyword">private</span> List&lt;ISelectable&gt; selectedUnits = <span class="keyword">new</span>(12);
+
+<span class="comment">// HashSet 장점:</span>
+<span class="comment">// - O(1) 추가/제거 성능</span>
+<span class="comment">// - 중복 자동 방지</span>
+<span class="comment">// - 순서 무관 (유닛 생존 상태에 적합)</span>
+
+<span class="comment">// List 장점:</span>
+<span class="comment">// - 순서 보장</span>
+<span class="comment">// - 인덱스 접근 가능</span>
+<span class="comment">// - 선택된 유닛 순서 유지</span>
+            </div>
+
+            <h4>4. UnitSpawnEvent 이벤트 시스템</h4>
+            <p>유닛 스폰 추적을 위한 새로운 이벤트:</p>
+            <div class="code-block">
+<span class="keyword">public struct</span> <span class="class-name">UnitSpawnEvent</span> : IEvent
+<span class="keyword">{</span>
+    <span class="keyword">public</span> AbstractUnit Unit 
+    { 
+        <span class="keyword">get</span>; 
+        <span class="keyword">private set</span>; 
+    }
+
+    <span class="keyword">public</span> <span class="method-name">UnitSpawnEvent</span>(AbstractUnit unit)
+    <span class="keyword">{</span>
+        Unit = unit;
+    <span class="keyword">}</span>
+<span class="keyword">}</span>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>💻 구현 코드</h3>
+
+            <h4>PlayerInput.cs - 다중 유닛 선택</h4>
+            <div class="code-block">
+<span class="keyword">private</span> HashSet&lt;AbstractUnit&gt; aliveUnits = <span class="keyword">new</span>(100);
+<span class="keyword">private</span> HashSet&lt;AbstractUnit&gt; addedUnits = <span class="keyword">new</span>(24);
+<span class="keyword">private</span> List&lt;ISelectable&gt; selectedUnits = <span class="keyword">new</span>(12);
+
+<span class="keyword">private void</span> <span class="method-name">Awake</span>()
+<span class="keyword">{</span>
+    <span class="comment">// 기존 코드...</span>
+    Bus&lt;UnitSelectedEvent&gt;.OnEvent += HandleUnitSelected;
+    Bus&lt;UnitDeselectedEvent&gt;.OnEvent += HandleUnitDeselected;
+    Bus&lt;UnitSpawnEvent&gt;.OnEvent += HandleUnitSpawn;  <span class="comment">// 새 이벤트 구독</span>
+<span class="keyword">}</span>
+
+<span class="keyword">private void</span> <span class="method-name">OnDestroy</span>()
+<span class="keyword">{</span>
+    Bus&lt;UnitSelectedEvent&gt;.OnEvent -= HandleUnitSelected;
+    Bus&lt;UnitDeselectedEvent&gt;.OnEvent -= HandleUnitDeselected;
+    Bus&lt;UnitSpawnEvent&gt;.OnEvent -= HandleUnitSpawn;  <span class="comment">// 구독 해제</span>
+<span class="keyword">}</span>
+
+<span class="comment">// Expression-bodied functions (간결한 이벤트 핸들러)</span>
+<span class="keyword">private void</span> <span class="method-name">HandleUnitSelected</span>(UnitSelectedEvent evt) => selectedUnits.Add(evt.Unit);
+<span class="keyword">private void</span> <span class="method-name">HandleUnitDeselected</span>(UnitDeselectedEvent evt) => selectedUnits.Remove(evt.Unit);
+<span class="keyword">private void</span> <span class="method-name">HandleUnitSpawn</span>(UnitSpawnEvent evt) => aliveUnits.Add(evt.Unit);
+            </div>
+
+            <h4>DeselectAllUnits() - 안전한 선택 해제</h4>
+            <div class="code-block">
+<span class="keyword">private void</span> <span class="method-name">DeselectAllUnits</span>()
+<span class="keyword">{</span>
+    <span class="comment">// 리스트 복사본 생성 (반복 중 변경 방지)</span>
+    ISelectable[] currentlySelectedUnits = selectedUnits.ToArray();
+    <span class="keyword">foreach</span>(ISelectable selectable <span class="keyword">in</span> currentlySelectedUnits)
+    <span class="keyword">{</span>
+        selectable.Deselect();  <span class="comment">// 이벤트 발행으로 리스트 변경됨</span>
+    <span class="keyword">}</span>
+<span class="keyword">}</span>
+            </div>
+
+            <h4>HandleRightClick() - 다중 유닛 이동</h4>
+            <div class="code-block">
+<span class="keyword">private void</span> <span class="method-name">HandleRightClick</span>()
+<span class="keyword">{</span>
+    <span class="keyword">if</span> (selectedUnits.Count == <span class="keyword">0</span>) { <span class="keyword">return</span>; }  <span class="comment">// Guardian Pattern</span>
+
+    Ray cameraRay = camera.ScreenPointToRay(Mouse.current.position.ReadValue());
+
+    <span class="keyword">if</span> (Mouse.current.rightButton.wasReleasedThisFrame
+        && Physics.Raycast(cameraRay, <span class="keyword">out</span> RaycastHit hit, <span class="keyword">float</span>.MaxValue, floorLayers))
+    <span class="keyword">{</span>
+        <span class="comment">// 모든 선택된 유닛에게 이동 명령</span>
+        <span class="keyword">foreach</span>(ISelectable selectable <span class="keyword">in</span> selectedUnits)
+        <span class="keyword">{</span>
+            <span class="keyword">if</span> (selectable <span class="keyword">is</span> IMoveable moveable)
+            <span class="keyword">{</span>
+                moveable.MoveTo(hit.point);
+            <span class="keyword">}</span>
+        <span class="keyword">}</span>
+    <span class="keyword">}</span>
+<span class="keyword">}</span>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>⚙️ Unity 설정</h3>
+            <p>이번 강의에서는 Unity 에디터 설정 변경이 없습니다. 모든 변경사항은 스크립트에서만 발생합니다.</p>
+        </div>
+
+        <div class="content-section">
+            <h3>🐛 주의사항</h3>
+            <div class="problem-solution">
+                <h5>⚠️ 리스트 반복 중 변경 오류</h5>
+                <p><strong>문제:</strong> 선택 해제 시 리스트를 반복하면서 동시에 리스트를 변경하면 런타임 오류 발생</p>
+                <p><strong>해결:</strong> <code>ToArray()</code>로 복사본을 만들어 안전하게 반복</p>
+            </div>
+
+            <div class="problem-solution">
+                <h5>⚠️ 선택 박스 크기 초기화</h5>
+                <p><strong>문제:</strong> 드래그 시작 시 이전 선택 박스 크기가 잠깐 보임</p>
+                <p><strong>해결:</strong> <code>selectionBox.sizeDelta = Vector2.zero</code>로 초기화</p>
+            </div>
+
+            <div class="problem-solution">
+                <h5>⚠️ HandleLeftClick() 임시 비활성화</h5>
+                <p><strong>이유:</strong> 드래그 선택과 단일 클릭 선택의 충돌 방지</p>
+                <p><strong>향후 계획:</strong> 다음 강의에서 통합된 선택 시스템 구현 예정</p>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>🎓 학습 포인트</h3>
+            <ul>
+                <li><strong>Abstract Class 활용:</strong> 공통 기능을 상위 클래스로 추출하여 코드 중복 제거</li>
+                <li><strong>Collection 선택:</strong> HashSet(순서 무관) vs List(순서 중요)의 적절한 사용</li>
+                <li><strong>성능 최적화:</strong> 초기 용량 설정으로 런타임 리사이징 방지</li>
+                <li><strong>Event Bus 확장:</strong> 새로운 이벤트 타입 추가로 시스템 확장성 확보</li>
+                <li><strong>Expression-bodied Functions:</strong> 한 줄 함수의 간결한 표현법</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h3>🎮 노바1492 적용 포인트</h3>
+            <ul>
+                <li><strong>다중 로봇 제어:</strong> 여러 로봇을 동시에 선택하여 집단 작전 수행</li>
+                <li><strong>파츠별 독립성:</strong> AbstractUnit 상속으로 각 로봇 파츠의 독립적 동작 유지</li>
+                <li><strong>성능 최적화:</strong> 12개 유닛 제한으로 대규모 전투 시 성능 보장</li>
+                <li><strong>확장성:</strong> 새로운 유닛 타입 추가 시 AbstractUnit만 상속하면 됨</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h3>📌 주요 변경 파일</h3>
+            <div class="code-block">Assets/Scripts/Events/UnitSpawnEvent.cs (신규)
+Assets/Scripts/Units/AbstractUnit.cs (신규)
+Assets/Scripts/Units/Worker.cs (리팩토링)
+Assets/Scripts/Units/WorkerThreeRobot.cs (상속 구조 변경)
+Assets/Scripts/Player/PlayerInput.cs (다중 선택 시스템)</div>
+        </div>
+    </div>
+
     <footer style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 40px;">
-        <h2>🎉 총 15개 강의 완료!</h2>
-        <p style="font-size: 1.2rem; margin-top: 10px;">예상 학습 시간: 11-12시간</p>
-        <p style="margin-top: 20px; opacity: 0.9;">다음 강의에서는 다중 유닛 선택 기능을 구현합니다.</p>
+        <h2>🎉 총 16개 강의 완료!</h2>
+        <p style="font-size: 1.2rem; margin-top: 10px;">예상 학습 시간: 12-13시간</p>
+        <p style="margin-top: 20px; opacity: 0.9;">다음 강의에서는 단일 클릭 선택과 드래그 선택을 통합합니다.</p>
     </footer>
 
 </body>
