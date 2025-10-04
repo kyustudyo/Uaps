@@ -117,53 +117,10 @@ Layer Collision Matrix:
 
 ## 🔄 작업 흐름
 
-### 💡 간편 명령어: `lecture`
-
-사용자가 이렇게 입력하면:
-```
-lecture <커밋해시>
-
-<강의 대본 전체 텍스트>
-```
-
-**자동으로 다음을 실행:**
-1. ✅ `cd lecture/urts-course && git cherry-pick <커밋해시>`
-2. ✅ 변경된 파일 분석 (Worker.cs 수정 여부 확인)
-3. ✅ `complete-lecture-notes.html`에 강의 N 추가 (Toss 스타일)
-   - 🎯 학습 목표
-   - 📝 핵심 개념
-   - 💻 구현 코드
-   - ⚙️ Unity 설정
-   - 🎓 학습 포인트
-   - 🎮 노바1492 프로젝트 적용 포인트
-   - 🔧 핵심 기술
-4. ✅ WorkerThreeRobot에도 동일 기능 적용 (필요시)
-   - **Rule 6 준수**: Update() 충돌 체크, 전체 파일 읽고 분석
-5. ✅ `urts-scripts-architecture.html` 업데이트 ⭐ NEW
-   - 새로운 클래스/메서드 추가
-   - 상호작용 플로우 업데이트
-   - 관계 테이블 업데이트
-6. ✅ urts-course 커밋: `docs: Add lecture N - <제목>`
-7. ✅ Uaps 서브모듈 업데이트 커밋: `chore: Update urts-course submodule`
-8. ✅ 강의 통계 업데이트 (총 X개 강의, Y-Z시간)
-
-**예시:**
-```
-lecture 5c60460e6763cf4518756d17cf482e7eb18ff6a2
-
-In this lecture, we're going to set up where we can click and drag...
-(강의 대본 전체)
-```
-
-### 강의 추가 프로세스 (수동)
-위 `lecture` 명령어가 자동으로 처리하는 단계:
-1. 사용자가 커밋 해시 + 강의 스크립트 제공
-2. 커밋 체리픽 또는 분석
-3. HTML에 강의 내용 추가 (Toss 스타일)
-4. Worker에 적용된 내용을 WorkerThreeRobot에도 적용
-5. **urts-scripts-architecture.html 업데이트** (새 클래스/메서드 추가)
-6. 커밋 (docs: Add lecture X - ...)
-7. 강의 통계 업데이트 (총 X개 강의, Y시간)
+### WorkerThreeRobot 기능 동기화
+Worker에 새 기능이 추가되면 WorkerThreeRobot에도 동일하게 적용:
+- **Rule 6 준수**: 전체 파일 읽고 Update() 충돌 체크
+- 기존 로직과 충돌 확인 후 적용
 
 ### 최근 완료한 강의
 **강의 11 (59ae39e)**: Unit & Decal Rendering Layers

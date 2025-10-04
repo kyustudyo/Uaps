@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎓 Event Bus 완전 정복 - 유니티 초보자를 위한 일타 강의</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+        .content {
+            padding: 40px;
+        }
+        .section {
+            margin-bottom: 50px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+        .section h2 {
+            color: #667eea;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section h3 {
+            color: #333;
+            font-size: 1.4rem;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        .analogy {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        .analogy h4 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        .diagram {
+            background: white;
+            border: 2px solid #667eea;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            line-height: 2;
+            overflow-x: auto;
+        }
+
+        /* ===== 예쁜 플로우 다이어그램 ===== */
+        .flow-diagram {
+            background: white;
+            border: 2px solid #667eea;
+            padding: 40px;
+            margin: 30px 0;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+        }
+
+        .flow-box {
+            flex: 1;
+            padding: 30px 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .flow-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .flow-box.publisher {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .flow-box.bus {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .flow-box.consumer {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+
+        .flow-box .emoji {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .flow-box .label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .flow-box .name {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .arrow {
+            font-size: 3rem;
+            color: #667eea;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .event-message {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            white-space: nowrap;
+        }
+        .code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .keyword { color: #c678dd; font-weight: bold; }
+        .string { color: #98c379; }
+        .comment { color: #5c6370; font-style: italic; }
+        .type { color: #e5c07b; }
+        .important {
+            background: #d1ecf1;
+            border-left: 4px solid #0c5460;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        .important h4 {
+            color: #0c5460;
+            margin-bottom: 10px;
+        }
+        .step {
+            background: #e8f5e8;
+            border: 2px solid #4caf50;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+        }
+        .step h4 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .bad, .good {
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .bad {
+            background: #fff5f5;
+            border-left: 4px solid #e53e3e;
+        }
+        .bad h4 {
+            color: #c53030;
+        }
+        .good {
+            background: #f0fff4;
+            border-left: 4px solid #38a169;
+        }
+        .good h4 {
+            color: #22543d;
+        }
+        ul, ol {
+            margin-left: 25px;
+            margin-top: 10px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        strong {
+            color: #667eea;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        @media (max-width: 768px) {
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Event Bus 완전 정복</h1>
+            <p>유니티 초보자를 위한 비유와 그림으로 이해하는 일타 강의</p>
+        </div>
+
+        <div class="content">
+            <!-- ========== 1. 현실 세계 비유 ========== -->
+            <div class="section">
+                <h2>📮 1. Event Bus는 우체국이다!</h2>
+
+                <div class="analogy">
+                    <h4>🏢 현실 세계 비유: 우체국 시스템</h4>
+                    <p>Event Bus는 <strong>우체국</strong>과 똑같습니다. 편지를 보내는 사람(Publisher)과 받는 사람(Consumer)이 서로를 몰라도, 우체국(Event Bus)을 통해 편지를 주고받을 수 있죠!</p>
+                </div>
+
+                <div class="diagram">
+📬 발신자 (Publisher)           📮 우체국 (Event Bus)           📭 수신자 (Consumer)
+     Worker                              ↓                        PlayerInput
+        │                                │                              ↑
+        │  "선택되었어요!" 편지 발송      │                              │
+        └────────────────────────────────┼──────────────────────────────┘
+                                         │
+                    모든 구독자에게 배달 ─┘
+                </div>
+
+                <h3>🎯 왜 우체국이 필요할까?</h3>
+                <p>만약 우체국이 없다면?</p>
+                <ul>
+                    <li>Worker가 PlayerInput의 주소(참조)를 알아야 함 → <strong>강한 결합</strong></li>
+                    <li>PlayerInput이 Worker의 주소를 알아야 함 → <strong>양방향 의존성</strong></li>
+                    <li>새로운 수신자 추가 시 Worker 코드 수정 필요 → <strong>확장 어려움</strong></li>
+                </ul>
+
+                <div class="important">
+                    <h4>💡 핵심 개념: 느슨한 결합 (Loose Coupling)</h4>
+                    <p>Event Bus를 사용하면 <strong>Worker는 "누가 받는지" 몰라도 됩니다</strong>. 그냥 우체국에 편지를 넣기만 하면 돼요!</p>
+                    <p>PlayerInput도 <strong>"누가 보냈는지" 몰라도 됩니다</strong>. 우체국에서 편지가 오면 읽기만 하면 돼요!</p>
+                </div>
+            </div>
+
+            <!-- ========== 2. 코드 단계별 분해 ========== -->
+            <div class="section">
+                <h2>🔬 2. 코드 단계별 완전 분해</h2>
+
+                <h3>📦 Step 1: IEvent.cs - "편지"라는 표시</h3>
+                <div class="code"><span class="keyword">public interface</span> <span class="type">IEvent</span> {}
+
+<span class="comment">// 이건 그냥 "마커"예요. "이 타입은 이벤트야!"라고 표시하는 빈 인터페이스</span>
+<span class="comment">// 마치 편지봉투에 "MAIL"이라고 쓰는 것과 같아요</span></div>
+
+                <div class="analogy">
+                    <h4>🏷️ 비유: 편지 봉투의 "우편물" 스티커</h4>
+                    <p>IEvent는 "이건 우편물이야!"라고 표시하는 스티커입니다. 우체국(Bus)은 이 스티커가 붙은 것만 배달해요.</p>
+                </div>
+
+                <h3>📦 Step 2: UnitSelectedEvent.cs - "유닛이 선택됨" 편지</h3>
+                <div class="code"><span class="keyword">public struct</span> <span class="type">UnitSelectedEvent</span> : <span class="type">IEvent</span>  <span class="comment">// "편지" 표시</span>
+{
+    <span class="comment">// 편지 내용물: 어떤 유닛이 선택되었는지</span>
+    <span class="keyword">public</span> <span class="type">ISelectable</span> Unit { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+
+    <span class="comment">// 편지봉투에 내용물 넣기</span>
+    <span class="keyword">public</span> UnitSelectedEvent(<span class="type">ISelectable</span> unit)
+    {
+        Unit = unit;  <span class="comment">// "이 유닛이 선택됐어요!" 정보 담기</span>
+    }
+}</div>
+
+                <div class="important">
+                    <h4>⚠️ 왜 struct를 쓸까?</h4>
+                    <p><strong>struct</strong>는 "값 타입"이에요. 편지 내용이 복사되어 전달됩니다.</p>
+                    <p><strong>class</strong>는 "참조 타입"이에요. 편지 원본이 전달됩니다.</p>
+                    <p>이벤트는 보통 작고 간단한 정보라 <strong>struct가 더 효율적</strong>입니다!</p>
+                </div>
+
+                <h3>📦 Step 3: Bus.cs - 우체국 시스템 (가장 중요!)</h3>
+                <div class="code"><span class="keyword">public static class</span> <span class="type">Bus</span>&lt;<span class="type">T</span>&gt; <span class="keyword">where</span> T : <span class="type">IEvent</span>
+{
+    <span class="comment">// 1️⃣ Delegate: "편지를 받을 수 있는 우편함"의 모양 정의</span>
+    <span class="keyword">public delegate void</span> <span class="type">Event</span>(<span class="type">T</span> args);
+
+    <span class="comment">// 2️⃣ OnEvent: 실제 "구독자 리스트" (누가 이 편지를 받고 싶어하는지)</span>
+    <span class="keyword">public static event</span> <span class="type">Event</span> OnEvent;
+
+    <span class="comment">// 3️⃣ Raise: "편지 발송" 버튼!</span>
+    <span class="keyword">public static void</span> Raise(<span class="type">T</span> evt) => OnEvent?.Invoke(evt);
+}</div>
+
+                <h3>🤔 한 줄씩 초보자 눈높이로 뜯어보기</h3>
+
+                <div class="step">
+                    <h4>🔹 `public static class Bus&lt;T&gt;`</h4>
+                    <p><strong>static class</strong>: 인스턴스를 만들 필요 없는 클래스. 게임 어디서든 <code>Bus.Raise()</code>로 바로 호출 가능!</p>
+                    <p><strong>&lt;T&gt;</strong>: Generic Type. "어떤 타입이든 받을 수 있어요"</p>
+                    <p>예: <code>Bus&lt;UnitSelectedEvent&gt;</code>, <code>Bus&lt;UnitDiedEvent&gt;</code> 모두 가능!</p>
+                </div>
+
+                <div class="step">
+                    <h4>🔹 `where T : IEvent`</h4>
+                    <p>"T는 IEvent를 구현한 타입만 가능해요"</p>
+                    <p>즉, <code>Bus&lt;int&gt;</code> ❌ 안 됨 (int는 IEvent가 아니니까)</p>
+                    <p><code>Bus&lt;UnitSelectedEvent&gt;</code> ✅ 가능 (UnitSelectedEvent는 IEvent니까)</p>
+                </div>
+
+                <div class="step">
+                    <h4>🔹 `public delegate void Event(T args);`</h4>
+                    <p><strong>delegate</strong>는 "함수의 모양"을 정의합니다.</p>
+                    <p>"T 타입 인자 하나를 받고, 아무것도 반환하지 않는(void) 함수"</p>
+
+                    <div class="code"><span class="comment">// 예를 들어, 이런 함수들이 이 모양에 맞아요:</span>
+<span class="keyword">void</span> HandleUnitSelected(<span class="type">UnitSelectedEvent</span> evt) { }  <span class="comment">// ✅ 맞음</span>
+<span class="keyword">void</span> OnUnitClicked(<span class="type">UnitSelectedEvent</span> evt) { }     <span class="comment">// ✅ 맞음</span>
+
+<span class="keyword">int</span> WrongFunction(<span class="type">UnitSelectedEvent</span> evt) { <span class="keyword">return</span> 0; }  <span class="comment">// ❌ 틀림 (void가 아님)</span>
+<span class="keyword">void</span> WrongFunction() { }                          <span class="comment">// ❌ 틀림 (인자 없음)</span></div>
+                </div>
+
+                <div class="step">
+                    <h4>🔹 `public static event Event OnEvent;`</h4>
+                    <p><strong>event</strong> 키워드가 핵심!</p>
+                    <p>이것은 "구독자 리스트"입니다. 여러 함수들을 += 연산자로 등록할 수 있어요.</p>
+
+                    <div class="diagram">OnEvent = [ HandleUnitSelected, OnUnitClicked, UpdateUI ]
+              ↑         ↑             ↑
+          구독자1    구독자2       구독자3
+
+Raise 호출 시 → 세 함수 모두 실행!</div>
+                </div>
+
+                <div class="step">
+                    <h4>🔹 `OnEvent?.Invoke(evt);`</h4>
+                    <p><strong>?.</strong>는 "Null-conditional operator"</p>
+                    <p>"OnEvent가 null이 아니면 Invoke 호출해줘"</p>
+
+                    <div class="code"><span class="comment">// 이 한 줄은 사실 이 코드와 같아요:</span>
+<span class="keyword">if</span> (OnEvent != <span class="keyword">null</span>)
+{
+    OnEvent.Invoke(evt);  <span class="comment">// 모든 구독자 함수 실행!</span>
+}</div>
+                </div>
+            </div>
+
+            <!-- ========== 3. 실제 사용 예제 ========== -->
+            <div class="section">
+                <h2>🎮 3. 실전 코드 - 어떻게 동작하는가?</h2>
+
+                <h3>📤 Publisher (Worker.cs) - 편지 발송자</h3>
+                <div class="code"><span class="keyword">public void</span> Select()
+{
+    <span class="comment">// 1. Decal 활성화 (시각 효과)</span>
+    <span class="keyword">if</span> (decalProjector != <span class="keyword">null</span>)
+    {
+        decalProjector.gameObject.SetActive(<span class="keyword">true</span>);
+    }
+
+    <span class="comment">// 2. 이벤트 발행 - "내가 선택되었어요!" 편지 보내기</span>
+    Bus&lt;UnitSelectedEvent&gt;.Raise(<span class="keyword">new</span> UnitSelectedEvent(<span class="keyword">this</span>));
+    <span class="comment">//    ↑ 우체국        ↑ 발송         ↑ 편지봉투 (내용물: this)</span>
+}</div>
+
+                <div class="analogy">
+                    <h4>📮 비유로 이해하기</h4>
+                    <p>Worker가 선택되면:</p>
+                    <ol>
+                        <li>Worker: "나 선택됐어! 편지 써야지!"</li>
+                        <li><code>new UnitSelectedEvent(this)</code>: 편지봉투에 "나(this)"를 넣음</li>
+                        <li><code>Bus.Raise(...)</code>: 우체국에 편지 투하!</li>
+                        <li>우체국: "구독자 리스트 확인... PlayerInput이 받고 싶대! 배달하자!"</li>
+                    </ol>
+                </div>
+
+                <h3>📥 Consumer (PlayerInput.cs) - 편지 수신자</h3>
+                <div class="code"><span class="keyword">private void</span> Awake()
+{
+    <span class="comment">// "나 UnitSelectedEvent 편지 받고 싶어요!" 신청</span>
+    Bus&lt;UnitSelectedEvent&gt;.OnEvent += HandleUnitSelected;
+    <span class="comment">//                         ↑ += 는 "구독" 의미</span>
+    <span class="comment">//                              ↑ 편지 오면 이 함수 실행해줘</span>
+}
+
+<span class="keyword">private void</span> OnDestroy()
+{
+    <span class="comment">// "더 이상 편지 안 받을래요!" 구독 취소</span>
+    Bus&lt;UnitSelectedEvent&gt;.OnEvent -= HandleUnitSelected;
+    <span class="comment">//                         ↑ -= 는 "구독 해제" 의미</span>
+}
+
+<span class="keyword">private void</span> HandleUnitSelected(<span class="type">UnitSelectedEvent</span> evt)
+{
+    <span class="comment">// 편지 도착! 봉투 뜯어보자</span>
+    <span class="keyword">if</span> (selectedUnit != <span class="keyword">null</span>)
+    {
+        selectedUnit.Deselect();  <span class="comment">// 기존 선택 해제</span>
+    }
+
+    selectedUnit = evt.Unit;  <span class="comment">// 편지 내용물: 선택된 유닛</span>
+}</div>
+
+                <div class="important">
+                    <h4>⚠️ 왜 OnDestroy에서 구독 해제를 해야 할까?</h4>
+                    <p>만약 구독 해제를 안 하면?</p>
+                    <ul>
+                        <li>PlayerInput이 삭제되어도 우체국 구독자 리스트에 남아있음</li>
+                        <li>이벤트 발생 시 삭제된 객체를 호출 → <strong>메모리 누수 & 에러!</strong></li>
+                    </ul>
+                    <p><strong>규칙: += 했으면 반드시 -= 해줘야 합니다!</strong></p>
+                </div>
+            </div>
+
+            <!-- ========== 4. 실행 흐름 ========== -->
+            <div class="section">
+                <h2>⚙️ 4. 전체 실행 흐름 - 타임라인</h2>
+
+                <div class="diagram">⏰ <strong>게임 시작 (Awake)</strong>
+┌─────────────────────────────────────────────┐
+│ PlayerInput.Awake()                         │
+│   Bus&lt;UnitSelectedEvent&gt;.OnEvent += Handle... │
+│                                             │
+│ 🎯 구독 완료! 이제 이벤트 기다리는 중...    │
+└─────────────────────────────────────────────┘
+
+⏰ <strong>마우스 좌클릭 (유닛 선택)</strong>
+┌─────────────────────────────────────────────┐
+│ 1. PlayerInput.HandleLeftClick()            │
+│    → Raycast로 Worker 감지                  │
+│    → worker.Select() 호출                   │
+└─────────────────────────────────────────────┘
+                    ↓
+┌─────────────────────────────────────────────┐
+│ 2. Worker.Select()                          │
+│    → decalProjector 활성화 (시각 효과)      │
+│    → Bus&lt;UnitSelectedEvent&gt;.Raise(...)      │
+│       "선택됨!" 이벤트 발행                 │
+└─────────────────────────────────────────────┘
+                    ↓
+┌─────────────────────────────────────────────┐
+│ 3. Bus.Raise(evt)                           │
+│    → OnEvent?.Invoke(evt)                   │
+│    → 모든 구독자에게 이벤트 전달!           │
+└─────────────────────────────────────────────┘
+                    ↓
+┌─────────────────────────────────────────────┐
+│ 4. PlayerInput.HandleUnitSelected(evt)      │
+│    → 기존 유닛 Deselect()                   │
+│    → selectedUnit = evt.Unit                │
+│    🎯 상태 업데이트 완료!                   │
+└─────────────────────────────────────────────┘</div>
+            </div>
+
+            <!-- ========== 5. 이전 방식과 비교 ========== -->
+            <div class="section">
+                <h2>🆚 5. Event Bus가 없었다면?</h2>
+
+                <div class="comparison">
+                    <div class="bad">
+                        <h4>❌ Event Bus 없이 (강한 결합)</h4>
+                        <div class="code"><span class="comment">// Worker.cs</span>
+<span class="keyword">public class</span> <span class="type">Worker</span>
+{
+    <span class="keyword">private</span> <span class="type">PlayerInput</span> playerInput;  <span class="comment">// 😱 의존성!</span>
+
+    <span class="keyword">void</span> Start()
+    {
+        <span class="comment">// Worker가 PlayerInput을 찾아야 함</span>
+        playerInput = FindObjectOfType&lt;PlayerInput&gt;();
+    }
+
+    <span class="keyword">public void</span> Select()
+    {
+        decalProjector.SetActive(<span class="keyword">true</span>);
+
+        <span class="comment">// 직접 호출 - 강한 결합!</span>
+        playerInput.OnUnitSelected(<span class="keyword">this</span>);
+    }
+}</div>
+                        <p><strong>문제점:</strong></p>
+                        <ul>
+                            <li>Worker가 PlayerInput을 알아야 함</li>
+                            <li>새 수신자 추가 시 Worker 수정 필요</li>
+                            <li>테스트 어려움</li>
+                        </ul>
+                    </div>
+
+                    <div class="good">
+                        <h4>✅ Event Bus 사용 (느슨한 결합)</h4>
+                        <div class="code"><span class="comment">// Worker.cs</span>
+<span class="keyword">public class</span> <span class="type">Worker</span>
+{
+    <span class="comment">// PlayerInput 몰라도 됨! 😊</span>
+
+    <span class="keyword">public void</span> Select()
+    {
+        decalProjector.SetActive(<span class="keyword">true</span>);
+
+        <span class="comment">// 우체국에 편지만 넣으면 끝!</span>
+        Bus&lt;UnitSelectedEvent&gt;.Raise(
+            <span class="keyword">new</span> UnitSelectedEvent(<span class="keyword">this</span>)
+        );
+    }
+}</div>
+                        <p><strong>장점:</strong></p>
+                        <ul>
+                            <li>Worker는 수신자를 몰라도 됨</li>
+                            <li>새 수신자 추가해도 Worker 수정 불필요</li>
+                            <li>독립적으로 테스트 가능</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 6. Generic 이해하기 ========== -->
+            <div class="section">
+                <h2>🧩 6. Generic &lt;T&gt; 왜 쓸까?</h2>
+
+                <div class="analogy">
+                    <h4>🍱 비유: 도시락 용기</h4>
+                    <p>Generic은 <strong>크기 조절 가능한 도시락 용기</strong>와 같아요!</p>
+                </div>
+
+                <div class="comparison">
+                    <div class="bad">
+                        <h4>❌ Generic 없이 (코드 중복)</h4>
+                        <div class="code"><span class="comment">// 이벤트 타입마다 Bus를 만들어야 함!</span>
+<span class="keyword">public class</span> <span class="type">UnitSelectedBus</span>
+{
+    <span class="keyword">public static event</span> Action&lt;UnitSelectedEvent&gt; OnEvent;
+}
+
+<span class="keyword">public class</span> <span class="type">UnitDiedBus</span>
+{
+    <span class="keyword">public static event</span> Action&lt;UnitDiedEvent&gt; OnEvent;
+}
+
+<span class="keyword">public class</span> <span class="type">BuildingDestroyedBus</span>
+{
+    <span class="keyword">public static event</span> Action&lt;BuildingDestroyedEvent&gt; OnEvent;
+}
+
+<span class="comment">// 100개 이벤트면 100개 클래스... 😱</span></div>
+                    </div>
+
+                    <div class="good">
+                        <h4>✅ Generic 사용 (재사용)</h4>
+                        <div class="code"><span class="comment">// 하나의 Bus로 모든 이벤트 처리!</span>
+<span class="keyword">public static class</span> <span class="type">Bus</span>&lt;<span class="type">T</span>&gt;
+{
+    <span class="keyword">public static event</span> Action&lt;T&gt; OnEvent;
+}
+
+<span class="comment">// 사용:</span>
+Bus&lt;UnitSelectedEvent&gt;.OnEvent += ...;
+Bus&lt;UnitDiedEvent&gt;.OnEvent += ...;
+Bus&lt;BuildingDestroyedEvent&gt;.OnEvent += ...;
+
+<span class="comment">// 새 이벤트 추가도 쉬움! ✨</span></div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>🔍 Generic의 마법</h4>
+                    <p><code>Bus&lt;UnitSelectedEvent&gt;</code>를 사용하면:</p>
+                    <ol>
+                        <li>컴파일러가 자동으로 <code>T</code>를 <code>UnitSelectedEvent</code>로 치환</li>
+                        <li>타입 안전성 보장 → 잘못된 타입 넣으면 컴파일 에러!</li>
+                        <li>코드 재사용 → 같은 Bus 클래스로 무한 확장</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- ========== 7. 자주 하는 실수 ========== -->
+            <div class="section">
+                <h2>⚠️ 7. 초보자가 자주 하는 실수</h2>
+
+                <div class="bad">
+                    <h4>❌ 실수 1: 구독 해제 안 함</h4>
+                    <div class="code"><span class="keyword">void</span> Awake()
+{
+    Bus&lt;UnitSelectedEvent&gt;.OnEvent += HandleUnitSelected;
+}
+
+<span class="comment">// OnDestroy() 없음! 😱 메모리 누수!</span></div>
+                    <p><strong>결과:</strong> 삭제된 객체가 구독자 리스트에 남아있어서 NullReferenceException 발생!</p>
+                </div>
+
+                <div class="good">
+                    <h4>✅ 올바른 방법: 항상 쌍으로!</h4>
+                    <div class="code"><span class="keyword">void</span> Awake()
+{
+    Bus&lt;UnitSelectedEvent&gt;.OnEvent <strong>+=</strong> HandleUnitSelected;  <span class="comment">// 구독</span>
+}
+
+<span class="keyword">void</span> OnDestroy()
+{
+    Bus&lt;UnitSelectedEvent&gt;.OnEvent <strong>-=</strong> HandleUnitSelected;  <span class="comment">// 구독 해제</span>
+}</div>
+                </div>
+
+                <div class="bad">
+                    <h4>❌ 실수 2: IEvent 구현 안 함</h4>
+                    <div class="code"><span class="keyword">public struct</span> <span class="type">MyEvent</span>  <span class="comment">// IEvent 상속 안 함!</span>
+{
+    <span class="keyword">public int</span> value;
+}
+
+Bus&lt;MyEvent&gt;.Raise(...);  <span class="comment">// ❌ 컴파일 에러!</span>
+<span class="comment">// Error: MyEvent must implement IEvent</span></div>
+                </div>
+
+                <div class="good">
+                    <h4>✅ 올바른 방법: IEvent 구현</h4>
+                    <div class="code"><span class="keyword">public struct</span> <span class="type">MyEvent</span> <strong>: IEvent</strong>  <span class="comment">// ✅ IEvent 구현!</span>
+{
+    <span class="keyword">public int</span> value;
+}
+
+Bus&lt;MyEvent&gt;.Raise(...);  <span class="comment">// ✅ 정상 작동!</span></div>
+                </div>
+
+                <div class="bad">
+                    <h4>❌ 실수 3: event 키워드 없이 Invoke 직접 호출</h4>
+                    <div class="code"><span class="comment">// Bus.cs (잘못된 구현)</span>
+<span class="keyword">public static</span> Action&lt;T&gt; OnEvent;  <span class="comment">// event 키워드 없음!</span>
+
+<span class="comment">// Worker.cs</span>
+Bus&lt;UnitSelectedEvent&gt;.OnEvent.Invoke(...);  <span class="comment">// 😱 직접 호출 가능!</span></div>
+                    <p><strong>문제:</strong> 외부에서 직접 Invoke 호출 가능 → 캡슐화 깨짐!</p>
+                </div>
+
+                <div class="good">
+                    <h4>✅ 올바른 방법: event 키워드 사용</h4>
+                    <div class="code"><span class="comment">// Bus.cs (올바른 구현)</span>
+<span class="keyword">public static event</span> Action&lt;T&gt; OnEvent;  <span class="comment">// ✅ event 키워드!</span>
+
+<span class="comment">// Worker.cs</span>
+Bus&lt;UnitSelectedEvent&gt;.OnEvent.Invoke(...);  <span class="comment">// ❌ 컴파일 에러!</span>
+Bus&lt;UnitSelectedEvent&gt;.Raise(...);           <span class="comment">// ✅ Raise만 호출 가능!</span></div>
+                </div>
+            </div>
+
+            <!-- ========== 8. 실전 연습 ========== -->
+            <div class="section">
+                <h2>🎯 8. 스스로 만들어보기 - 연습 문제</h2>
+
+                <div class="step">
+                    <h4>📝 연습 1: 유닛이 죽었을 때 이벤트 발행</h4>
+                    <p>다음을 구현해보세요:</p>
+                    <ol>
+                        <li><code>UnitDiedEvent.cs</code> 생성 (어떤 유닛이 죽었는지 담기)</li>
+                        <li><code>Worker.cs</code>에서 HP가 0이 되면 이벤트 발행</li>
+                        <li><code>UIManager.cs</code>에서 이벤트 받아서 "유닛 사망!" 메시지 표시</li>
+                    </ol>
+                </div>
+
+                <div class="code"><span class="comment">// 힌트: 이렇게 시작하세요!</span>
+<span class="keyword">public struct</span> <span class="type">UnitDiedEvent</span> : <span class="type">IEvent</span>
+{
+    <span class="keyword">public</span> <span class="type">ISelectable</span> Unit { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+
+    <span class="keyword">public</span> UnitDiedEvent(<span class="type">ISelectable</span> unit)
+    {
+        Unit = unit;
+    }
+}
+
+<span class="comment">// Worker.cs</span>
+<span class="keyword">void</span> TakeDamage(<span class="keyword">float</span> damage)
+{
+    health -= damage;
+    <span class="keyword">if</span> (health &lt;= 0)
+    {
+        Bus&lt;UnitDiedEvent&gt;.Raise(<span class="keyword">new</span> UnitDiedEvent(<span class="keyword">this</span>));  <span class="comment">// 여기!</span>
+    }
+}
+
+<span class="comment">// UIManager.cs</span>
+<span class="keyword">void</span> Awake()
+{
+    Bus&lt;UnitDiedEvent&gt;.OnEvent += HandleUnitDied;  <span class="comment">// 구독</span>
+}
+
+<span class="keyword">void</span> HandleUnitDied(<span class="type">UnitDiedEvent</span> evt)
+{
+    Debug.Log(<span class="string">$"유닛 사망: {evt.Unit.name}"</span>);  <span class="comment">// 처리</span>
+}</div>
+            </div>
+
+            <!-- ========== 9. 요약 ========== -->
+            <div class="section">
+                <h2>📚 9. 핵심 정리 - 5줄 요약</h2>
+
+                <div class="important">
+                    <ol style="font-size: 1.1rem; line-height: 2;">
+                        <li><strong>Event Bus = 우체국</strong>: Publisher와 Consumer를 중개하는 시스템</li>
+                        <li><strong>Generic &lt;T&gt;</strong>: 하나의 Bus로 모든 이벤트 타입 처리 (재사용)</li>
+                        <li><strong>Delegate</strong>: 함수의 모양(시그니처)을 정의하는 타입</li>
+                        <li><strong>event 키워드</strong>: 외부에서 직접 Invoke 못하게 보호 (캡슐화)</li>
+                        <li><strong>+=/-=</strong>: 구독/구독 해제 - 항상 쌍으로! (메모리 누수 방지)</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- ========== 10. 다음 단계 ========== -->
+            <div class="section">
+                <h2>🚀 10. 이제 뭐 하지?</h2>
+
+                <div class="step">
+                    <h4>✅ 체크리스트</h4>
+                    <ul>
+                        <li>IEvent 인터페이스의 역할 이해 완료</li>
+                        <li>Generic &lt;T&gt;가 왜 필요한지 이해 완료</li>
+                        <li>Delegate와 event 차이점 이해 완료</li>
+                        <li>Publisher-Consumer 패턴 이해 완료</li>
+                        <li>구독/구독 해제 쌍으로 해야 하는 이유 이해 완료</li>
+                    </ul>
+                </div>
+
+                <div class="analogy">
+                    <h4>🎓 다음 학습 추천</h4>
+                    <ul>
+                        <li>여러 Consumer가 동시에 구독하는 패턴 실습</li>
+                        <li>이벤트 우선순위 시스템 구현</li>
+                        <li>Event Bus 디버깅 도구 만들기 (누가 구독 중인지 보기)</li>
+                        <li>유니티 ScriptableObject와 Event Bus 조합</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

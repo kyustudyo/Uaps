@@ -18,7 +18,7 @@
         .content-list { list-style: none; padding-left: 0; }
         .content-list li { padding: 8px 0; padding-left: 25px; position: relative; }
         .content-list li::before { content: "✓"; position: absolute; left: 0; color: #4caf50; font-weight: bold; }
-        .code-block { background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 10px; margin: 15px 0; overflow-x: auto; font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; font-size: 0.9rem; }
+        .code-block { background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 10px; margin: 15px 0; overflow-x: auto; font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; font-size: 0.9rem; white-space: pre; line-height: 1.8; }
         .project-application { background: #f0f4f8; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #38a169; }
         .tech-stack { background: #fff5f5; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #e53e3e; }
         .summary-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; border-radius: 20px; margin-top: 40px; text-align: center; }
@@ -1735,7 +1735,10 @@ namespace GameDevTV.RTS.Player
 
         private void HandleDragSelect()
         {
-            if (selectionBox == null) { return; }  // Guardian Pattern
+            if (selectionBox == null) 
+            { 
+                return; 
+            }  // Guardian Pattern
 
             // 1️⃣ 마우스 왼쪽 버튼 처음 눌렀을 때
             if (Mouse.current.leftButton.wasPressedThisFrame)
@@ -1952,7 +1955,11 @@ namespace GameDevTV.RTS.Events
     public struct UnitSelectedEvent : IEvent
     {
         // Immutable: 외부에서 변경 불가
-        public ISelectable Unit { get; private set; }
+        public ISelectable Unit 
+        { 
+            get; 
+            private set; 
+        }
 
         public UnitSelectedEvent(ISelectable unit)
         {
@@ -2077,13 +2084,10 @@ public class PlayerInput : MonoBehaviour
     </div>
 
     <!-- 강의 15: Deselecting Units with Event Bus -->
-    <div class="lecture-card">
-        <div class="lecture-header">
-            <h2>강의 15: Deselecting Units with Event Bus</h2>
-            <p class="lecture-subtitle">이벤트 버스로 유닛 선택 해제 구현</p>
-        </div>
+    <div class="lecture-section" id="lecture-15">
+        <h2 class="lecture-title">📚 강의 15: Deselecting Units with Event Bus (이벤트 버스로 유닛 선택 해제)</h2>
 
-        <div class="content-section">
+        <div class="lecture-goal">
             <h3>🎯 학습 목표</h3>
             <ul class="content-list">
                 <li>UnitDeselectedEvent 생성하여 선택 해제 이벤트 구현</li>
@@ -2109,12 +2113,20 @@ public class PlayerInput : MonoBehaviour
 <span class="comment">// ✅ Good: 각 이벤트는 명확한 단일 목적</span>
 <span class="keyword">public struct</span> <span class="class-name">UnitSelectedEvent</span> : IEvent
 <span class="keyword">{</span>
-    <span class="keyword">public</span> ISelectable Unit { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+    <span class="keyword">public</span> ISelectable Unit 
+    { 
+        <span class="keyword">get</span>; 
+        <span class="keyword">private set</span>; 
+    }
 <span class="keyword">}</span>
 
 <span class="keyword">public struct</span> <span class="class-name">UnitDeselectedEvent</span> : IEvent
 <span class="keyword">{</span>
-    <span class="keyword">public</span> ISelectable Unit { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+    <span class="keyword">public</span> ISelectable Unit 
+    { 
+        <span class="keyword">get</span>; 
+        <span class="keyword">private set</span>; 
+    }
 <span class="keyword">}</span>
             </div>
 
@@ -2165,7 +2177,11 @@ public class PlayerInput : MonoBehaviour
 <span class="keyword">{</span>
     <span class="keyword">public struct</span> <span class="class-name">UnitDeselectedEvent</span> : IEvent
     <span class="keyword">{</span>
-        <span class="keyword">public</span> ISelectable Unit { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+        <span class="keyword">public</span> ISelectable Unit 
+        { 
+            <span class="keyword">get</span>; 
+            <span class="keyword">private set</span>; 
+        }
 
         <span class="keyword">public</span> <span class="method-name">UnitDeselectedEvent</span>(ISelectable unit)
         <span class="keyword">{</span>
@@ -2217,7 +2233,10 @@ public class PlayerInput : MonoBehaviour
 
 <span class="keyword">private void</span> <span class="method-name">HandleLeftClick</span>()
 <span class="keyword">{</span>
-    <span class="keyword">if</span> (camera == <span class="keyword">null</span>) { <span class="keyword">return</span>; }
+    <span class="keyword">if</span> (camera == <span class="keyword">null</span>) 
+    { 
+        <span class="keyword">return</span>; 
+    }
 
     Ray cameraRay = camera.ScreenPointToRay(Mouse.current.position.ReadValue());
 
@@ -2245,17 +2264,17 @@ public class PlayerInput : MonoBehaviour
             <p>이번 강의에서는 Unity 에디터 설정 변경이 없습니다. 모든 변경사항은 스크립트에서만 발생합니다.</p>
         </div>
 
-        <div class="bug-fix">
+        <div class="content-section">
             <h3>🐛 주의사항</h3>
-            <div class="warning-box">
-                <h4>⚠️ 강의와 실제 코드 차이점</h4>
+            <div class="problem-solution">
+                <h5>⚠️ 강의와 실제 코드 차이점</h5>
                 <p><strong>강의 내용:</strong> Worker.Deselect()에서 <code>Bus&lt;UnitDeselectedEvent&gt;.Raise()</code> 호출</p>
                 <p><strong>실제 커밋:</strong> Worker.cs는 수정되지 않았고, Deselect()는 이벤트를 발행하지 않음</p>
                 <p><strong>이유:</strong> 강의 진행 중 구현 방식이 변경되었을 가능성. PlayerInput에서 직접 Deselect() 호출 후 별도로 상태 관리하는 방식으로 보임.</p>
             </div>
 
-            <div class="warning-box">
-                <h4>⚠️ OnDestroy에서 구독 해제 필수</h4>
+            <div class="problem-solution">
+                <h5>⚠️ OnDestroy에서 구독 해제 필수</h5>
                 <p>이벤트 구독을 해제하지 않으면 GameObject가 파괴되어도 이벤트 핸들러가 남아있어 메모리 누수 및 NullReferenceException 발생 가능.</p>
                 <div class="code-block">
 <span class="comment">// ✅ Good: Awake와 OnDestroy 쌍으로 관리</span>
@@ -2274,7 +2293,7 @@ public class PlayerInput : MonoBehaviour
 
         <div class="content-section">
             <h3>🔄 실행 흐름</h3>
-            <div class="flow-diagram">
+            <div class="step-guide">
                 <h5>📌 선택 해제 → 새 유닛 선택 흐름</h5>
                 <ol>
                     <li><strong>좌클릭</strong>: HandleLeftClick() 호출</li>
@@ -2320,12 +2339,19 @@ public class PlayerInput : MonoBehaviour
             </ul>
         </div>
 
-        <div class="file-changes">
-            <h3>📌 주요 변경 파일</h3>
+        <div class="tech-stack">
+            <h3>🔧 핵심 기술</h3>
             <ul class="content-list">
-                <li><strong>Assets/Scripts/Events/UnitDeselectedEvent.cs</strong> (신규): 선택 해제 이벤트 정의</li>
-                <li><strong>Assets/Scripts/Player/PlayerInput.cs</strong>: 이벤트 구독/해제, 핸들러 추가</li>
+                <li><strong>Event Bus 확장</strong>: 여러 이벤트 타입 동시 관리</li>
+                <li><strong>+=/-= 연산자</strong>: 이벤트 구독/해제</li>
+                <li><strong>OnDestroy</strong>: GameObject 파괴 시 정리 작업</li>
+                <li><strong>Discrete Event Structs</strong>: 명확한 단일 책임 이벤트</li>
+                <li><strong>Null 체크</strong>: <code>if (selectedUnit != null)</code> 패턴</li>
             </ul>
+
+            <h4>주요 변경 파일</h4>
+            <div class="code-block">Assets/Scripts/Events/UnitDeselectedEvent.cs (신규)
+Assets/Scripts/Player/PlayerInput.cs (수정)</div>
         </div>
     </div>
 
