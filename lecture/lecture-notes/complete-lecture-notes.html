@@ -2373,6 +2373,10 @@ Assets/Scripts/Player/PlayerInput.cs (수정)</div>
             <h3>📝 핵심 개념</h3>
 
             <h4>1. AbstractUnit 클래스 설계</h4>
+            <p><strong>왜 필요한가?</strong> 기존에는 Worker와 WorkerThreeRobot이 각각 동일한 코드를 중복으로 가지고 있었습니다. 
+            NavMeshAgent 설정, 선택/해제 로직, 이동 명령 처리가 모든 유닛에서 반복되었죠. 
+            AbstractUnit을 만들면 코드 중복을 제거하고, 새로운 유닛 타입 추가 시 일관된 동작을 보장할 수 있습니다.</p>
+            
             <p>모든 유닛의 공통 기능을 추상 클래스로 통합:</p>
             <div class="code-block">
 <span class="keyword">public abstract class</span> <span class="class-name">AbstractUnit</span> : MonoBehaviour, ISelectable, IMoveable
@@ -2417,6 +2421,10 @@ Assets/Scripts/Player/PlayerInput.cs (수정)</div>
             </div>
 
             <h4>2. 다중 유닛 선택 알고리즘</h4>
+            <p><strong>왜 이런 구조인가?</strong> 단순히 클릭으로는 하나의 유닛만 선택할 수 있습니다. 
+            하지만 RTS 게임에서는 여러 유닛을 동시에 선택해서 일괄 명령을 내려야 합니다. 
+            드래그 박스를 그려서 그 안에 있는 모든 유닛을 선택하는 방식이 가장 직관적이고 효율적입니다.</p>
+            
             <p>드래그 선택의 3단계 프로세스:</p>
             <div class="code-block">
 <span class="comment">// 1단계: 드래그 시작 - 선택 박스 초기화</span>
@@ -2455,6 +2463,11 @@ Assets/Scripts/Player/PlayerInput.cs (수정)</div>
             </div>
 
             <h4>3. HashSet vs List 성능 최적화</h4>
+            <p><strong>왜 HashSet을 사용하는가?</strong> 
+            <code>aliveUnits</code>는 현재 살아있는 모든 유닛을 추적하는 컬렉션입니다. 
+            여기서 중요한 것은 <strong>중복이 없어야 하고, 순서는 중요하지 않다</strong>는 점입니다. 
+            HashSet은 중복을 자동으로 제거하고, 추가/삭제 연산이 O(1)로 매우 빠릅니다. 
+            List는 중복을 허용하고 순서를 유지하는데, 이 경우에는 불필요한 오버헤드입니다.</p>
             <p>유닛 관리에 HashSet을 사용하는 이유:</p>
             <div class="code-block">
 <span class="comment">// HashSet: 중복 없는 고성능 컬렉션</span>
@@ -2476,6 +2489,12 @@ Assets/Scripts/Player/PlayerInput.cs (수정)</div>
             </div>
 
             <h4>4. UnitSpawnEvent 이벤트 시스템</h4>
+            <p><strong>왜 UnitSpawnEvent가 필요한가?</strong> 
+            PlayerInput은 드래그 선택을 위해 현재 살아있는 모든 유닛을 알아야 합니다. 
+            하지만 유닛이 언제 생성되는지 직접 알 수 없죠. 
+            UnitSpawnEvent를 통해 유닛이 생성될 때마다 PlayerInput이 자동으로 알 수 있게 됩니다. 
+            이는 Event Bus 패턴의 핵심인 "느슨한 결합"을 보여주는 예시입니다.</p>
+            
             <p>유닛 스폰 추적을 위한 새로운 이벤트:</p>
             <div class="code-block">
 <span class="keyword">public struct</span> <span class="class-name">UnitSpawnEvent</span> : IEvent
@@ -2525,6 +2544,11 @@ Assets/Scripts/Player/PlayerInput.cs (수정)</div>
             </div>
 
             <h4>DeselectAllUnits() - 안전한 선택 해제</h4>
+            <p><strong>왜 ToArray()를 사용하는가?</strong> 
+            <code>selectedUnits</code> 리스트를 직접 반복하면서 <code>Deselect()</code>를 호출하면 문제가 발생합니다. 
+            <code>Deselect()</code>는 이벤트를 발행하고, 이벤트 핸들러가 <code>selectedUnits</code> 리스트를 수정하기 때문입니다. 
+            "반복 중 컬렉션을 수정할 수 없습니다" 런타임 에러가 발생하죠. 
+            <code>ToArray()</code>로 스냅샷을 만들어서 안전하게 반복할 수 있습니다.</p>
             <div class="code-block">
 <span class="keyword">private void</span> <span class="method-name">DeselectAllUnits</span>()
 <span class="keyword">{</span>
@@ -2538,6 +2562,10 @@ Assets/Scripts/Player/PlayerInput.cs (수정)</div>
             </div>
 
             <h4>HandleRightClick() - 다중 유닛 이동</h4>
+            <p><strong>왜 foreach로 모든 유닛을 처리하는가?</strong> 
+            기존에는 <code>selectedUnit</code> 하나만 처리했지만, 이제는 <code>selectedUnits</code> 리스트에 여러 유닛이 있을 수 있습니다. 
+            각 유닛이 <code>IMoveable</code> 인터페이스를 구현하는지 확인하고, 이동 가능한 유닛들에게만 이동 명령을 내립니다. 
+            이렇게 하면 한 번의 우클릭으로 모든 선택된 유닛이 동시에 이동합니다.</p>
             <div class="code-block">
 <span class="keyword">private void</span> <span class="method-name">HandleRightClick</span>()
 <span class="keyword">{</span>
@@ -2619,10 +2647,217 @@ Assets/Scripts/Player/PlayerInput.cs (다중 선택 시스템)</div>
     </div>
 
     <footer style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 40px;">
-        <h2>🎉 총 16개 강의 완료!</h2>
-        <p style="font-size: 1.2rem; margin-top: 10px;">예상 학습 시간: 12-13시간</p>
-        <p style="margin-top: 20px; opacity: 0.9;">다음 강의에서는 단일 클릭 선택과 드래그 선택을 통합합니다.</p>
+        <h2>🎉 총 17개 강의 완료!</h2>
+        <p style="font-size: 1.2rem; margin-top: 10px;">예상 학습 시간: 13-14시간</p>
+        <p style="margin-top: 20px; opacity: 0.9;">다음 강의에서는 더 고급 선택 기능을 구현합니다.</p>
     </footer>
+
+    <div class="lecture-section">
+        <h2>📚 강의 17: Add Units to Selection (Shift 키로 유닛 추가 선택)</h2>
+
+        <div class="lecture-goal">
+            <h3>🎯 학습 목표</h3>
+            <ul>
+                <li>Shift 키를 이용한 다중 유닛 선택 기능 구현</li>
+                <li>코드 리팩토링을 통한 가독성 향상</li>
+                <li>단일 클릭 선택과 드래그 선택의 통합</li>
+                <li>함수 분리를 통한 코드 구조 개선</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h3>📝 핵심 개념</h3>
+
+            <h4>1. 코드 리팩토링 - 함수 분리</h4>
+            <p><strong>왜 필요한가?</strong> 
+            <code>HandleDragSelect()</code> 함수가 너무 길어져서 가독성이 떨어졌습니다. 
+            하나의 함수가 여러 가지 일을 하면 나중에 코드를 이해하기 어려워집니다. 
+            각 단계별로 함수를 분리하면 코드의 의도가 명확해지고 유지보수가 쉬워집니다.</p>
+            
+            <p>HandleDragSelect를 3개의 작은 함수로 분리:</p>
+            <div class="code-block">
+<span class="comment">// 기존: 하나의 거대한 함수</span>
+<span class="keyword">private void</span> <span class="method-name">HandleDragSelect</span>()
+<span class="keyword">{</span>
+    <span class="comment">// 50줄 이상의 복잡한 로직...</span>
+<span class="keyword">}</span>
+
+<span class="comment">// 개선: 3개의 명확한 함수로 분리</span>
+<span class="keyword">private void</span> <span class="method-name">HandleDragSelect</span>()
+<span class="keyword">{</span>
+    <span class="keyword">if</span> (Mouse.current.leftButton.wasPressedThisFrame)
+    <span class="keyword">{</span>
+        HandleMouseDown();
+    <span class="keyword">}</span>
+    <span class="keyword">else if</span> (Mouse.current.leftButton.isPressed && !Mouse.current.leftButton.wasPressedThisFrame)
+    <span class="keyword">{</span>
+        HandleMouseDrag();
+    <span class="keyword">}</span>
+    <span class="keyword">else if</span> (Mouse.current.leftButton.wasReleasedThisFrame)
+    <span class="keyword">{</span>
+        HandleMouseUp();
+    <span class="keyword">}</span>
+<span class="keyword">}</span>
+            </div>
+
+            <h4>2. Shift 키를 이용한 다중 선택</h4>
+            <p><strong>왜 이런 방식인가?</strong> 
+            RTS 게임에서는 여러 유닛을 선택하는 방법이 여러 가지 있습니다. 
+            Shift 키를 누르고 클릭하면 기존 선택을 유지하면서 새로운 유닛을 추가할 수 있습니다. 
+            이는 사용자가 직관적으로 이해할 수 있는 표준적인 UI 패턴입니다.</p>
+            
+            <div class="code-block">
+<span class="keyword">private void</span> <span class="method-name">HandleMouseUp</span>()
+<span class="keyword">{</span>
+    <span class="comment">// Shift 키가 눌리지 않았을 때만 기존 선택 해제</span>
+    <span class="keyword">if</span> (!Keyboard.current.shiftKey.isPressed)
+    <span class="keyword">{</span>
+        DeselectAllUnits();
+    <span class="keyword">}</span>
+
+    HandleLeftClick();  <span class="comment">// 단일 클릭 선택</span>
+    <span class="keyword">foreach</span> (AbstractUnit unit <span class="keyword">in</span> addedUnits)
+    <span class="keyword">{</span>
+        unit.Select();  <span class="comment">// 드래그 선택된 유닛들 추가</span>
+    <span class="keyword">}</span>
+    selectionBox.gameObject.SetActive(<span class="keyword">false</span>);
+<span class="keyword">}</span>
+            </div>
+
+            <h4>3. 단일 클릭과 드래그 선택 통합</h4>
+            <p><strong>왜 통합해야 하는가?</strong> 
+            기존에는 <code>HandleLeftClick()</code>이 Update에서 독립적으로 실행되어 드래그 선택과 충돌할 수 있었습니다. 
+            <code>HandleMouseUp()</code>에서 <code>HandleLeftClick()</code>을 호출하면 
+            마우스를 뗄 때만 단일 클릭이 실행되어 드래그와 자연스럽게 통합됩니다.</p>
+            
+            <div class="code-block">
+<span class="comment">// Update()에서 제거</span>
+<span class="keyword">private void</span> <span class="method-name">Update</span>()
+<span class="keyword">{</span>
+    HandlePanning();
+    HandleZooming();
+    HandleRotation();
+    <span class="comment">// HandleLeftClick(); ← 제거됨</span>
+    HandleRightClick();
+    HandleDragSelect();
+<span class="keyword">}</span>
+
+<span class="comment">// HandleMouseUp()에서 통합</span>
+<span class="keyword">private void</span> <span class="method-name">HandleMouseUp</span>()
+<span class="keyword">{</span>
+    <span class="keyword">if</span> (!Keyboard.current.shiftKey.isPressed)
+    <span class="keyword">{</span>
+        DeselectAllUnits();
+    <span class="keyword">}</span>
+
+    HandleLeftClick();  <span class="comment">// 여기서 단일 클릭 처리</span>
+    <span class="comment">// 드래그 선택 처리...</span>
+<span class="keyword">}</span>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>💻 구현 코드</h3>
+
+            <h4>HandleMouseDown() - 드래그 시작</h4>
+            <p><strong>왜 별도 함수로 분리하는가?</strong> 
+            드래그 시작 시 해야 할 일들이 명확합니다: 선택 박스 초기화, 마우스 위치 저장, 이전 선택 초기화. 
+            이 로직을 별도 함수로 분리하면 코드의 의도가 명확해집니다.</p>
+            <div class="code-block">
+<span class="keyword">private void</span> <span class="method-name">HandleMouseDown</span>()
+<span class="keyword">{</span>
+    selectionBox.sizeDelta = Vector2.zero;  <span class="comment">// 이전 크기 초기화</span>
+    selectionBox.gameObject.SetActive(<span class="keyword">true</span>);
+    startingMousePosition = Mouse.current.position.ReadValue();
+    addedUnits.Clear();  <span class="comment">// 이전 선택 초기화</span>
+<span class="keyword">}</span>
+            </div>
+
+            <h4>HandleMouseDrag() - 드래그 중</h4>
+            <p><strong>왜 별도 함수로 분리하는가?</strong> 
+            드래그 중에는 선택 박스 내의 유닛들을 찾는 로직만 필요합니다. 
+            이 로직이 복잡하므로 별도 함수로 분리하여 가독성을 높입니다.</p>
+            <div class="code-block">
+<span class="keyword">private void</span> <span class="method-name">HandleMouseDrag</span>()
+<span class="keyword">{</span>
+    Bounds selectionBoxBounds = ResizeSelectionBox();
+    <span class="keyword">foreach</span> (AbstractUnit unit <span class="keyword">in</span> aliveUnits)
+    <span class="keyword">{</span>
+        Vector2 unitPosition = camera.WorldToScreenPoint(unit.transform.position);
+
+        <span class="keyword">if</span> (selectionBoxBounds.Contains(unitPosition))
+        <span class="keyword">{</span>
+            addedUnits.Add(unit);
+        <span class="keyword">}</span>
+    <span class="keyword">}</span>
+<span class="keyword">}</span>
+            </div>
+
+            <h4>HandleLeftClick() - 단일 클릭 선택</h4>
+            <p><strong>왜 단순화했는가?</strong> 
+            기존에는 마우스 버튼 상태 확인과 선택 해제 로직이 있었지만, 
+            이제는 <code>HandleMouseUp()</code>에서 마우스 상태를 확인하고 선택 해제도 처리하므로 
+            <code>HandleLeftClick()</code>은 순수하게 레이캐스트와 선택만 담당하면 됩니다.</p>
+            <div class="code-block">
+<span class="keyword">private void</span> <span class="method-name">HandleLeftClick</span>()
+<span class="keyword">{</span>
+    <span class="keyword">if</span> (camera == <span class="keyword">null</span>) { <span class="keyword">return</span>; }
+
+    Ray cameraRay = camera.ScreenPointToRay(Mouse.current.position.ReadValue());
+
+    <span class="keyword">if</span> (Physics.Raycast(cameraRay, <span class="keyword">out</span> RaycastHit hit, <span class="keyword">float</span>.MaxValue, selectableUnitsLayers)
+        && hit.collider.TryGetComponent(<span class="keyword">out</span> ISelectable selectable))
+    <span class="keyword">{</span>
+        selectable.Select();
+    <span class="keyword">}</span>
+<span class="keyword">}</span>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>⚙️ Unity 설정</h3>
+            <p>이번 강의에서는 Unity 에디터 설정 변경이 없습니다. 모든 변경사항은 스크립트에서만 발생합니다.</p>
+        </div>
+
+        <div class="content-section">
+            <h3>🐛 주의사항</h3>
+            <div class="problem-solution">
+                <h5>⚠️ Shift 키 상태 확인</h5>
+                <p><strong>주의:</strong> <code>Keyboard.current.shiftKey.isPressed</code>는 현재 프레임에서 Shift 키가 눌려있는지 확인</p>
+                <p><strong>용도:</strong> Shift가 눌려있으면 기존 선택을 유지하고 새 유닛을 추가 선택</p>
+            </div>
+
+            <div class="problem-solution">
+                <h5>⚠️ 함수 분리의 장점</h5>
+                <p><strong>가독성:</strong> 각 함수가 하나의 명확한 역할만 담당</p>
+                <p><strong>유지보수:</strong> 특정 기능 수정 시 해당 함수만 찾으면 됨</p>
+                <p><strong>테스트:</strong> 각 함수를 독립적으로 테스트 가능</p>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>🎓 학습 포인트</h3>
+            <ul>
+                <li><strong>코드 리팩토링:</strong> 큰 함수를 작은 함수로 분리하여 가독성 향상</li>
+                <li><strong>UI 패턴:</strong> Shift 키를 이용한 다중 선택은 표준적인 RTS 게임 패턴</li>
+                <li><strong>함수 통합:</strong> 관련된 기능들을 하나의 흐름으로 통합하여 일관성 확보</li>
+                <li><strong>단일 책임 원칙:</strong> 각 함수가 하나의 명확한 역할만 담당하도록 설계</li>
+            </ul>
+        </div>
+
+        <div class="tech-stack">
+            <h3>🔧 핵심 기술</h3>
+            <ul class="content-list">
+                <li><strong>함수 분리 (Function Decomposition)</strong>: 복잡한 함수를 작은 단위로 분해</li>
+                <li><strong>Shift 키 입력 처리</strong>: <code>Keyboard.current.shiftKey.isPressed</code></li>
+                <li><strong>조건부 선택 해제</strong>: Shift 키 상태에 따른 선택 유지/해제</li>
+                <li><strong>이벤트 통합</strong>: 단일 클릭과 드래그 선택의 자연스러운 통합</li>
+            </ul>
+
+            <h4>주요 변경 파일</h4>
+            <div class="code-block">Assets/Scripts/Player/PlayerInput.cs (리팩토링)</div>
+        </div>
+    </div>
 
 </body>
 </html>
