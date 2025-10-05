@@ -541,6 +541,11 @@ package "Events" {
         +Unit : ISelectable
         +UnitDeselectedEvent(ISelectable)
     }
+
+    class UnitSpawnEvent {
+        +Unit : AbstractUnit
+        +UnitSpawnEvent(AbstractUnit)
+    }
 }
 
 ' Interfaces
@@ -554,9 +559,15 @@ package "Units" {
         +MoveTo(Vector3)
     }
 
-    class Worker {
+    abstract class AbstractUnit {
         -agent : NavMeshAgent
         -decalProjector : DecalProjector
+        +Select()
+        +Deselect()
+        +MoveTo(Vector3)
+    }
+
+    class Worker {
         +Select()
         +Deselect()
         +MoveTo(Vector3)
@@ -566,7 +577,6 @@ package "Units" {
         -headPart : GameObject
         -bodyPart : GameObject
         -legsPart : GameObject
-        -agent : NavMeshAgent
         +RotateParts(Vector3)
         +SetRobotPart(RobotPartType, GameObject)
         +Select()
@@ -602,16 +612,18 @@ package "Player" {
 ' Relationships
 UnitSelectedEvent ..|> IEvent
 UnitDeselectedEvent ..|> IEvent
-Worker ..|> ISelectable
-Worker ..|> IMoveable
-WorkerThreeRobot ..|> ISelectable
-WorkerThreeRobot ..|> IMoveable
+UnitSpawnEvent ..|> IEvent
+AbstractUnit ..|> ISelectable
+AbstractUnit ..|> IMoveable
+Worker --|> AbstractUnit : extends
+WorkerThreeRobot --|> AbstractUnit : extends
 WorkerThreeRobot *-- RobotPart : contains 3
 
 PlayerInput --> ISelectable : uses
 PlayerInput --> IMoveable : uses
 PlayerInput --> CameraConfig : uses
-PlayerInput ..> Bus : subscribes (Selected/Deselected)
+PlayerInput ..> Bus : subscribes (Selected/Deselected/Spawn)
+AbstractUnit ..> Bus : publishes (Selected/Deselected/Spawn)
 Worker ..> Bus : publishes (Selected)
 WorkerThreeRobot ..> Bus : publishes (Selected)
 
