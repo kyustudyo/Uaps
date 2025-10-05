@@ -217,18 +217,56 @@ lecture/lecture-notes/
 
 ## 🎯 다음 작업 예상
 
+### 🚨 진행 중인 작업: devil_top을 WorkerThreeRobot headPart에 적용
+
+**현재 상태:**
+- ✅ devil_top FBX 및 텍스처 파일 복사 완료
+  - 위치: `/Users/hankyulee/Desktop/Uaps/lecture/urts-course/Assets/Models/devil_top/`
+  - 파일: base_basic_pbr.fbx, texture_diffuse.png, texture_normal.png, texture_metallic.png, texture_roughness.png
+- ✅ Unity MCP 설정 완료 (`.mcp.local.json`에 추가)
+- ⏳ Unity 에디터에서 Material 생성 및 Prefab 적용 필요
+
+**남은 작업 (Unity 에디터 또는 Unity MCP 사용):**
+
+1. **Material 생성 및 설정**:
+   - 위치: `Assets/Models/devil_top/`
+   - 이름: `DevilTopMaterial`
+   - Shader: URP/Lit
+   - Albedo: texture_diffuse.png
+   - Normal Map: texture_normal.png (Normal Map 체크)
+   - Metallic: texture_metallic.png
+   - Smoothness: texture_roughness.png
+
+2. **WorkerThreeRobot Prefab 수정**:
+   - Prefab 위치: `Assets/Units/Worker/WorkerThreeRobot.prefab`
+   - 기존 headPart (Engineer_1) 제거
+   - base_basic_pbr.fbx를 새 headPart로 할당
+   - DevilTopMaterial 적용
+   - Prefab 저장
+
+3. **테스트 및 확인**:
+   - Game Scene에서 WorkerThreeRobot이 devil_top head를 가지는지 확인
+   - 회전 및 이동 시 정상 작동 확인
+   - Material이 올바르게 렌더링되는지 확인
+
+**Unity MCP 사용 시:**
+- Unity MCP가 `.mcp.local.json`에 설정됨
+- 새 세션에서 Unity MCP 도구 사용 가능
+- Unity 에디터 실행 필수
+
+**수동 작업 시:**
+- Unity 에디터에서 위 단계 직접 수행
+- Prefab Mode에서 작업 (더블클릭으로 열기)
+
+---
+
 ### 다음 강의 추가 시
-1. 사용자가 커밋 해시 제공
-2. `git cherry-pick [hash]` 또는 분석
-3. `complete-lecture-notes.html`에 강의 추가
-4. Worker 변경사항을 WorkerThreeRobot에도 적용
-5. 강의 번호 증가 (현재 12개)
-6. 커밋
+- Cursor에서 `lecture` 명령어로 처리
+- 강의 번호: 현재 15개 완료, 다음은 16
 
 ### WorkerThreeRobot 확장 작업
-- IMovable 구현 필요 여부 확인
-- 애니메이션 추가 시 Animator 설정
-- 파츠별 커스터마이징 시스템 구현
+- devil_top 적용 후 다른 파츠 추가 가능
+- 파츠별 커스터마이징 시스템 활용
 
 ---
 
