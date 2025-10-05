@@ -2647,9 +2647,9 @@ Assets/Scripts/Player/PlayerInput.cs (다중 선택 시스템)</div>
     </div>
 
     <footer style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 40px;">
-        <h2>🎉 총 17개 강의 완료!</h2>
-        <p style="font-size: 1.2rem; margin-top: 10px;">예상 학습 시간: 13-14시간</p>
-        <p style="margin-top: 20px; opacity: 0.9;">다음 강의에서는 더 고급 선택 기능을 구현합니다.</p>
+        <h2>🎉 총 18개 강의 완료!</h2>
+        <p style="font-size: 1.2rem; margin-top: 10px;">예상 학습 시간: 14-15시간</p>
+        <p style="margin-top: 20px; opacity: 0.9;">다음 강의에서는 더 고급 네비게이션 기능을 구현합니다.</p>
     </footer>
 
     <div class="lecture-section">
@@ -2856,6 +2856,187 @@ Assets/Scripts/Player/PlayerInput.cs (다중 선택 시스템)</div>
 
             <h4>주요 변경 파일</h4>
             <div class="code-block">Assets/Scripts/Player/PlayerInput.cs (리팩토링)</div>
+        </div>
+    </div>
+
+    <div class="lecture-section">
+        <h2>📚 강의 18: NavMesh Areas and Obstacles (NavMesh 영역과 장애물)</h2>
+
+        <div class="lecture-goal">
+            <h3>🎯 학습 목표</h3>
+            <ul>
+                <li>NavMesh Areas의 개념과 사용법 이해</li>
+                <li>NavMesh Obstacle과 NavMesh Modifier의 차이점 파악</li>
+                <li>런타임에서 동적으로 NavMesh를 조작하는 방법</li>
+                <li>리소스와 건물에 적절한 NavMesh 컴포넌트 적용</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h3>📝 핵심 개념</h3>
+
+            <h4>1. NavMesh Areas (NavMesh 영역)</h4>
+            <p><strong>왜 필요한가?</strong> 
+            NavMesh Areas는 특정 지역의 이동 비용을 조정할 수 있게 해줍니다. 
+            예를 들어, 물 지역은 2배 비싸게, 점프 지역은 3배 비싸게 설정할 수 있습니다. 
+            이렇게 하면 AI가 더 현실적인 경로를 선택하게 됩니다.</p>
+            
+            <p>기본 내장 타입들:</p>
+            <div class="code-block">
+<span class="comment">// NavMesh Areas 기본 타입</span>
+<span class="keyword">Walkable</span>: 비용 1 (기본)
+<span class="keyword">Not Walkable</span>: 통과 불가 (특수)
+<span class="keyword">Jump</span>: 비용 2 (점프 지역)
+            </div>
+
+            <h4>2. NavMesh Modifier vs NavMesh Obstacle</h4>
+            <p><strong>왜 구분해야 하는가?</strong> 
+            두 컴포넌트는 서로 다른 시점에서 NavMesh를 조작합니다. 
+            Modifier는 베이킹 시에만 작동하고, Obstacle은 런타임에 동적으로 작동합니다.</p>
+            
+            <div class="code-block">
+<span class="comment">// NavMesh Modifier (베이킹 시에만)</span>
+<span class="keyword">장점:</strong> 정적 환경에서 영구적인 변경
+<span class="keyword">단점:</strong> 런타임에 변경 불가 (리베이킹 필요)
+<span class="keyword">사용처:</strong> 건물, 벽, 영구적 장애물
+
+<span class="comment">// NavMesh Obstacle (런타임 동적)</span>
+<span class="keyword">장점:</strong> 런타임에 실시간 변경 가능
+<span class="keyword">단점:</strong> 성능 오버헤드 있음
+<span class="keyword">사용처:</strong> 리소스, 파괴 가능한 객체
+            </div>
+
+            <h4>3. NavMesh Obstacle 설정</h4>
+            <p><strong>왜 이런 설정들이 필요한가?</strong> 
+            NavMesh Obstacle은 런타임에 NavMesh를 실시간으로 조각내므로, 
+            성능과 정확성 사이의 균형을 맞추는 설정들이 중요합니다.</p>
+            
+            <div class="code-block">
+<span class="comment">// NavMesh Obstacle 주요 설정</span>
+<span class="keyword">Carve</span>: true  <span class="comment">// NavMesh를 조각낼지 여부</span>
+<span class="keyword">Carve Only Stationary</span>: true  <span class="comment">// 정지 상태에서만 조각내기</span>
+<span class="keyword">Move Threshold</span>: 0.1  <span class="comment">// 움직임 감지 임계값</span>
+<span class="keyword">Time To Stationary</span>: 0.5  <span class="comment">// 정지로 간주되는 시간</span>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>💻 구현 코드</h3>
+
+            <h4>Minerals Prefab에 NavMesh Obstacle 적용</h4>
+            <p><strong>왜 Minerals에 Obstacle을 사용하는가?</strong> 
+            Minerals는 채굴되면 사라지는 동적 객체입니다. 
+            베이킹 시에만 작동하는 Modifier를 사용하면, 
+            채굴 후에도 NavMesh가 업데이트되지 않아 유닛이 통과할 수 없게 됩니다.</p>
+            
+            <div class="code-block">
+<span class="comment">// Minerals NavMesh Obstacle 설정</span>
+<span class="keyword">Shape</span>: Box
+<span class="keyword">Extents</span>: (0.25, 0.125, 0.25)  <span class="comment">// 미네랄 크기에 맞게 조정</span>
+<span class="keyword">Center</span>: (0, -0.5, 0)  <span class="comment">// 바닥에 맞춤</span>
+<span class="keyword">Carve</span>: true
+<span class="keyword">Carve Only Stationary</span>: true
+            </div>
+
+            <h4>Gas Prefab에 NavMesh Obstacle 적용</h4>
+            <p><strong>왜 Gas에 다른 설정을 사용하는가?</strong> 
+            Gas는 Minerals보다 작고 높이가 낮은 객체입니다. 
+            따라서 더 작은 크기와 다른 중심점을 사용해야 합니다.</p>
+            
+            <div class="code-block">
+<span class="comment">// Gas NavMesh Obstacle 설정</span>
+<span class="keyword">Shape</span>: Box
+<span class="keyword">Extents</span>: (0.9, 0.125, 0.5)  <span class="comment">// 가스 크기에 맞게 조정</span>
+<span class="keyword">Center</span>: (0.15, 0, 0)  <span class="comment">// 가스 위치에 맞춤</span>
+<span class="keyword">Carve</span>: true
+<span class="keyword">Carve Only Stationary</span>: true
+            </div>
+
+            <h4>NavMesh Surface Layer 설정</h4>
+            <p><strong>왜 Layer를 분리해야 하는가?</strong> 
+            NavMesh가 모든 객체를 고려하면 성능이 저하됩니다. 
+            필요한 Layer만 포함시켜서 효율적인 NavMesh를 생성해야 합니다.</p>
+            
+            <div class="code-block">
+<span class="comment">// NavMesh Surface Include Layers</span>
+<span class="keyword">Floor</span>: ✓  <span class="comment">// 바닥만 포함</span>
+<span class="keyword">Water</span>: ✓  <span class="comment">// 물 포함 (Not Walkable로 설정)</span>
+<span class="keyword">Default</span>: ✗  <span class="comment">// 리소스 제외 (Obstacle 사용)</span>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>⚙️ Unity 설정</h3>
+            
+            <h4>1. NavMesh Surface 설정</h4>
+            <p>Navigation Window에서 NavMesh Surface 컴포넌트 설정:</p>
+            <ul>
+                <li><strong>Include Layers</strong>: Floor, Water만 포함</li>
+                <li><strong>Default Area</strong>: Walkable</li>
+                <li><strong>Generate Links</strong>: false (필요시)</li>
+            </ul>
+
+            <h4>2. NavMesh Areas 설정</h4>
+            <p>Navigation Window의 Areas 탭에서:</p>
+            <ul>
+                <li><strong>Walkable</strong>: 비용 1 (기본)</li>
+                <li><strong>Not Walkable</strong>: 통과 불가</li>
+                <li><strong>Jump</strong>: 비용 2</li>
+            </ul>
+
+            <h4>3. NavMesh Modifier Volume 설정</h4>
+            <p>정적 장애물에 사용:</p>
+            <ul>
+                <li><strong>Area Type</strong>: Not Walkable</li>
+                <li><strong>Affected Agents</strong>: All (또는 특정 에이전트)</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h3>🐛 주의사항</h3>
+            <div class="problem-solution">
+                <h5>⚠️ NavMesh Obstacle 성능 고려사항</h5>
+                <p><strong>주의:</strong> NavMesh Obstacle은 런타임에 NavMesh를 실시간으로 조각내므로 성능 오버헤드가 있습니다</p>
+                <p><strong>최적화:</strong> Carve Only Stationary를 true로 설정하여 정지 상태에서만 조각내기</p>
+            </div>
+
+            <div class="problem-solution">
+                <h5>⚠️ Layer 설정 중요성</h5>
+                <p><strong>문제:</strong> 모든 Layer를 포함하면 불필요한 객체들이 NavMesh에 포함됨</p>
+                <p><strong>해결:</strong> 필요한 Layer만 선택적으로 포함 (Floor, Water)</p>
+            </div>
+
+            <div class="problem-solution">
+                <h5>⚠️ NavMesh Modifier vs Obstacle 선택</h5>
+                <p><strong>Modifier 사용:</strong> 정적 환경, 영구적 장애물</p>
+                <p><strong>Obstacle 사용:</strong> 동적 객체, 파괴 가능한 리소스</p>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>🎓 학습 포인트</h3>
+            <ul>
+                <li><strong>NavMesh Areas:</strong> 지역별 이동 비용 조정으로 현실적인 경로 생성</li>
+                <li><strong>Modifier vs Obstacle:</strong> 정적 vs 동적 환경에 따른 적절한 컴포넌트 선택</li>
+                <li><strong>성능 최적화:</strong> Carve Only Stationary로 불필요한 계산 방지</li>
+                <li><strong>Layer 관리:</strong> 필요한 Layer만 포함하여 효율적인 NavMesh 생성</li>
+            </ul>
+        </div>
+
+        <div class="tech-stack">
+            <h3>🔧 핵심 기술</h3>
+            <ul class="content-list">
+                <li><strong>NavMesh Areas</strong>: 지역별 이동 비용 설정</li>
+                <li><strong>NavMesh Obstacle</strong>: 런타임 동적 NavMesh 조작</li>
+                <li><strong>NavMesh Modifier</strong>: 베이킹 시 NavMesh 조작</li>
+                <li><strong>Layer Mask</strong>: NavMesh Surface 포함 레이어 제어</li>
+            </ul>
+
+            <h4>주요 변경 파일</h4>
+            <div class="code-block">Assets/Gatherable Resources/Gas.prefab (NavMesh Obstacle 추가)
+Assets/Gatherable Resources/Minerals.prefab (NavMesh Obstacle 추가)
+Assets/Scenes/Game.unity (NavMesh Surface 설정 변경)
+Assets/Scenes/Game/NavMesh-Floor.asset (NavMesh 데이터 업데이트)</div>
         </div>
     </div>
 
