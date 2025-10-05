@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URTS Scripts Architecture Documentation</title>
+    <title>URTS Scripts Architecture - Complete Guide</title>
     <style>
         * {
             margin: 0;
@@ -51,184 +51,139 @@
         }
 
         .section h2 {
-            color: #4a5568;
-            font-size: 2rem;
+            color: #667eea;
             margin-bottom: 20px;
+            font-size: 2rem;
             border-bottom: 3px solid #667eea;
             padding-bottom: 10px;
         }
 
         .section h3 {
-            color: #2d3748;
+            color: #764ba2;
+            margin: 25px 0 15px 0;
             font-size: 1.5rem;
-            margin: 20px 0 15px 0;
+        }
+
+        .section h4 {
+            color: #555;
+            margin: 20px 0 10px 0;
+            font-size: 1.2rem;
+        }
+
+        .code-block {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.8;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        .keyword {
+            color: #d73a49;
+            font-weight: bold;
+        }
+
+        .comment {
+            color: #6a737d;
+            font-style: italic;
+        }
+
+        .class-name {
+            color: #6f42c1;
+            font-weight: bold;
+        }
+
+        .method-name {
+            color: #005cc5;
+            font-weight: bold;
+        }
+
+        .interface-name {
+            color: #e36209;
+            font-weight: bold;
+        }
+
+        .abstract-class {
+            color: #6f42c1;
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
         }
 
         .architecture-diagram {
             background: #f8f9fa;
             border: 2px solid #e9ecef;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            white-space: pre;
             overflow-x: auto;
         }
 
-        .namespace-box {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 10px 0;
-            text-align: center;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        .class-box {
+        .package-box {
             background: #e3f2fd;
             border: 2px solid #2196f3;
             border-radius: 8px;
             padding: 15px;
-            margin: 10px 0;
-            position: relative;
+            margin: 15px 0;
         }
 
-        .class-box.implement {
-            background: #e8f5e8;
-            border-color: #4caf50;
-        }
-
-        .class-box.event {
-            background: #fff3e0;
-            border-color: #ff9800;
-        }
-
-        .class-box.config {
-            background: #f3e5f5;
-            border-color: #9c27b0;
-        }
-
-        .class-title {
+        .package-title {
+            color: #1976d2;
             font-weight: bold;
             font-size: 1.1rem;
-            color: #1976d2;
-            margin-bottom: 8px;
-        }
-
-        .class-title.implement {
-            color: #388e3c;
-        }
-
-        .class-title.event {
-            color: #f57c00;
-        }
-
-        .class-title.config {
-            color: #7b1fa2;
-        }
-
-        .class-description {
-            font-size: 0.9rem;
-            color: #666;
             margin-bottom: 10px;
         }
 
-        .class-methods {
-            font-size: 0.85rem;
-            color: #555;
-        }
-
-        .method {
-            background: #f5f5f5;
-            padding: 5px 8px;
-            margin: 3px 0;
-            border-radius: 4px;
-            border-left: 3px solid #2196f3;
+        .relationship {
+            background: #f3e5f5;
+            border-left: 4px solid #9c27b0;
+            padding: 10px;
+            margin: 10px 0;
         }
 
         .flow-diagram {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
+            background: #fff3e0;
+            border: 2px solid #ff9800;
+            border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
             text-align: center;
         }
 
         .flow-step {
-            background: #667eea;
-            color: white;
-            padding: 15px;
+            background: white;
+            border: 2px solid #ff9800;
             border-radius: 8px;
-            margin: 10px 0;
+            padding: 15px;
+            margin: 10px;
             display: inline-block;
             min-width: 200px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
         .flow-arrow {
             font-size: 2rem;
-            color: #667eea;
-            margin: 10px 0;
+            color: #ff9800;
+            margin: 0 10px;
         }
 
-        .code-block {
-            background: #2d3748;
-            color: #e2e8f0;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 15px 0;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            white-space: pre;
-            line-height: 1.8;
-        }
-
-        .code-block .keyword {
-            color: #81c784;
-        }
-
-        .code-block .class-name {
-            color: #64b5f6;
-        }
-
-        .code-block .method-name {
-            color: #ffb74d;
-        }
-
-        .code-block .comment {
-            color: #a0aec0;
-        }
-
-        .relationship-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-
-        .relationship-table th,
-        .relationship-table td {
-            border: 1px solid #e2e8f0;
-            padding: 12px;
-            text-align: left;
-        }
-
-        .relationship-table th {
-            background: #667eea;
-            color: white;
-            font-weight: bold;
-        }
-
-        .relationship-table tr:nth-child(even) {
-            background: #f8f9fa;
-        }
-
-        .highlight {
-            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
+        .emoji {
+            font-size: 1.2em;
         }
 
         .warning {
@@ -239,528 +194,745 @@
             margin: 15px 0;
         }
 
-        .warning::before {
-            content: "⚠️ ";
-            font-size: 1.2rem;
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
         }
 
-        .info {
+        .info-box {
             background: #d1ecf1;
             border: 1px solid #bee5eb;
             border-radius: 8px;
             padding: 15px;
             margin: 15px 0;
         }
-
-        .info::before {
-            content: "ℹ️ ";
-            font-size: 1.2rem;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .section {
-                padding: 20px;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚀 URTS Scripts Architecture</h1>
-            <p>Unity RTS 게임의 스크립트 구조와 상호작용 관계 분석</p>
+            <h1>🏗️ URTS Scripts Architecture</h1>
+            <p>Complete Guide to Unity RTS Project Structure</p>
         </div>
 
-        <!-- 개요 섹션 -->
         <div class="section">
-            <h2>📋 프로젝트 개요</h2>
-            <p>이 문서는 Unity RTS(Real-Time Strategy) 게임의 스크립트 아키텍처를 분석합니다. 
-            <span class="highlight">Event Bus 패턴</span>을 중심으로 한 컴포넌트 간 상호작용과 
-            <span class="highlight">모듈화된 설계</span>를 다룹니다.</p>
+            <h2>📁 Project Structure Overview</h2>
             
-            <div class="info">
-                <strong>주요 특징:</strong>
-                <ul>
-                    <li>🎯 Event Bus 패턴으로 느슨한 결합 구현</li>
-                    <li>🤖 모듈화된 로봇 파츠 시스템</li>
-                    <li>🎮 직관적인 플레이어 입력 처리</li>
-                    <li>📷 동적 카메라 제어</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- 네임스페이스 구조 -->
-        <div class="section">
-            <h2>🏗️ 네임스페이스 구조</h2>
             <div class="architecture-diagram">
-                <div class="namespace-box">GameDevTV.RTS.EventBus</div>
-                <div class="namespace-box">GameDevTV.RTS.Events</div>
-                <div class="namespace-box">GameDevTV.RTS.Player</div>
-                <div class="namespace-box">GameDevTV.RTS.Units</div>
+Assets/Scripts/
+├── EventBus/                    <span class="comment">// 이벤트 시스템</span>
+│   ├── Bus.cs                   <span class="comment">// 제네릭 이벤트 버스</span>
+│   └── IEvent.cs                <span class="comment">// 이벤트 마커 인터페이스</span>
+├── Events/                      <span class="comment">// 이벤트 데이터 구조</span>
+│   ├── UnitSelectedEvent.cs     <span class="comment">// 유닛 선택 이벤트</span>
+│   ├── UnitDeselectedEvent.cs    <span class="comment">// 유닛 선택 해제 이벤트</span>
+│   └── UnitSpawnEvent.cs        <span class="comment">// 유닛 스폰 이벤트</span>
+├── Player/                      <span class="comment">// 플레이어 관련</span>
+│   └── PlayerInput.cs           <span class="comment">// 입력 처리 및 카메라 제어</span>
+└── Units/                       <span class="comment">// 유닛 관련</span>
+    ├── AbstractUnit.cs          <span class="comment">// 모든 유닛의 추상 기본 클래스</span>
+    ├── Worker.cs                <span class="comment">// 기본 작업자 유닛</span>
+    ├── WorkerThreeRobot.cs      <span class="comment">// 3부품 로봇 유닛</span>
+    ├── RobotPart.cs             <span class="comment">// 로봇 부품 회전 시스템</span>
+    ├── ISelectable.cs           <span class="comment">// 선택 가능 인터페이스</span>
+    ├── IMoveable.cs             <span class="comment">// 이동 가능 인터페이스</span>
+    └── HoldGunIK.cs             <span class="comment">// 총기 애니메이션</span>
             </div>
         </div>
 
-        <!-- 클래스 다이어그램 -->
         <div class="section">
-            <h2>📊 클래스 다이어그램</h2>
-            
-            <h3>🎯 Event Bus 시스템</h3>
-            <div class="class-box event">
-                <div class="class-title event">Bus&lt;T&gt;</div>
-                <div class="class-description">제네릭 이벤트 버스 클래스</div>
-                <div class="class-methods">
-                    <div class="method">Raise(T evt) - 이벤트 발행</div>
-                    <div class="method">OnEvent - 이벤트 구독</div>
+            <h2>🎯 Core Architecture Patterns</h2>
+
+            <div class="package-box">
+                <div class="package-title">🔄 Event Bus Pattern</div>
+                <p><strong>목적:</strong> 컴포넌트 간 느슨한 결합을 통한 이벤트 기반 통신</p>
+                <p><strong>핵심:</strong> Publisher-Subscriber 패턴으로 시스템 간 독립성 확보</p>
+                
+                <div class="code-block">
+<span class="comment">// 이벤트 발행</span>
+<span class="keyword">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.<span class="method-name">Raise</span>(<span class="keyword">new</span> <span class="class-name">UnitSelectedEvent</span>(<span class="keyword">this</span>));
+
+<span class="comment">// 이벤트 구독</span>
+<span class="keyword">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.<span class="keyword">OnEvent</span> += <span class="method-name">HandleUnitSelected</span>;
                 </div>
             </div>
 
-            <div class="class-box event">
-                <div class="class-title event">IEvent</div>
-                <div class="class-description">이벤트 인터페이스 (마커 인터페이스)</div>
-            </div>
-
-            <div class="class-box event">
-                <div class="class-title event">UnitSelectedEvent</div>
-                <div class="class-description">유닛 선택 이벤트 데이터</div>
-                <div class="class-methods">
-                    <div class="method">Unit (ISelectable) - 선택된 유닛</div>
+            <div class="package-box">
+                <div class="package-title">🏗️ Abstract Base Class Pattern</div>
+                <p><strong>목적:</strong> 공통 기능을 추상화하여 코드 중복 제거</p>
+                <p><strong>핵심:</strong> AbstractUnit이 모든 유닛의 기본 동작을 제공</p>
+                
+                <div class="code-block">
+<span class="abstract-class">AbstractUnit</span> : <span class="keyword">MonoBehaviour</span>, <span class="interface-name">ISelectable</span>, <span class="interface-name">IMoveable</span>
+├── <span class="method-name">Select()</span>           <span class="comment">// 선택 시 이벤트 발행</span>
+├── <span class="method-name">Deselect()</span>        <span class="comment">// 선택 해제 시 이벤트 발행</span>
+├── <span class="method-name">MoveTo()</span>           <span class="comment">// NavMeshAgent 이동</span>
+└── <span class="method-name">Start()</span>            <span class="comment">// 스폰 이벤트 발행</span>
                 </div>
             </div>
 
-            <div class="class-box event">
-                <div class="class-title event">UnitDeselectedEvent</div>
-                <div class="class-description">유닛 선택 해제 이벤트 데이터</div>
-                <div class="class-methods">
-                    <div class="method">Unit (ISelectable) - 해제된 유닛</div>
-                </div>
-            </div>
+            <div class="package-box">
+                <div class="package-title">🎮 Multi-Unit Selection System</div>
+                <p><strong>목적:</strong> 드래그 선택과 Shift 키를 통한 다중 유닛 선택</p>
+                <p><strong>핵심:</strong> HashSet과 List를 활용한 효율적인 선택 관리</p>
+                
+                <div class="code-block">
+<span class="comment">// 선택된 유닛 관리</span>
+<span class="keyword">List</span>&lt;<span class="interface-name">ISelectable</span>&gt; <span class="keyword">selectedUnits</span> = <span class="keyword">new</span>(12);
 
-            <h3>🎮 Player 시스템</h3>
-            <div class="class-box">
-                <div class="class-title">PlayerInput</div>
-                <div class="class-description">플레이어 입력 처리 및 카메라 제어</div>
-                <div class="class-methods">
-                    <div class="method">HandleLeftClick() - 유닛 선택/해제</div>
-                    <div class="method">HandleRightClick() - 이동 명령</div>
-                    <div class="method">HandleUnitSelected() - 선택 이벤트 핸들러</div>
-                    <div class="method">HandleUnitDeselected() - 해제 이벤트 핸들러</div>
-                    <div class="method">HandlePanning() - 카메라 이동</div>
-                    <div class="method">HandleZooming() - 카메라 줌</div>
-                    <div class="method">HandleRotation() - 카메라 회전</div>
-                    <div class="method">HandleDragSelect() - 드래그 선택 UI</div>
-                </div>
-            </div>
+<span class="comment">// 살아있는 유닛 추적</span>
+<span class="keyword">HashSet</span>&lt;<span class="abstract-class">AbstractUnit</span>&gt; <span class="keyword">aliveUnits</span> = <span class="keyword">new</span>(100);
 
-            <div class="class-box config">
-                <div class="class-title config">CameraConfig</div>
-                <div class="class-description">카메라 설정 데이터 클래스</div>
-                <div class="class-methods">
-                    <div class="method">PanSpeed - 이동 속도</div>
-                    <div class="method">ZoomSpeed - 줌 속도</div>
-                    <div class="method">RotationSpeed - 회전 속도</div>
-                </div>
-            </div>
-
-            <h3>🤖 Units 시스템</h3>
-            <div class="class-box implement">
-                <div class="class-title implement">ISelectable</div>
-                <div class="class-description">선택 가능한 객체 인터페이스</div>
-                <div class="class-methods">
-                    <div class="method">Select() - 선택</div>
-                    <div class="method">Deselect() - 선택 해제</div>
-                </div>
-            </div>
-
-            <div class="class-box implement">
-                <div class="class-title implement">IMoveable</div>
-                <div class="class-description">이동 가능한 객체 인터페이스</div>
-                <div class="class-methods">
-                    <div class="method">MoveTo(Vector3) - 이동</div>
-                </div>
-            </div>
-
-            <div class="class-box">
-                <div class="class-title">Worker</div>
-                <div class="class-description">기본 작업자 유닛</div>
-                <div class="class-methods">
-                    <div class="method">Select() - 선택 (이벤트 발행)</div>
-                    <div class="method">Deselect() - 선택 해제</div>
-                    <div class="method">MoveTo() - NavMeshAgent 이동</div>
-                </div>
-            </div>
-
-            <div class="class-box">
-                <div class="class-title">WorkerThreeRobot</div>
-                <div class="class-description">3파츠 조립 로봇 (Nova 1492 스타일)</div>
-                <div class="class-methods">
-                    <div class="method">RotateParts() - 독립적 파츠 회전</div>
-                    <div class="method">SetRobotPart() - 런타임 파츠 교체</div>
-                    <div class="method">Select() - 선택 (이벤트 발행)</div>
-                </div>
-            </div>
-
-            <div class="class-box">
-                <div class="class-title">RobotPart</div>
-                <div class="class-description">개별 로봇 파츠 회전 제어</div>
-                <div class="class-methods">
-                    <div class="method">RotateTowards() - 방향 회전</div>
-                    <div class="method">SetRotationSpeed() - 회전 속도 설정</div>
-                </div>
-            </div>
-
-            <div class="class-box">
-                <div class="class-title">HoldGunIK</div>
-                <div class="class-description">총기 잡기 IK 애니메이션</div>
-                <div class="class-methods">
-                    <div class="method">OnAnimatorIK() - IK 가중치 설정</div>
+<span class="comment">// 드래그 선택 임시 저장</span>
+<span class="keyword">HashSet</span>&lt;<span class="abstract-class">AbstractUnit</span>&gt; <span class="keyword">addedUnits</span> = <span class="keyword">new</span>(24);
                 </div>
             </div>
         </div>
 
-        <!-- 상호작용 플로우 -->
         <div class="section">
-            <h2>🔄 상호작용 플로우</h2>
-            
-            <h3>유닛 선택 플로우</h3>
+            <h2>🔄 Event Flow Diagram</h2>
+
             <div class="flow-diagram">
-                <div class="flow-step">1. 플레이어 마우스 클릭</div>
-                <div class="flow-arrow">↓</div>
-                <div class="flow-step">2. PlayerInput.HandleLeftClick()</div>
-                <div class="flow-arrow">↓</div>
-                <div class="flow-step">3. Physics.Raycast() - 충돌 검사</div>
-                <div class="flow-arrow">↓</div>
-                <div class="flow-step">4. Worker.Select() 호출</div>
-                <div class="flow-arrow">↓</div>
-                <div class="flow-step">5. Bus&lt;UnitSelectedEvent&gt;.Raise()</div>
-                <div class="flow-arrow">↓</div>
-                <div class="flow-step">6. PlayerInput.HandleUnitSelected()</div>
-                <div class="flow-arrow">↓</div>
-                <div class="flow-step">7. selectedUnit 업데이트</div>
+                <div class="flow-step">
+                    <h4>🎯 유닛 스폰</h4>
+                    <p>AbstractUnit.Start()</p>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <h4>📢 이벤트 발행</h4>
+                    <p>UnitSpawnEvent</p>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <h4>📥 이벤트 수신</h4>
+                    <p>PlayerInput.HandleUnitSpawn()</p>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <h4>📝 aliveUnits 추가</h4>
+                    <p>선택 가능한 유닛 목록 업데이트</p>
+                </div>
             </div>
 
-            <h3>유닛 이동 플로우</h3>
             <div class="flow-diagram">
-                <div class="flow-step">1. 플레이어 우클릭</div>
-                <div class="flow-arrow">↓</div>
-                <div class="flow-step">2. PlayerInput.HandleRightClick()</div>
-                <div class="flow-arrow">↓</div>
-                <div class="flow-step">3. Physics.Raycast() - 바닥 검사</div>
-                <div class="flow-arrow">↓</div>
-                <div class="flow-step">4. moveable.MoveTo(hit.point)</div>
-                <div class="flow-arrow">↓</div>
-                <div class="flow-step">5. NavMeshAgent.SetDestination()</div>
+                <div class="flow-step">
+                    <h4>🖱️ 마우스 클릭</h4>
+                    <p>PlayerInput.HandleLeftClick()</p>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <h4>🎯 레이캐스트</h4>
+                    <p>Physics.Raycast()</p>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <h4>✅ 유닛 선택</h4>
+                    <p>ISelectable.Select()</p>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <h4>📢 선택 이벤트</h4>
+                    <p>UnitSelectedEvent</p>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <h4>📝 선택 목록 업데이트</h4>
+                    <p>selectedUnits.Add()</p>
+                </div>
             </div>
         </div>
 
-        <!-- 코드 예시 -->
         <div class="section">
-            <h2>💻 핵심 코드 예시</h2>
-            
-            <h3>Event Bus 시스템</h3>
-            <div class="code-block"><span class="keyword">namespace</span> GameDevTV.RTS.EventBus
-<span class="keyword">{</span>
-    <span class="keyword">public static class</span> <span class="class-name">Bus</span>&lt;T&gt; <span class="keyword">where</span> T : IEvent
-    <span class="keyword">{</span>
-        <span class="keyword">public delegate void</span> <span class="method-name">Event</span>(T args);
-        <span class="keyword">public static event</span> Event OnEvent;
+            <h2>🤖 Unit System Deep Dive</h2>
 
-        <span class="keyword">public static void</span> <span class="method-name">Raise</span>(T evt)
-        <span class="keyword">{</span>
-            OnEvent?.Invoke(evt);
-        <span class="keyword">}</span>
-    <span class="keyword">}</span>
-<span class="keyword">}</span></div>
+            <div class="package-box">
+                <div class="package-title">🏗️ AbstractUnit - 모든 유닛의 기반</div>
+                
+                <div class="code-block">
+<span class="keyword">public abstract class</span> <span class="abstract-class">AbstractUnit</span> : <span class="keyword">MonoBehaviour</span>, <span class="interface-name">ISelectable</span>, <span class="interface-name">IMoveable</span>
+{
+    [<span class="keyword">RequireComponent</span>(<span class="keyword">typeof</span>(NavMeshAgent))]
+    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> DecalProjector decalProjector;
+    <span class="keyword">private</span> NavMeshAgent agent;
 
-            <h3>유닛 선택 이벤트 발행</h3>
-            <div class="code-block"><span class="keyword">public void</span> <span class="method-name">Select</span>()
-<span class="keyword">{</span>
-    <span class="comment">// 시각적 피드백</span>
-    <span class="keyword">if</span> (decalProjector != <span class="keyword">null</span>)
-    <span class="keyword">{</span>
-        decalProjector.gameObject.SetActive(<span class="keyword">true</span>);
-    <span class="keyword">}</span>
+    <span class="comment">// 공통 기능</span>
+    <span class="keyword">public void</span> <span class="method-name">Select</span>() { <span class="comment">/* 선택 시각화 + 이벤트 발행 */</span> }
+    <span class="keyword">public void</span> <span class="method-name">Deselect</span>() { <span class="comment">/* 선택 해제 + 이벤트 발행 */</span> }
+    <span class="keyword">public void</span> <span class="method-name">MoveTo</span>(Vector3 position) { <span class="comment">/* NavMeshAgent 이동 */</span> }
+    <span class="keyword">private void</span> <span class="method-name">Start</span>() { <span class="comment">/* 스폰 이벤트 발행 */</span> }
+}
+                </div>
 
-    <span class="comment">// 이벤트 발행</span>
-    Bus&lt;UnitSelectedEvent&gt;.Raise(<span class="keyword">new</span> UnitSelectedEvent(<span class="keyword">this</span>));
-<span class="keyword">}</span></div>
-
-            <h3>이벤트 구독 및 처리</h3>
-            <div class="code-block"><span class="keyword">private void</span> <span class="method-name">Awake</span>()
-<span class="keyword">{</span>
-    <span class="comment">// 이벤트 구독</span>
-    Bus&lt;UnitSelectedEvent&gt;.OnEvent += HandleUnitSelected;
-<span class="keyword">}</span>
-
-<span class="keyword">private void</span> <span class="method-name">HandleUnitSelected</span>(UnitSelectedEvent evt)
-<span class="keyword">{</span>
-    <span class="comment">// 기존 선택 해제</span>
-    <span class="keyword">if</span> (selectedUnit != <span class="keyword">null</span>)
-    <span class="keyword">{</span>
-        selectedUnit.Deselect();
-    <span class="keyword">}</span>
-
-    <span class="comment">// 새 유닛 선택</span>
-    selectedUnit = evt.Unit;
-<span class="keyword">}</span></div>
-        </div>
-
-        <!-- 관계 다이어그램 -->
-        <div class="section">
-            <h2>🔗 클래스 간 관계 다이어그램</h2>
-
-            <div class="info">
-                <strong>PlantUML 다이어그램:</strong> 아래 코드를 <a href="https://www.plantuml.com/plantuml/uml/" target="_blank">PlantUML Online Editor</a>에 붙여넣어 시각화할 수 있습니다.
+                <div class="info-box">
+                    <strong>💡 왜 AbstractUnit이 필요한가?</strong><br>
+                    • 모든 유닛이 공통으로 가져야 할 기능을 한 곳에서 관리<br>
+                    • NavMeshAgent, DecalProjector 등 공통 컴포넌트 설정<br>
+                    • 이벤트 발행 로직의 일관성 보장<br>
+                    • 새로운 유닛 타입 추가 시 개발 시간 단축
+                </div>
             </div>
 
-            <div class="code-block" style="background: #f8f9fa; color: #333; border: 2px solid #e9ecef;">@startuml URTS_Architecture
-
-' Event Bus System
-package "EventBus" {
-    interface IEvent
-    class "Bus&lt;T&gt;" as Bus {
-        +{static} OnEvent : event
-        +{static} Raise(T evt)
-    }
+            <div class="package-box">
+                <div class="package-title">👷 Worker - 기본 작업자</div>
+                
+                <div class="code-block">
+<span class="keyword">public class</span> <span class="class-name">Worker</span> : <span class="abstract-class">AbstractUnit</span>
+{
+    <span class="comment">// AbstractUnit의 모든 기능을 상속받음</span>
+    <span class="comment">// 추가적인 작업자 특화 기능을 여기에 구현</span>
 }
+                </div>
 
-package "Events" {
-    class UnitSelectedEvent {
-        +Unit : ISelectable
-        +UnitSelectedEvent(ISelectable)
-    }
-
-    class UnitDeselectedEvent {
-        +Unit : ISelectable
-        +UnitDeselectedEvent(ISelectable)
-    }
-
-    class UnitSpawnEvent {
-        +Unit : AbstractUnit
-        +UnitSpawnEvent(AbstractUnit)
-    }
-}
-
-' Interfaces
-package "Units" {
-    interface ISelectable {
-        +Select()
-        +Deselect()
-    }
-
-    interface IMoveable {
-        +MoveTo(Vector3)
-    }
-
-    abstract class AbstractUnit {
-        -agent : NavMeshAgent
-        -decalProjector : DecalProjector
-        +Select()
-        +Deselect()
-        +MoveTo(Vector3)
-    }
-
-    class Worker {
-        +Select()
-        +Deselect()
-        +MoveTo(Vector3)
-    }
-
-    class WorkerThreeRobot {
-        -headPart : GameObject
-        -bodyPart : GameObject
-        -legsPart : GameObject
-        +RotateParts(Vector3)
-        +SetRobotPart(RobotPartType, GameObject)
-        +Select()
-        +Deselect()
-        +MoveTo(Vector3)
-    }
-
-    class RobotPart {
-        -rotationSpeed : float
-        +RotateTowards(Vector3)
-        +SetRotationSpeed(float)
-    }
-}
-
-package "Player" {
-    class PlayerInput {
-        -selectedUnit : ISelectable
-        -cameraConfig : CameraConfig
-        +HandleLeftClick()
-        +HandleRightClick()
-        +HandlePanning()
-        +HandleZooming()
-        -HandleUnitSelected(UnitSelectedEvent)
-    }
-
-    class CameraConfig {
-        +PanSpeed : float
-        +ZoomSpeed : float
-        +RotationSpeed : float
-    }
-}
-
-' Relationships
-UnitSelectedEvent ..|> IEvent
-UnitDeselectedEvent ..|> IEvent
-UnitSpawnEvent ..|> IEvent
-AbstractUnit ..|> ISelectable
-AbstractUnit ..|> IMoveable
-Worker --|> AbstractUnit : extends
-WorkerThreeRobot --|> AbstractUnit : extends
-WorkerThreeRobot *-- RobotPart : contains 3
-
-PlayerInput --> ISelectable : uses
-PlayerInput --> IMoveable : uses
-PlayerInput --> CameraConfig : uses
-PlayerInput ..> Bus : subscribes (Selected/Deselected/Spawn)
-AbstractUnit ..> Bus : publishes (Selected/Deselected/Spawn)
-Worker ..> Bus : publishes (Selected)
-WorkerThreeRobot ..> Bus : publishes (Selected)
-
-note right of Bus
-  Generic Event Bus
-  Decouples components
-end note
-
-note right of PlayerInput
-  Handles all player input
-  and camera control
-end note
-
-@enduml</div>
-
-            <h3>📊 관계 테이블</h3>
-            <table class="relationship-table">
-                <thead>
-                    <tr>
-                        <th>클래스</th>
-                        <th>의존성</th>
-                        <th>관계 유형</th>
-                        <th>설명</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>PlayerInput</td>
-                        <td>ISelectable, IMoveable</td>
-                        <td>인터페이스 의존</td>
-                        <td>유닛 선택 및 이동 명령</td>
-                    </tr>
-                    <tr>
-                        <td>PlayerInput</td>
-                        <td>CameraConfig</td>
-                        <td>구성 의존</td>
-                        <td>카메라 설정 데이터</td>
-                    </tr>
-                    <tr>
-                        <td>Worker</td>
-                        <td>ISelectable, IMoveable</td>
-                        <td>인터페이스 구현</td>
-                        <td>선택 및 이동 기능</td>
-                    </tr>
-                    <tr>
-                        <td>WorkerThreeRobot</td>
-                        <td>RobotPart</td>
-                        <td>컴포지션</td>
-                        <td>3개 파츠로 구성</td>
-                    </tr>
-                    <tr>
-                        <td>WorkerThreeRobot</td>
-                        <td>Bus&lt;UnitSelectedEvent&gt;</td>
-                        <td>이벤트 발행</td>
-                        <td>선택 이벤트 발행</td>
-                    </tr>
-                    <tr>
-                        <td>PlayerInput</td>
-                        <td>Bus&lt;UnitSelectedEvent&gt;</td>
-                        <td>이벤트 구독</td>
-                        <td>선택 이벤트 수신</td>
-                    </tr>
-                    <tr>
-                        <td>PlayerInput</td>
-                        <td>Bus&lt;UnitDeselectedEvent&gt;</td>
-                        <td>이벤트 구독</td>
-                        <td>선택 해제 이벤트 수신</td>
-                    </tr>
-                    <tr>
-                        <td>UnitSelectedEvent</td>
-                        <td>IEvent</td>
-                        <td>인터페이스 구현</td>
-                        <td>이벤트 타입 제약 조건</td>
-                    </tr>
-                    <tr>
-                        <td>UnitDeselectedEvent</td>
-                        <td>IEvent</td>
-                        <td>인터페이스 구현</td>
-                        <td>이벤트 타입 제약 조건</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- 설계 원칙 -->
-        <div class="section">
-            <h2>🎯 설계 원칙</h2>
-            
-            <h3>1. 느슨한 결합 (Loose Coupling)</h3>
-            <p>Event Bus 패턴을 통해 컴포넌트 간 직접 참조를 최소화하고, 이벤트를 통한 통신으로 유연성을 확보했습니다.</p>
-
-            <h3>2. 단일 책임 원칙 (SRP)</h3>
-            <p>각 클래스는 명확한 단일 책임을 가집니다:</p>
-            <ul>
-                <li><strong>PlayerInput:</strong> 입력 처리 및 카메라 제어</li>
-                <li><strong>Worker:</strong> 기본 유닛 동작</li>
-                <li><strong>WorkerThreeRobot:</strong> 복합 로봇 동작</li>
-                <li><strong>RobotPart:</strong> 개별 파츠 회전</li>
-            </ul>
-
-            <h3>3. 인터페이스 분리 원칙 (ISP)</h3>
-            <p>ISelectable과 IMoveable 인터페이스로 기능을 분리하여 필요한 기능만 구현할 수 있도록 했습니다.</p>
-
-            <h3>4. 개방-폐쇄 원칙 (OCP)</h3>
-            <p>새로운 유닛 타입을 추가할 때 기존 코드 수정 없이 인터페이스만 구현하면 됩니다.</p>
-        </div>
-
-        <!-- 주의사항 -->
-        <div class="section">
-            <h2>⚠️ 주의사항 및 개선점</h2>
-            
-            <div class="warning">
-                <strong>메모리 누수 방지:</strong> OnDestroy()에서 이벤트 구독을 해제해야 합니다.
+                <div class="info-box">
+                    <strong>💡 Worker의 역할</strong><br>
+                    • AbstractUnit의 기본 기능을 그대로 사용<br>
+                    • 향후 작업자 특화 기능 추가 가능<br>
+                    • 간단하고 확장 가능한 구조
+                </div>
             </div>
 
-            <div class="warning">
-                <strong>레이어 충돌 매트릭스:</strong> World Bounds와 Floor 레이어 충돌을 비활성화해야 정상 작동합니다.
+            <div class="package-box">
+                <div class="package-title">🤖 WorkerThreeRobot - 고급 로봇</div>
+                
+                <div class="code-block">
+<span class="keyword">public class</span> <span class="class-name">WorkerThreeRobot</span> : <span class="abstract-class">AbstractUnit</span>
+{
+    <span class="comment">// 로봇 부품들</span>
+    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> GameObject headPart;
+    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> GameObject bodyPart;
+    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> GameObject legsPart;
+
+    <span class="comment">// 각 부품별 회전 속도</span>
+    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> <span class="keyword">float</span> headRotationSpeed = 180f;
+    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> <span class="keyword">float</span> bodyRotationSpeed = 90f;
+    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> <span class="keyword">float</span> legsRotationSpeed = 45f;
+
+    <span class="comment">// Nova 1492 스타일 독립 회전</span>
+    <span class="keyword">private void</span> <span class="method-name">RotateParts</span>(Vector3 direction)
+    {
+        headPartScript?.<span class="method-name">RotateTowards</span>(direction);
+        bodyPartScript?.<span class="method-name">RotateTowards</span>(direction);
+        legsPartScript?.<span class="method-name">RotateTowards</span>(direction);
+    }
+}
+                </div>
+
+                <div class="info-box">
+                    <strong>💡 WorkerThreeRobot의 특별한 점</strong><br>
+                    • AbstractUnit의 기본 기능 + 로봇 특화 기능<br>
+                    • 각 부품이 독립적으로 회전 (Nova 1492 스타일)<br>
+                    • 런타임에 부품 교체 가능<br>
+                    • 성능 최적화된 회전 시스템
+                </div>
             </div>
 
-            <div class="info">
-                <strong>확장 가능성:</strong>
+            <div class="package-box">
+                <div class="package-title">⚙️ RobotPart - 부품 회전 시스템</div>
+                
+                <div class="code-block">
+<span class="keyword">public class</span> <span class="class-name">RobotPart</span> : <span class="keyword">MonoBehaviour</span>
+{
+    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> RobotPartType partType;
+    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> <span class="keyword">float</span> rotationSpeed = 5f;
+
+    <span class="comment">// 부품별 독립 회전</span>
+    <span class="keyword">public void</span> <span class="method-name">RotateTowards</span>(Vector3 targetDirection)
+    {
+        <span class="keyword">var</span> targetRotation = Quaternion.<span class="method-name">LookRotation</span>(targetDirection);
+        cachedTransform.rotation = Quaternion.<span class="method-name">RotateTowards</span>(
+            cachedTransform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+    }
+}
+                </div>
+
+                <div class="info-box">
+                    <strong>💡 RobotPart의 역할</strong><br>
+                    • 각 로봇 부품의 독립적인 회전 처리<br>
+                    • 부품별 다른 회전 속도 지원<br>
+                    • 성능 최적화된 Transform 캐싱<br>
+                    • 확장 가능한 부품 타입 시스템
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎮 Player Input System</h2>
+
+            <div class="package-box">
+                <div class="package-title">🖱️ 다중 유닛 선택 시스템</div>
+                
+                <div class="code-block">
+<span class="comment">// 드래그 선택 처리</span>
+<span class="keyword">private void</span> <span class="method-name">HandleDragSelect</span>()
+{
+    <span class="keyword">if</span> (selectionBox == <span class="keyword">null</span>) { <span class="keyword">return</span>; }
+
+    <span class="keyword">if</span> (Mouse.current.leftButton.wasPressedThisFrame)
+        <span class="method-name">HandleMouseDown</span>();
+    <span class="keyword">else if</span> (Mouse.current.leftButton.isPressed)
+        <span class="method-name">HandleMouseDrag</span>();
+    <span class="keyword">else if</span> (Mouse.current.leftButton.wasReleasedThisFrame)
+        <span class="method-name">HandleMouseUp</span>();
+}
+
+<span class="comment">// Shift 키를 통한 추가 선택</span>
+<span class="keyword">private void</span> <span class="method-name">HandleMouseUp</span>()
+{
+    <span class="keyword">if</span> (!Keyboard.current.shiftKey.isPressed)
+        <span class="method-name">DeselectAllUnits</span>();
+
+    <span class="method-name">HandleLeftClick</span>();  <span class="comment">// 단일 클릭 선택</span>
+    <span class="keyword">foreach</span> (<span class="abstract-class">AbstractUnit</span> unit <span class="keyword">in</span> addedUnits)
+        unit.<span class="method-name">Select</span>();  <span class="comment">// 드래그 선택된 유닛들 추가</span>
+    selectionBox.gameObject.SetActive(<span class="keyword">false</span>);
+}
+
+<span class="comment">// 드래그 중 유닛 감지</span>
+<span class="keyword">private void</span> <span class="method-name">HandleMouseDrag</span>()
+{
+    Bounds selectionBoxBounds = <span class="method-name">ResizeSelectionBox</span>();
+    <span class="keyword">foreach</span> (<span class="abstract-class">AbstractUnit</span> unit <span class="keyword">in</span> aliveUnits)
+    {
+        Vector2 unitPosition = camera.<span class="method-name">WorldToScreenPoint</span>(unit.transform.position);
+        <span class="keyword">if</span> (selectionBoxBounds.<span class="method-name">Contains</span>(unitPosition))
+            addedUnits.<span class="method-name">Add</span>(unit);
+    }
+}
+                </div>
+
+                <div class="info-box">
+                    <strong>💡 다중 선택 시스템의 핵심</strong><br>
+                    • 드래그 선택과 단일 클릭 선택의 통합<br>
+                    • Shift 키를 통한 추가 선택 지원<br>
+                    • HashSet을 활용한 효율적인 유닛 관리<br>
+                    • UI 선택 박스와의 연동<br>
+                    • <strong>성능 최적화</strong>: ToArray()로 컬렉션 수정 중 반복 방지
+                </div>
+            </div>
+
+            <div class="package-box">
+                <div class="package-title">📷 카메라 제어 시스템</div>
+                
+                <div class="code-block">
+<span class="comment">// Cinemachine 기반 카메라 제어</span>
+<span class="keyword">private void</span> <span class="method-name">HandlePanning</span>() 
+{
+    Vector2 moveAmount = <span class="method-name">GetKeyboardMoveAmount</span>();
+    moveAmount += <span class="method-name">GetMouseMoveAmount</span>();
+    cameraTarget.linearVelocity = <span class="keyword">new</span> Vector3(moveAmount.x, 0, moveAmount.y);
+}
+
+<span class="keyword">private void</span> <span class="method-name">HandleZooming</span>() 
+{
+    <span class="keyword">if</span> (<span class="method-name">ShouldSetZoomStartTime</span>())
+        zoomStartTime = Time.time;
+    
+    <span class="keyword">float</span> zoomTime = Mathf.<span class="method-name">Clamp01</span>((Time.time - zoomStartTime) * cameraConfig.ZoomSpeed);
+    <span class="comment">// End 키로 줌 인/아웃</span>
+}
+
+<span class="keyword">private void</span> <span class="method-name">HandleRotation</span>() 
+{
+    <span class="comment">/* 우클릭 드래그로 카메라 회전 */</span>
+}
+                </div>
+
+                <div class="info-box">
+                    <strong>💡 카메라 시스템의 특징</strong><br>
+                    • Cinemachine을 활용한 부드러운 카메라 움직임<br>
+                    • RTS 게임에 최적화된 컨트롤 (키보드 + 마우스)<br>
+                    • 성능 최적화된 입력 처리<br>
+                    • <strong>End 키 줌 기능</strong>: 빠른 줌 인/아웃 지원
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Data Structures & Performance</h2>
+
+            <div class="package-box">
+                <div class="package-title">⚡ 성능 최적화된 컬렉션 사용</div>
+                
+                <div class="code-block">
+<span class="comment">// 선택된 유닛 관리 - 순서 중요 (UI 표시 순서)</span>
+<span class="keyword">List</span>&lt;<span class="interface-name">ISelectable</span>&gt; <span class="keyword">selectedUnits</span> = <span class="keyword">new</span>(12);
+
+<span class="comment">// 살아있는 유닛 추적 - 중복 없음, 순서 무관, 빠른 검색</span>
+<span class="keyword">HashSet</span>&lt;<span class="abstract-class">AbstractUnit</span>&gt; <span class="keyword">aliveUnits</span> = <span class="keyword">new</span>(100);
+
+<span class="comment">// 드래그 선택 임시 저장 - 중복 없음, 순서 무관</span>
+<span class="keyword">HashSet</span>&lt;<span class="abstract-class">AbstractUnit</span>&gt; <span class="keyword">addedUnits</span> = <span class="keyword">new</span>(24);
+
+<span class="comment">// 성능 최적화: 컬렉션 수정 중 반복 방지</span>
+<span class="keyword">private void</span> <span class="method-name">DeselectAllUnits</span>()
+{
+    <span class="interface-name">ISelectable</span>[] currentlySelectedUnits = selectedUnits.<span class="method-name">ToArray</span>();
+    <span class="keyword">foreach</span>(<span class="interface-name">ISelectable</span> selectable <span class="keyword">in</span> currentlySelectedUnits)
+        selectable.<span class="method-name">Deselect</span>();
+}
+                </div>
+
+                <div class="info-box">
+                    <strong>💡 컬렉션 선택 기준</strong><br>
+                    • <strong>List</strong>: 순서가 중요한 선택된 유닛들 (UI 표시 순서)<br>
+                    • <strong>HashSet</strong>: 중복 제거가 중요한 aliveUnits, addedUnits<br>
+                    • <strong>초기 용량 설정</strong>: 런타임 리사이징 방지로 성능 향상<br>
+                    • <strong>ToArray() 패턴</strong>: 컬렉션 수정 중 반복 시 안전성 확보
+                </div>
+            </div>
+
+            <div class="package-box">
+                <div class="package-title">🔄 이벤트 기반 아키텍처</div>
+                
+                <div class="code-block">
+<span class="comment">// 이벤트 발행자 (AbstractUnit)</span>
+<span class="keyword">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.<span class="method-name">Raise</span>(<span class="keyword">new</span> <span class="class-name">UnitSelectedEvent</span>(<span class="keyword">this</span>));
+
+<span class="comment">// 이벤트 구독자 (PlayerInput)</span>
+<span class="keyword">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.<span class="keyword">OnEvent</span> += <span class="method-name">HandleUnitSelected</span>;
+
+<span class="comment">// 이벤트 처리</span>
+<span class="keyword">private void</span> <span class="method-name">HandleUnitSelected</span>(<span class="class-name">UnitSelectedEvent</span> evt) 
+    => selectedUnits.<span class="method-name">Add</span>(evt.Unit);
+                </div>
+
+                <div class="info-box">
+                    <strong>💡 이벤트 시스템의 장점</strong><br>
+                    • <strong>느슨한 결합</strong>: 컴포넌트 간 직접 참조 없음<br>
+                    • <strong>확장성</strong>: 새로운 이벤트 리스너 쉽게 추가<br>
+                    • <strong>유지보수성</strong>: 이벤트 발행/구독 로직 분리<br>
+                    • <strong>테스트 용이성</strong>: 각 컴포넌트 독립 테스트 가능
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Key Design Patterns</h2>
+
+            <div class="package-box">
+                <div class="package-title">🏗️ Template Method Pattern</div>
+                <p><strong>AbstractUnit</strong>에서 공통 기능을 정의하고, 하위 클래스에서 특화 기능을 구현</p>
+                
+                <div class="code-block">
+<span class="abstract-class">AbstractUnit</span>
+├── <span class="method-name">Select()</span>        <span class="comment">// 공통 구현 (이벤트 발행)</span>
+├── <span class="method-name">Deselect()</span>      <span class="comment">// 공통 구현 (이벤트 발행)</span>
+├── <span class="method-name">MoveTo()</span>        <span class="comment">// 공통 구현 (NavMeshAgent)</span>
+├── <span class="method-name">Start()</span>         <span class="comment">// 공통 구현 (스폰 이벤트)</span>
+└── <span class="method-name">Awake()</span>         <span class="comment">// 하위 클래스에서 오버라이드 가능</span>
+
+<span class="class-name">WorkerThreeRobot</span> : <span class="abstract-class">AbstractUnit</span>
+└── <span class="method-name">Awake()</span>         <span class="comment">// 로봇 특화 초기화 (부품 설정)</span>
+                </div>
+            </div>
+
+            <div class="package-box">
+                <div class="package-title">🎭 Strategy Pattern</div>
+                <p><strong>ISelectable, IMoveable</strong> 인터페이스를 통한 다양한 유닛 타입 지원</p>
+                
+                <div class="code-block">
+<span class="interface-name">ISelectable</span>
+├── <span class="method-name">Select()</span>
+└── <span class="method-name">Deselect()</span>
+
+<span class="interface-name">IMoveable</span>
+└── <span class="method-name">MoveTo(Vector3)</span>
+
+<span class="comment">// 모든 유닛이 이 인터페이스들을 구현</span>
+<span class="abstract-class">AbstractUnit</span> : <span class="interface-name">ISelectable</span>, <span class="interface-name">IMoveable</span>
+
+<span class="comment">// 다형성을 통한 유닛 처리</span>
+<span class="keyword">foreach</span>(<span class="interface-name">ISelectable</span> selectable <span class="keyword">in</span> selectedUnits)
+{
+    <span class="keyword">if</span> (selectable <span class="keyword">is</span> <span class="interface-name">IMoveable</span> moveable)
+        moveable.<span class="method-name">MoveTo</span>(hit.point);
+}
+                </div>
+            </div>
+
+            <div class="package-box">
+                <div class="package-title">📢 Observer Pattern</div>
+                <p><strong>Event Bus</strong>를 통한 이벤트 기반 통신</p>
+                
+                <div class="code-block">
+<span class="comment">// Subject (이벤트 발행자)</span>
+<span class="abstract-class">AbstractUnit</span> → <span class="class-name">UnitSelectedEvent</span>
+
+<span class="comment">// Observer (이벤트 구독자)</span>
+<span class="class-name">PlayerInput</span> ← <span class="class-name">UnitSelectedEvent</span>
+
+<span class="comment">// 중재자</span>
+<span class="class-name">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;
+
+<span class="comment">// 느슨한 결합 달성</span>
+<span class="keyword">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.<span class="keyword">OnEvent</span> += <span class="method-name">HandleUnitSelected</span>;
+<span class="keyword">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.<span class="method-name">Raise</span>(<span class="keyword">new</span> <span class="class-name">UnitSelectedEvent</span>(<span class="keyword">this</span>));
+                </div>
+            </div>
+
+            <div class="package-box">
+                <div class="package-title">🎨 Component Pattern</div>
+                <p><strong>RobotPart</strong>를 통한 모듈화된 로봇 부품 시스템</p>
+                
+                <div class="code-block">
+<span class="comment">// 각 부품이 독립적인 컴포넌트</span>
+<span class="class-name">RobotPart</span> (Head, Body, Legs)
+├── <span class="method-name">RotateTowards()</span>   <span class="comment">// 독립 회전</span>
+├── <span class="method-name">SetRotationSpeed()</span> <span class="comment">// 개별 속도 설정</span>
+└── <span class="method-name">GetPartType()</span>     <span class="comment">// 부품 타입 식별</span>
+
+<span class="comment">// 조합을 통한 복잡한 객체 생성</span>
+<span class="class-name">WorkerThreeRobot</span>
+├── HeadPart + <span class="class-name">RobotPart</span>
+├── BodyPart + <span class="class-name">RobotPart</span>
+└── LegsPart + <span class="class-name">RobotPart</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🚀 Future Extensibility</h2>
+
+            <div class="success">
+                <h3>✅ 확장 가능한 구조</h3>
                 <ul>
-                    <li>새로운 이벤트 타입 추가 (UnitMovedEvent, UnitAttackedEvent 등)</li>
-                    <li>다양한 로봇 파츠 타입 지원</li>
-                    <li>AI 시스템과의 통합</li>
+                    <li><strong>새로운 유닛 타입</strong>: AbstractUnit을 상속받아 쉽게 추가</li>
+                    <li><strong>새로운 이벤트</strong>: IEvent를 구현하여 이벤트 시스템 확장</li>
+                    <li><strong>새로운 입력 방식</strong>: PlayerInput에 새로운 핸들러 추가</li>
+                    <li><strong>새로운 로봇 부품</strong>: RobotPart 시스템 확장</li>
+                </ul>
+            </div>
+
+            <div class="warning">
+                <h3>⚠️ 주의사항</h3>
+                <ul>
+                    <li><strong>이벤트 구독 해제</strong>: OnDestroy에서 반드시 이벤트 구독 해제</li>
+                    <li><strong>컬렉션 수정</strong>: 반복 중 컬렉션 수정 시 ToArray() 사용</li>
+                    <li><strong>성능 고려</strong>: HashSet vs List 선택 시 용도에 맞게 사용</li>
                 </ul>
             </div>
         </div>
 
-        <!-- 결론 -->
+        <!-- 강의 19: Unit Dancing 문제 해결 -->
         <div class="section">
-            <h2>🎉 결론</h2>
-            <p>이 URTS 프로젝트는 <span class="highlight">Event Bus 패턴</span>을 중심으로 한 잘 설계된 아키텍처를 보여줍니다. 
-            모듈화된 구조와 명확한 책임 분리로 유지보수성과 확장성을 확보했으며, 
-            특히 <span class="highlight">Nova 1492 스타일의 로봇 파츠 시스템</span>은 독창적인 구현입니다.</p>
+            <h2>🎯 강의 19: Unit Dancing 문제 해결 (수학적 접근)</h2>
             
-            <p>이 문서를 통해 새로운 개발자도 프로젝트의 전체적인 구조와 각 컴포넌트의 역할을 쉽게 이해할 수 있을 것입니다.</p>
+            <div class="subsection">
+                <h3>🤔 Unit Dancing 문제</h3>
+                <div class="code-block">
+<span class="comment">// 문제 상황</span>
+<span class="comment">// 여러 유닛이 같은 목표 지점에 도달하려고 할 때</span>
+<span class="comment">// 유닛들이 서로 밀고 당기며 "춤추는" 현상 발생</span>
+<span class="comment">// NavMesh Avoidance 시스템의 한계로 인한 문제</span>
+
+<span class="comment">// 기존 문제가 있던 코드</span>
+<span class="keyword">foreach</span>(ISelectable selectable <span class="keyword">in</span> selectedUnits)
+{
+    <span class="keyword">if</span> (selectable <span class="keyword">is</span> IMoveable moveable)
+    {
+        moveable.MoveTo(hit.point); <span class="comment">// 모든 유닛이 같은 지점으로!</span>
+    }
+}
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>💡 해결 방법: 원형 배치 알고리즘</h3>
+                
+                <h4>1. AgentRadius 프로퍼티 추가</h4>
+                <div class="code-block">
+<span class="comment">// AbstractUnit.cs</span>
+<span class="keyword">public float</span> AgentRadius => agent.radius;
+
+<span class="comment">// 왜 필요한가?</span>
+<span class="comment">// - 원형 배치 알고리즘에서 각 유닛의 크기를 알아야 함</span>
+<span class="comment">// - 유닛 간 충돌 방지를 위한 최소 거리 계산</span>
+<span class="comment">// - 동적 원의 반지름 계산에 필수</span>
+                </div>
+
+                <h4>2. 수학적 접근: Unit Circle 활용</h4>
+                <div class="code-block">
+<span class="comment">// Unit Circle의 핵심</span>
+<span class="comment">// cos(θ): X 좌표 계산</span>
+<span class="comment">// sin(θ): Y 좌표 계산 (Unity에서는 Z)</span>
+<span class="comment">// 360° = 2π radians</span>
+
+<span class="comment">// 원형 배치 알고리즘</span>
+<span class="keyword">private void</span> MoveUnitsInFormation(Vector3 targetPoint)
+{
+    <span class="comment">// 선택된 유닛들 중 AbstractUnit만 필터링</span>
+    List&lt;AbstractUnit&gt; abstractUnits = <span class="keyword">new</span> List&lt;AbstractUnit&gt;(selectedUnits.Count);
+    <span class="keyword">foreach</span> (ISelectable selectable <span class="keyword">in</span> selectedUnits)
+    {
+        <span class="keyword">if</span> (selectable <span class="keyword">is</span> AbstractUnit unit)
+            abstractUnits.Add(unit);
+    }
+
+    <span class="comment">// 원형 배치 알고리즘 변수들</span>
+    <span class="keyword">int</span> layer = 0;                    <span class="comment">// 현재 레이어 (원의 반지름)</span>
+    <span class="keyword">int</span> unitsOnLayer = 0;           <span class="comment">// 현재 레이어의 유닛 수</span>
+    <span class="keyword">int</span> maxUnitsOnLayer = 1;        <span class="comment">// 현재 레이어에 배치할 수 있는 최대 유닛 수</span>
+    <span class="keyword">float</span> circleRadius = 0f;       <span class="comment">// 현재 원의 반지름</span>
+    <span class="keyword">float</span> radialOffset = 0f;       <span class="comment">// 각 유닛 간의 각도 차이</span>
+
+    <span class="keyword">foreach</span> (AbstractUnit unit <span class="keyword">in</span> abstractUnits)
+    {
+        <span class="comment">// 목표 위치 계산 (삼각함수 활용)</span>
+        Vector3 targetPosition = <span class="keyword">new</span> Vector3(
+            targetPoint.x + circleRadius * Mathf.Cos(radialOffset * unitsOnLayer),
+            targetPoint.y,
+            targetPoint.z + circleRadius * Mathf.Sin(radialOffset * unitsOnLayer)
+        );
+
+        unit.MoveTo(targetPosition);
+        unitsOnLayer++;
+
+        <span class="comment">// 현재 레이어가 가득 찼는지 확인</span>
+        <span class="keyword">if</span> (unitsOnLayer >= maxUnitsOnLayer)
+        {
+            <span class="comment">// 다음 레이어로 이동</span>
+            unitsOnLayer = 0;
+            layer++;
+            
+            <span class="comment">// 새로운 원의 반지름 계산 (에이전트 반지름의 3.5배씩 증가)</span>
+            circleRadius += unit.AgentRadius * 3.5f;
+            
+            <span class="comment">// 새로운 레이어에 배치할 수 있는 최대 유닛 수 계산</span>
+            <span class="comment">// 원의 둘레 = 2πr, 유닛 직경 = 2 * AgentRadius</span>
+            <span class="keyword">float</span> circumference = 2f * Mathf.PI * circleRadius;
+            maxUnitsOnLayer = Mathf.FloorToInt(circumference / (unit.AgentRadius * 2f));
+            
+            <span class="comment">// 각 유닛 간의 각도 차이 계산</span>
+            radialOffset = 2f * Mathf.PI / maxUnitsOnLayer;
+        }
+    }
+}
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🧮 수학 공식</h3>
+                
+                <h4>원의 둘레 계산</h4>
+                <div class="code-block">
+<span class="comment">// 공식: C = 2πr</span>
+<span class="comment">// C: 원의 둘레 (Circumference)</span>
+<span class="comment">// r: 원의 반지름 (Radius)</span>
+<span class="comment">// π: 파이 (3.14159...)</span>
+
+<span class="keyword">float</span> circumference = 2f * Mathf.PI * circleRadius;
+                </div>
+
+                <h4>최대 유닛 수 계산</h4>
+                <div class="code-block">
+<span class="comment">// 공식: maxUnits = floor(둘레 / 유닛직경)</span>
+<span class="comment">// 둘레 = 2π × circleRadius</span>
+<span class="comment">// 유닛직경 = 2 × AgentRadius</span>
+<span class="comment">// floor(): 소수점 버림 (정수로 변환)</span>
+
+<span class="keyword">int</span> maxUnitsOnLayer = Mathf.FloorToInt(circumference / (unit.AgentRadius * 2f));
+                </div>
+
+                <h4>각도 차이 계산</h4>
+                <div class="code-block">
+<span class="comment">// 공식: radialOffset = 2π / maxUnitsOnLayer</span>
+<span class="comment">// 전체 원 = 2π radians (360도)</span>
+<span class="comment">// 유닛 수로 나누어 균등 분할</span>
+<span class="comment">// 각 유닛의 위치 = radialOffset × unitsOnLayer</span>
+
+<span class="keyword">float</span> radialOffset = 2f * Mathf.PI / maxUnitsOnLayer;
+                </div>
+
+                <h4>삼각함수 좌표 계산</h4>
+                <div class="code-block">
+<span class="comment">// X 좌표: circleRadius × cos(angle)</span>
+<span class="comment">// Z 좌표: circleRadius × sin(angle)</span>
+<span class="comment">// angle = radialOffset × unitsOnLayer</span>
+<span class="comment">// Unity는 Y축이 위쪽이므로 Z축을 사용</span>
+
+Vector3 targetPosition = <span class="keyword">new</span> Vector3(
+    targetPoint.x + circleRadius * Mathf.Cos(radialOffset * unitsOnLayer),
+    targetPoint.y,
+    targetPoint.z + circleRadius * Mathf.Sin(radialOffset * unitsOnLayer)
+);
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🎓 학습 포인트</h3>
+                
+                <h4>왜 필요한가?</h4>
+                <div class="code-block">
+<span class="comment">// 1. AgentRadius 프로퍼티</span>
+<span class="comment">// - 동적 계산: 각 유닛의 크기에 맞는 배치</span>
+<span class="comment">// - 충돌 방지: 유닛 간 겹침 방지</span>
+<span class="comment">// - 확장성: 다양한 크기의 유닛 지원</span>
+
+<span class="comment">// 2. 원형 배치 알고리즘</span>
+<span class="comment">// - 자연스러운 포메이션: 군집 이동의 현실성</span>
+<span class="comment">// - 수학적 정확성: 삼각함수로 정확한 위치 계산</span>
+<span class="comment">// - 확장 가능성: 무제한 유닛 수 지원</span>
+
+<span class="comment">// 3. 레이어 시스템</span>
+<span class="comment">// - 효율적 공간 활용: 원형으로 최대한 많은 유닛 배치</span>
+<span class="comment">// - 동적 확장: 유닛 수에 따라 자동으로 레이어 추가</span>
+<span class="comment">// - 균등 분배: 각 레이어에 최적의 유닛 수 배치</span>
+                </div>
+
+                <h4>성능 최적화</h4>
+                <div class="code-block">
+<span class="comment">// 최적화 포인트:</span>
+<span class="comment">// - List 초기 용량: selectedUnits.Count로 리사이징 방지</span>
+<span class="comment">// - Mathf.FloorToInt: 정수 변환으로 메모리 효율성</span>
+<span class="comment">// - 삼각함수 캐싱: 동일한 각도에 대한 중복 계산 방지</span>
+
+List&lt;AbstractUnit&gt; abstractUnits = <span class="keyword">new</span> List&lt;AbstractUnit&gt;(selectedUnits.Count);
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🎮 노바1492 적용 포인트</h3>
+                
+                <h4>로봇 부품 시스템과의 연동</h4>
+                <div class="code-block">
+<span class="comment">// WorkerThreeRobot 특화:</span>
+<span class="comment">// - 부품별 크기 고려: 각 로봇의 실제 크기에 맞는 배치</span>
+<span class="comment">// - 회전 시스템 연동: 이동 시 부품 회전과 포메이션 조화</span>
+<span class="comment">// - 부품 교체 시 대응: 런타임 부품 변경에 따른 크기 조정</span>
+
+<span class="comment">// 전술적 포메이션</span>
+<span class="comment">// - 군집 이동: 다수의 로봇이 자연스럽게 이동</span>
+<span class="comment">// - 전투 포메이션: 적과의 거리에 따른 배치 조정</span>
+<span class="comment">// - 작업 효율성: 리소스 수집 시 최적 배치</span>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>📌 주요 변경 사항</h3>
+                <ul>
+                    <li><strong>AbstractUnit.cs</strong>: AgentRadius 프로퍼티 추가 (현재는 제거됨)</li>
+                    <li><strong>PlayerInput.cs</strong>: MoveUnitsInFormation 메서드 구현 (현재는 제거됨)</li>
+                    <li><strong>HandleRightClick</strong>: 원형 배치 로직으로 교체 (현재는 원래대로 복구됨)</li>
+                </ul>
+            </div>
+
+            <div class="subsection">
+                <h3>🚀 향후 구현 방향</h3>
+                <ul>
+                    <li>다양한 포메이션 패턴 구현 (사각형, 삼각형 등)</li>
+                    <li>적과의 거리에 따른 동적 포메이션 조정</li>
+                    <li>유닛 타입별 특화 배치 시스템</li>
+                    <li>성능 최적화를 위한 포메이션 캐싱</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 40px; border-radius: 15px;">
+            <h2>🎉 URTS Architecture Master!</h2>
+            <p style="font-size: 1.2rem; margin-top: 10px;">이제 확장 가능하고 유지보수하기 쉬운 RTS 시스템을 구축할 수 있습니다!</p>
         </div>
     </div>
 </body>

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 NavMesh 완전 이해 가이드 - 토스 스타일</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .section h3 {
+            color: #764ba2;
+            margin: 25px 0 15px 0;
+            font-size: 1.5rem;
+        }
+
+        .section h4 {
+            color: #555;
+            margin: 20px 0 10px 0;
+            font-size: 1.2rem;
+        }
+
+        .code-block {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.8;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        .keyword {
+            color: #d73a49;
+            font-weight: bold;
+        }
+
+        .comment {
+            color: #6a737d;
+            font-style: italic;
+        }
+
+        .class-name {
+            color: #6f42c1;
+            font-weight: bold;
+        }
+
+        .method-name {
+            color: #005cc5;
+            font-weight: bold;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .comparison-table th {
+            background: #667eea;
+            color: white;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .emoji {
+            font-size: 1.2em;
+        }
+
+        .step {
+            background: #f0f8ff;
+            border: 2px solid #4a90e2;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .step h4 {
+            color: #4a90e2;
+            margin-bottom: 10px;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 NavMesh 완전 이해 가이드</h1>
+            <p>토스 스타일로 쉽게 배우는 NavMesh Areas & Obstacles</p>
+        </div>
+
+        <div class="section">
+            <h2>🤔 "NavMesh가 뭔데?" - 기본 개념부터 차근차근</h2>
+            
+            <div class="highlight">
+                <h3>💡 NavMesh = AI가 걸어다닐 수 있는 길</h3>
+                <p>게임에서 AI 캐릭터가 "어디로 갈 수 있는지" 미리 계산해둔 지도라고 생각하세요!</p>
+            </div>
+
+            <div class="step">
+                <h4>🎮 실제 게임에서 보면...</h4>
+                <p><strong>RTS 게임에서 유닛을 클릭하면</strong> → 유닛이 목표지점까지 <strong>장애물을 피해서</strong> 이동하죠?</p>
+                <p>이게 바로 <strong>NavMesh</strong> 덕분입니다!</p>
+            </div>
+
+            <div class="code-block">
+<span class="comment">// NavMesh가 없다면?</span>
+유닛: "어? 벽이 있는데 어떻게 가지? 🤔"
+결과: 벽을 뚫고 가거나, 길을 못 찾아서 멈춤
+
+<span class="comment">// NavMesh가 있다면?</span>
+유닛: "NavMesh 보고... 아! 이 길로 가면 되겠네! 🚶‍♂️"
+결과: 장애물을 피해서 자연스럽게 이동
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🏗️ NavMesh의 3가지 핵심 요소</h2>
+
+            <div class="step">
+                <h4>1️⃣ NavMesh Areas (영역)</h4>
+                <p><strong>뜻:</strong> "이 지역은 비싸다", "이 지역은 싸다"</p>
+                <p><strong>예시:</strong> 물은 2배 비싸게, 점프는 3배 비싸게</p>
+            </div>
+
+            <div class="step">
+                <h4>2️⃣ NavMesh Modifier (수정자)</h4>
+                <p><strong>뜻:</strong> "이 건물은 영원히 통과 불가"</p>
+                <p><strong>특징:</strong> 게임 시작 전에 미리 설정 (베이킹 시)</p>
+            </div>
+
+            <div class="step">
+                <h4>3️⃣ NavMesh Obstacle (장애물)</h4>
+                <p><strong>뜻:</strong> "이 리소스는 채굴되면 사라져"</p>
+                <p><strong>특징:</strong> 게임 중에 실시간으로 변화</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⚔️ Modifier vs Obstacle - 대결!</h2>
+
+            <table class="comparison-table">
+                <tr>
+                    <th>구분</th>
+                    <th>NavMesh Modifier</th>
+                    <th>NavMesh Obstacle</th>
+                </tr>
+                <tr>
+                    <td><strong>🎯 사용 목적</strong></td>
+                    <td>영구적 장애물<br>(건물, 벽, 물)</td>
+                    <td>임시 장애물<br>(리소스, 파괴 가능한 객체)</td>
+                </tr>
+                <tr>
+                    <td><strong>⏰ 작동 시점</strong></td>
+                    <td>게임 시작 전<br>(베이킹 시)</td>
+                    <td>게임 중<br>(런타임)</td>
+                </tr>
+                <tr>
+                    <td><strong>🚀 성능</strong></td>
+                    <td>매우 좋음<br>(한 번만 계산)</td>
+                    <td>보통<br>(실시간 계산)</td>
+                </tr>
+                <tr>
+                    <td><strong>🔄 변경 가능성</strong></td>
+                    <td>불가능<br>(리베이킹 필요)</td>
+                    <td>가능<br>(즉시 변경)</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>🎮 실제 게임 상황으로 이해하기</h2>
+
+            <div class="step">
+                <h4>🏠 건물 (Barracks) - Modifier 사용</h4>
+                <p><strong>상황:</strong> 플레이어가 건물을 짓는다</p>
+                <p><strong>문제:</strong> 유닛들이 건물을 뚫고 지나가면 안 되죠?</p>
+                
+                <div class="code-block">
+<span class="comment">// Modifier를 사용하는 이유</span>
+1. 건물은 <span class="keyword">영원히</span> 그 자리에 있음
+2. <span class="keyword">성능</span>이 중요 (많은 건물이 있을 수 있음)
+3. <span class="keyword">변경할 필요</span>가 없음
+
+<span class="comment">// 결과</span>
+✅ 유닛들이 건물을 피해서 이동
+✅ 성능 효율적
+✅ 안정적
+                </div>
+            </div>
+
+            <div class="step">
+                <h4>⛏️ 미네랄 (Minerals) - Obstacle 사용</h4>
+                <p><strong>상황:</strong> 유닛이 미네랄을 채굴한다</p>
+                <p><strong>문제:</strong> 채굴 전에는 장애물, 채굴 후에는 통과 가능해야 함</p>
+                
+                <div class="code-block">
+<span class="comment">// Obstacle을 사용하는 이유</span>
+1. 미네랄은 <span class="keyword">채굴되면 사라짐</span>
+2. <span class="keyword">실시간</span>으로 변화해야 함
+3. <span class="keyword">유연성</span>이 중요
+
+<span class="comment">// 채굴 전</span>
+미네랄: "나는 여기 있어! 통과 못해! 🚫"
+유닛: "알겠어, 돌아서 갈게"
+
+<span class="comment">// 채굴 후</span>
+미네랄: "사라졌어! 이제 통과해도 돼! ✅"
+유닛: "좋아, 이제 이 길로 갈 수 있네!"
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 실제 코드로 보는 설정</h2>
+
+            <div class="step">
+                <h4>Minerals Prefab 설정</h4>
+                <div class="code-block">
+<span class="comment">// Minerals에 NavMesh Obstacle 추가</span>
+<span class="keyword">NavMeshObstacle</span> obstacle = minerals.AddComponent&lt;NavMeshObstacle&gt;();
+
+<span class="comment">// 설정값들</span>
+obstacle.shape = NavMeshObstacleShape.Box;           <span class="comment">// 박스 모양</span>
+obstacle.extents = <span class="keyword">new</span> Vector3(0.25f, 0.125f, 0.25f);  <span class="comment">// 크기</span>
+obstacle.center = <span class="keyword">new</span> Vector3(0, -0.5f, 0);           <span class="comment">// 중심점</span>
+obstacle.carve = <span class="keyword">true</span>;                                <span class="comment">// NavMesh 조각내기</span>
+obstacle.carveOnlyStationary = <span class="keyword">true</span>;                  <span class="comment">// 정지 상태에서만</span>
+                </div>
+
+                <div class="warning">
+                    <strong>💡 왜 이런 설정을 하나요?</strong><br>
+                    • <code>carveOnlyStationary = true</code>: 움직이는 동안은 계산하지 않아서 성능 절약<br>
+                    • <code>center = (0, -0.5, 0)</code>: 미네랄의 바닥 부분에 맞춤<br>
+                    • <code>extents = (0.25, 0.125, 0.25)</code>: 미네랄 크기에 딱 맞게
+                </div>
+            </div>
+
+            <div class="step">
+                <h4>Gas Prefab 설정</h4>
+                <div class="code-block">
+<span class="comment">// Gas는 Minerals와 다른 설정</span>
+obstacle.extents = <span class="keyword">new</span> Vector3(0.9f, 0.125f, 0.5f);   <span class="comment">// 가스는 더 넓고 낮음</span>
+obstacle.center = <span class="keyword">new</span> Vector3(0.15f, 0, 0);          <span class="comment">// 가스 위치에 맞춤</span>
+
+<span class="comment">// 왜 다를까?</span>
+- Gas는 Minerals보다 <span class="keyword">넓고 낮음</span>
+- 각 리소스의 <span class="keyword">실제 크기</span>에 맞춰야 함
+- 유닛이 <span class="keyword">정확히</span> 리소스 근처까지 갈 수 있도록
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 핵심 포인트 정리</h2>
+
+            <div class="success">
+                <h3>✅ 기억해야 할 3가지</h3>
+                <ol>
+                    <li><strong>Modifier</strong> = 영원한 장애물 (건물, 벽)</li>
+                    <li><strong>Obstacle</strong> = 임시 장애물 (리소스, 파괴 가능한 것)</li>
+                    <li><strong>성능</strong>을 고려해서 적절히 선택하기</li>
+                </ol>
+            </div>
+
+            <div class="highlight">
+                <h3>🤔 "언제 뭘 써야 하지?"</h3>
+                <p><strong>질문:</strong> "이 객체가 게임 중에 사라질 수 있나요?"</p>
+                <p><strong>답변:</strong></p>
+                <ul>
+                    <li>✅ <strong>Yes</strong> → NavMesh Obstacle 사용</li>
+                    <li>❌ <strong>No</strong> → NavMesh Modifier 사용</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <h4>🎮 실제 게임에서의 효과</h4>
+                <div class="code-block">
+<span class="comment">// 채굴 전</span>
+유닛: "미네랄이 있어서 돌아서 가야겠어"
+→ NavMesh Obstacle이 길을 막음
+
+<span class="comment">// 채굴 후</span>
+유닛: "미네랄이 사라졌네! 이제 이 길로 갈 수 있어!"
+→ NavMesh Obstacle이 비활성화되어 길이 열림
+
+<span class="comment">// 건물은?</span>
+유닛: "건물은 영원히 여기 있으니까 계속 돌아서 가야지"
+→ NavMesh Modifier로 영구적으로 길을 막음
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🚀 다음 단계</h2>
+            <p>이제 NavMesh의 기본 개념을 이해했으니, 실제 Unity에서 어떻게 설정하는지 연습해보세요!</p>
+            
+            <div class="step">
+                <h4>📝 연습 과제</h4>
+                <ol>
+                    <li>새로운 리소스 Prefab을 만들어서 NavMesh Obstacle 추가해보기</li>
+                    <li>건물 Prefab에 NavMesh Modifier Volume 추가해보기</li>
+                    <li>유닛이 리소스 주변을 돌아다니는지 테스트해보기</li>
+                </ol>
+            </div>
+        </div>
+
+        <div style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 40px; border-radius: 15px;">
+            <h2>🎉 NavMesh 마스터가 되었습니다!</h2>
+            <p style="font-size: 1.2rem; margin-top: 10px;">이제 AI가 현명하게 길을 찾을 수 있게 도와주세요!</p>
+        </div>
+    </div>
+</body>
+</html>

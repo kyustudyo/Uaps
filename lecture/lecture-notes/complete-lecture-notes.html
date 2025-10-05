@@ -3038,6 +3038,309 @@ Assets/Gatherable Resources/Minerals.prefab (NavMesh Obstacle 추가)
 Assets/Scenes/Game.unity (NavMesh Surface 설정 변경)
 Assets/Scenes/Game/NavMesh-Floor.asset (NavMesh 데이터 업데이트)</div>
         </div>
+
+        <!-- 강의 19: Unit Dancing 문제 해결 -->
+        <div class="lecture-section">
+            <h2 class="lecture-title">🎯 강의 19: Unit Dancing 문제 해결 (수학적 접근)</h2>
+            
+            <div class="lecture-goal">
+                <h3>🎯 학습 목표</h3>
+                <ul class="content-list">
+                    <li>Unit Dancing 문제의 원인과 해결 방법 이해</li>
+                    <li>삼각함수와 원형 배치 알고리즘 구현</li>
+                    <li>수학적 접근을 통한 유닛 포메이션 시스템 구축</li>
+                    <li>Agent Radius 기반 동적 배치 시스템 개발</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>📝 핵심 개념</h3>
+                
+                <h4>🤔 Unit Dancing이란?</h4>
+                <div class="step-guide">
+                    <h5>문제 상황:</h5>
+                    <ul>
+                        <li>여러 유닛이 같은 목표 지점에 도달하려고 할 때 발생</li>
+                        <li>유닛들이 서로 밀고 당기며 "춤추는" 현상</li>
+                        <li>NavMesh Avoidance 시스템의 한계로 인한 문제</li>
+                    </ul>
+                </div>
+
+                <h4>💡 해결 방법들</h4>
+                <div class="step-guide">
+                    <h5>1. 목표 지점 분산 (이번 강의에서 구현)</h5>
+                    <ul>
+                        <li>모든 유닛을 같은 지점으로 보내지 않음</li>
+                        <li>원형 배치를 통한 자연스러운 포메이션</li>
+                        <li>수학적 계산으로 최적 위치 결정</li>
+                    </ul>
+                    
+                    <h5>2. 동적 목표 조정</h5>
+                    <ul>
+                        <li>목표 지점과 정지 거리를 동적으로 조정</li>
+                        <li>복잡한 타이밍과 값 결정 문제</li>
+                    </ul>
+                    
+                    <h5>3. Avoidance 비활성화</h5>
+                    <ul>
+                        <li>유닛들이 겹쳐서 이동</li>
+                        <li>게임의 완성도가 떨어짐</li>
+                    </ul>
+                </div>
+
+                <h4>🧮 수학적 접근: Unit Circle 활용</h4>
+                <div class="step-guide">
+                    <h5>Unit Circle의 핵심:</h5>
+                    <ul>
+                        <li><strong>cos(θ)</strong>: X 좌표 계산</li>
+                        <li><strong>sin(θ)</strong>: Y 좌표 계산 (Unity에서는 Z)</li>
+                        <li><strong>360° = 2π radians</strong></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>💻 구현 코드</h3>
+                
+                <h4>1. AbstractUnit에 AgentRadius 프로퍼티 추가</h4>
+                <div class="code-block">
+<span class="comment">// AbstractUnit.cs - Agent Radius 접근성 개선</span>
+<span class="keyword">public float</span> AgentRadius => agent.radius;
+
+<span class="comment">// 왜 필요한가?</span>
+<span class="comment">// - 원형 배치 알고리즘에서 각 유닛의 크기를 알아야 함</span>
+<span class="comment">// - 유닛 간 충돌 방지를 위한 최소 거리 계산</span>
+<span class="comment">// - 동적 원의 반지름 계산에 필수</span>
+                </div>
+
+                <h4>2. 원형 배치 알고리즘 구현</h4>
+                <div class="code-block">
+<span class="keyword">private void</span> MoveUnitsInFormation(Vector3 targetPoint)
+{
+    <span class="comment">// 선택된 유닛들 중 AbstractUnit만 필터링</span>
+    List&lt;AbstractUnit&gt; abstractUnits = <span class="keyword">new</span> List&lt;AbstractUnit&gt;(selectedUnits.Count);
+    <span class="keyword">foreach</span> (ISelectable selectable <span class="keyword">in</span> selectedUnits)
+    {
+        <span class="keyword">if</span> (selectable <span class="keyword">is</span> AbstractUnit unit)
+            abstractUnits.Add(unit);
+    }
+
+    <span class="comment">// 원형 배치 알고리즘 변수들</span>
+    <span class="keyword">int</span> layer = 0;                    <span class="comment">// 현재 레이어 (원의 반지름)</span>
+    <span class="keyword">int</span> unitsOnLayer = 0;           <span class="comment">// 현재 레이어의 유닛 수</span>
+    <span class="keyword">int</span> maxUnitsOnLayer = 1;        <span class="comment">// 현재 레이어에 배치할 수 있는 최대 유닛 수</span>
+    <span class="keyword">float</span> circleRadius = 0f;       <span class="comment">// 현재 원의 반지름</span>
+    <span class="keyword">float</span> radialOffset = 0f;       <span class="comment">// 각 유닛 간의 각도 차이</span>
+
+    <span class="keyword">foreach</span> (AbstractUnit unit <span class="keyword">in</span> abstractUnits)
+    {
+        <span class="comment">// 목표 위치 계산 (삼각함수 활용)</span>
+        Vector3 targetPosition = <span class="keyword">new</span> Vector3(
+            targetPoint.x + circleRadius * Mathf.Cos(radialOffset * unitsOnLayer),
+            targetPoint.y,
+            targetPoint.z + circleRadius * Mathf.Sin(radialOffset * unitsOnLayer)
+        );
+
+        unit.MoveTo(targetPosition);
+        unitsOnLayer++;
+
+        <span class="comment">// 현재 레이어가 가득 찼는지 확인</span>
+        <span class="keyword">if</span> (unitsOnLayer >= maxUnitsOnLayer)
+        {
+            <span class="comment">// 다음 레이어로 이동</span>
+            unitsOnLayer = 0;
+            layer++;
+            
+            <span class="comment">// 새로운 원의 반지름 계산 (에이전트 반지름의 3.5배씩 증가)</span>
+            circleRadius += unit.AgentRadius * 3.5f;
+            
+            <span class="comment">// 새로운 레이어에 배치할 수 있는 최대 유닛 수 계산</span>
+            <span class="comment">// 원의 둘레 = 2πr, 유닛 직경 = 2 * AgentRadius</span>
+            <span class="keyword">float</span> circumference = 2f * Mathf.PI * circleRadius;
+            maxUnitsOnLayer = Mathf.FloorToInt(circumference / (unit.AgentRadius * 2f));
+            
+            <span class="comment">// 각 유닛 간의 각도 차이 계산</span>
+            radialOffset = 2f * Mathf.PI / maxUnitsOnLayer;
+        }
+    }
+}
+                </div>
+
+                <h4>3. HandleRightClick 수정</h4>
+                <div class="code-block">
+<span class="keyword">private void</span> HandleRightClick()
+{
+    <span class="keyword">if</span> (selectedUnits.Count == 0) { <span class="keyword">return</span>; }
+
+    Ray cameraRay = camera.ScreenPointToRay(Mouse.current.position.ReadValue());
+
+    <span class="keyword">if</span> (Mouse.current.rightButton.wasReleasedThisFrame
+        && Physics.Raycast(cameraRay, <span class="keyword">out</span> RaycastHit hit, <span class="keyword">float</span>.MaxValue, floorLayers))
+    {
+        <span class="comment">// 기존 단순 이동 로직 (주석 처리)</span>
+        <span class="comment">// foreach(ISelectable selectable in selectedUnits)</span>
+        <span class="comment">// {</span>
+        <span class="comment">//     if (selectable is IMoveable moveable)</span>
+        <span class="comment">//         moveable.MoveTo(hit.point);</span>
+        <span class="comment">// }</span>
+
+        <span class="comment">// 새로운 원형 배치 이동 로직</span>
+        MoveUnitsInFormation(hit.point);
+    }
+}
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>🧮 수학 공식 설명</h3>
+                
+                <h4>원의 둘레 계산</h4>
+                <div class="step-guide">
+                    <h5>공식: C = 2πr</h5>
+                    <ul>
+                        <li>C: 원의 둘레 (Circumference)</li>
+                        <li>r: 원의 반지름 (Radius)</li>
+                        <li>π: 파이 (3.14159...)</li>
+                    </ul>
+                </div>
+
+                <h4>최대 유닛 수 계산</h4>
+                <div class="step-guide">
+                    <h5>공식: maxUnits = floor(둘레 / 유닛직경)</h5>
+                    <ul>
+                        <li>둘레 = 2π × circleRadius</li>
+                        <li>유닛직경 = 2 × AgentRadius</li>
+                        <li>floor(): 소수점 버림 (정수로 변환)</li>
+                    </ul>
+                </div>
+
+                <h4>각도 차이 계산</h4>
+                <div class="step-guide">
+                    <h5>공식: radialOffset = 2π / maxUnitsOnLayer</h5>
+                    <ul>
+                        <li>전체 원 = 2π radians (360도)</li>
+                        <li>유닛 수로 나누어 균등 분할</li>
+                        <li>각 유닛의 위치 = radialOffset × unitsOnLayer</li>
+                    </ul>
+                </div>
+
+                <h4>삼각함수 좌표 계산</h4>
+                <div class="step-guide">
+                    <h5>X 좌표: circleRadius × cos(angle)</h5>
+                    <h5>Z 좌표: circleRadius × sin(angle)</h5>
+                    <ul>
+                        <li>angle = radialOffset × unitsOnLayer</li>
+                        <li>Unity는 Y축이 위쪽이므로 Z축을 사용</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>⚙️ Unity 설정</h3>
+                
+                <h4>NavMeshAgent 설정</h4>
+                <div class="step-guide">
+                    <h5>중요한 설정값들:</h5>
+                    <ul>
+                        <li><strong>Radius</strong>: 유닛의 반지름 (0.5 권장)</li>
+                        <li><strong>Stopping Distance</strong>: 목표 지점에서의 정지 거리</li>
+                        <li><strong>Avoidance Priority</strong>: 회피 우선순위</li>
+                    </ul>
+                </div>
+
+                <h4>테스트를 위한 유닛 복제</h4>
+                <div class="step-guide">
+                    <h5>단계별 복제:</h5>
+                    <ol>
+                        <li>기본 2개 유닛 선택</li>
+                        <li>복제하여 4개로 증가</li>
+                        <li>4개 선택 후 복제하여 8개로 증가</li>
+                        <li>8개 선택 후 복제하여 16개로 증가</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎓 학습 포인트</h3>
+                
+                <h4>왜 필요한가?</h4>
+                <div class="step-guide">
+                    <h5>1. AgentRadius 프로퍼티</h5>
+                    <ul>
+                        <li><strong>동적 계산</strong>: 각 유닛의 크기에 맞는 배치</li>
+                        <li><strong>충돌 방지</strong>: 유닛 간 겹침 방지</li>
+                        <li><strong>확장성</strong>: 다양한 크기의 유닛 지원</li>
+                    </ul>
+                    
+                    <h5>2. 원형 배치 알고리즘</h5>
+                    <ul>
+                        <li><strong>자연스러운 포메이션</strong>: 군집 이동의 현실성</li>
+                        <li><strong>수학적 정확성</strong>: 삼각함수로 정확한 위치 계산</li>
+                        <li><strong>확장 가능성</strong>: 무제한 유닛 수 지원</li>
+                    </ul>
+                    
+                    <h5>3. 레이어 시스템</h5>
+                    <ul>
+                        <li><strong>효율적 공간 활용</strong>: 원형으로 최대한 많은 유닛 배치</li>
+                        <li><strong>동적 확장</strong>: 유닛 수에 따라 자동으로 레이어 추가</li>
+                        <li><strong>균등 분배</strong>: 각 레이어에 최적의 유닛 수 배치</li>
+                    </ul>
+                </div>
+
+                <h4>성능 최적화</h4>
+                <div class="step-guide">
+                    <h5>최적화 포인트:</h5>
+                    <ul>
+                        <li><strong>List 초기 용량</strong>: selectedUnits.Count로 리사이징 방지</li>
+                        <li><strong>Mathf.FloorToInt</strong>: 정수 변환으로 메모리 효율성</li>
+                        <li><strong>삼각함수 캐싱</strong>: 동일한 각도에 대한 중복 계산 방지</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎮 노바1492 적용 포인트</h3>
+                
+                <h4>로봇 부품 시스템과의 연동</h4>
+                <div class="step-guide">
+                    <h5>WorkerThreeRobot 특화:</h5>
+                    <ul>
+                        <li><strong>부품별 크기 고려</strong>: 각 로봇의 실제 크기에 맞는 배치</li>
+                        <li><strong>회전 시스템 연동</strong>: 이동 시 부품 회전과 포메이션 조화</li>
+                        <li><strong>부품 교체 시 대응</strong>: 런타임 부품 변경에 따른 크기 조정</li>
+                    </ul>
+                </div>
+
+                <h4>전술적 포메이션</h4>
+                <div class="step-guide">
+                    <h5>게임플레이 향상:</h5>
+                    <ul>
+                        <li><strong>군집 이동</strong>: 다수의 로봇이 자연스럽게 이동</li>
+                        <li><strong>전투 포메이션</strong>: 적과의 거리에 따른 배치 조정</li>
+                        <li><strong>작업 효율성</strong>: 리소스 수집 시 최적 배치</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>📌 주요 변경 파일</h3>
+                <ul class="content-list">
+                    <li><strong>AbstractUnit.cs</strong>: AgentRadius 프로퍼티 추가</li>
+                    <li><strong>PlayerInput.cs</strong>: MoveUnitsInFormation 메서드 구현</li>
+                    <li><strong>HandleRightClick</strong>: 원형 배치 로직으로 교체</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>🚀 다음 단계</h3>
+                <ul class="content-list">
+                    <li>다양한 포메이션 패턴 구현 (사각형, 삼각형 등)</li>
+                    <li>적과의 거리에 따른 동적 포메이션 조정</li>
+                    <li>유닛 타입별 특화 배치 시스템</li>
+                    <li>성능 최적화를 위한 포메이션 캐싱</li>
+                </ul>
+            </div>
+        </div>
     </div>
 
 </body>
