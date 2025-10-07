@@ -931,6 +931,79 @@ List&lt;AbstractUnit&gt; abstractUnits = <span class="keyword">new</span> List&l
             </div>
         </div>
 
+        <!-- 강의 21: Our First Building - The Supply Hut (첫 번째 건물 - 공급소) -->
+        <div class="section">
+            <h2>강의 21: Our First Building - The Supply Hut (첫 번째 건물 - 공급소)</h2>
+            
+            <div class="subsection">
+                <h3>📋 새로운 클래스 추가</h3>
+                <div class="code-block">// SupplyHut.cs - 첫 번째 건물 클래스
+public class SupplyHut : MonoBehaviour, ISelectable
+{
+    [SerializeField] private DecalProjector decalProjector;
+    [field: SerializeField] public int Health { get; private set; }
+
+    public void Select()
+    {
+        if (decalProjector != null)
+        {
+            decalProjector.gameObject.SetActive(true);
+        }
+        Bus<UnitSelectedEvent>.Raise(new UnitSelectedEvent(this));
+    }
+
+    public void Deselect()
+    {
+        if (decalProjector != null)
+        {
+            decalProjector.gameObject.SetActive(false);
+        }
+        Bus<UnitDeselectedEvent>.Raise(new UnitDeselectedEvent(this));
+    }
+}</div>
+            </div>
+
+            <div class="subsection">
+                <h3>🏗️ 건물 시스템의 특징</h3>
+                <ul>
+                    <li><strong>ISelectable 구현</strong>: 유닛과 동일한 선택 시스템 사용</li>
+                    <li><strong>Property Fields</strong>: Health를 안전하게 관리하는 프로퍼티</li>
+                    <li><strong>DecalProjector</strong>: 선택 시 시각적 피드백 제공</li>
+                    <li><strong>Event Bus 통합</strong>: UnitSelectedEvent/UnitDeselectedEvent 발생</li>
+                </ul>
+            </div>
+
+            <div class="subsection">
+                <h3>🚧 NavMesh Obstacle 설정</h3>
+                <ul>
+                    <li><strong>통과 방지</strong>: 유닛이 건물을 통과하지 못하도록 차단</li>
+                    <li><strong>크기 조정</strong>: 건물 모델에 맞게 Obstacle 크기 설정</li>
+                    <li><strong>높이 조정</strong>: Air Units에 영향을 주지 않도록 Y축 위치 조정</li>
+                    <li><strong>Carve 활성화</strong>: NavMesh에서 해당 영역을 제거</li>
+                </ul>
+            </div>
+
+            <div class="subsection">
+                <h3>❓ 왜 필요한가?</h3>
+                <ul>
+                    <li><strong>RTS 게임의 핵심</strong>: 유닛뿐만 아니라 건물도 선택하고 관리</li>
+                    <li><strong>전략적 깊이</strong>: 건물 배치와 관리가 게임의 중요한 요소</li>
+                    <li><strong>확장성</strong>: 다양한 건물 타입을 추가할 수 있는 기반 구조</li>
+                    <li><strong>현실성</strong>: 건물이 실제 장애물 역할을 하도록 구현</li>
+                </ul>
+            </div>
+
+            <div class="subsection">
+                <h3>🎮 노바1492 적용 포인트</h3>
+                <ul>
+                    <li><strong>로봇 생산 건물</strong>: 다양한 로봇을 생산하는 공장 시스템</li>
+                    <li><strong>리소스 건물</strong>: 에너지와 부품을 생산하는 발전소</li>
+                    <li><strong>방어 건물</strong>: 적의 공격을 막는 방어 시설</li>
+                    <li><strong>연구 건물</strong>: 새로운 기술을 개발하는 연구소</li>
+                </ul>
+            </div>
+        </div>
+
         <!-- 강의 20: Multiple NavMeshes (다중 네비메시) -->
         <div class="section">
             <h2>강의 20: Multiple NavMeshes (다중 네비메시)</h2>
