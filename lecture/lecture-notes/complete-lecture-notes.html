@@ -3343,5 +3343,133 @@ Assets/Scenes/Game/NavMesh-Floor.asset (NavMesh 데이터 업데이트)</div>
         </div>
     </div>
 
+    <!-- 강의 20: Multiple NavMeshes (다중 네비메시) -->
+    <div class="lecture-section">
+        <h2 class="lecture-title">🎯 강의 20: Multiple NavMeshes (다중 네비메시)</h2>
+        
+        <div class="lecture-goal">
+            <h3>🎯 학습 목표</h3>
+            <ul class="content-list">
+                <li>다중 NavMesh Surface를 사용한 다양한 유닛 타입 지원</li>
+                <li>Air Unit과 Ground Unit의 독립적인 네비게이션 시스템</li>
+                <li>NavMesh Obstacle의 한계와 해결 방법</li>
+                <li>Agent Type 설정과 Layer Collision Matrix 활용</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h3>📝 핵심 개념</h3>
+            <ul class="content-list">
+                <li><strong>Multiple NavMesh Surfaces</strong>: 같은 씬에 여러 개의 독립적인 NavMesh</li>
+                <li><strong>Agent Types</strong>: Humanoid, Air Units 등 다양한 에이전트 타입</li>
+                <li><strong>Layer Separation</strong>: TransparentFX 레이어를 활용한 물리 충돌 방지</li>
+                <li><strong>Height Separation</strong>: Y축 높이 차이로 NavMesh 격리</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h3>💻 구현 과정</h3>
+            
+            <div class="step-guide">
+                <h5>1단계: Air Unit Floor 생성</h5>
+                <ol>
+                    <li>Floor 하위에 Empty GameObject 생성 → "Air Unit Floor"</li>
+                    <li>Box Collider 추가 (Size: X=96, Z=128)</li>
+                    <li>Y 위치를 1.26으로 설정 (장애물 위로)</li>
+                    <li>Layer를 TransparentFX로 변경</li>
+                </ol>
+            </div>
+
+            <div class="step-guide">
+                <h5>2단계: Air Units Agent Type 생성</h5>
+                <ol>
+                    <li>Window → AI → Navigation 열기</li>
+                    <li>Agent Types 탭에서 "Air Units" 추가</li>
+                    <li>기본 설정 유지 (Radius: 0.5, Height: 2, Speed: 3.5)</li>
+                </ol>
+            </div>
+
+            <div class="step-guide">
+                <h5>3단계: 두 번째 NavMesh Surface 추가</h5>
+                <ol>
+                    <li>Floor에 NavMesh Surface 컴포넌트 추가</li>
+                    <li>Agent Type을 "Air Units"로 설정</li>
+                    <li>Layer Mask를 "TransparentFX"만 선택</li>
+                    <li>Bake 실행</li>
+                </ol>
+            </div>
+
+            <div class="step-guide">
+                <h5>4단계: Physics Settings 조정</h5>
+                <ol>
+                    <li>Edit → Project Settings → Physics</li>
+                    <li>Layer Collision Matrix에서 TransparentFX 체크 해제</li>
+                    <li>모든 레이어와의 충돌 비활성화</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>🔧 Unity 설정 변경사항</h3>
+            
+            <div class="code-block">// Floor GameObject에 추가된 컴포넌트
+NavMesh Surface (Air Units용)
+- Agent Type: Air Units (-1372625422)
+- Collect Objects: Volume
+- Size: {x: 96.29, y: 7.025, z: 127.91}
+- Center: {x: -0.1419, y: 3.48, z: 0.178}
+- Layer Mask: TransparentFX (2)</div>
+
+            <div class="code-block">// Air Transport 설정
+NavMeshAgent:
+- Agent Type: Air Units
+- Obstacle Avoidance: No Obstacle Avoidance
+- Height: 2 (기본값)</div>
+        </div>
+
+        <div class="content-section">
+            <h3>❓ 왜 필요한가?</h3>
+            
+            <div class="tech-stack">
+                <h4>🎯 NavMesh Obstacle의 한계</h4>
+                <p><strong>문제점</strong>: NavMesh Obstacle은 모든 NavMesh를 자동으로 carve합니다.</p>
+                <p><strong>해결책</strong>: NavMesh Modifier는 특정 Agent Type만 영향을 받지만, 런타임에는 변경 불가능합니다.</p>
+            </div>
+
+            <div class="tech-stack">
+                <h4>🚁 Air Unit의 특수 요구사항</h4>
+                <p><strong>비행 유닛</strong>: 물, 미네랄, 가스 위를 자유롭게 날아야 함</p>
+                <p><strong>Ground Unit</strong>: 장애물을 피해서 돌아다녀야 함</p>
+                <p><strong>충돌 방지</strong>: 서로 다른 높이의 NavMesh로 격리</p>
+            </div>
+
+            <div class="tech-stack">
+                <h4>⚙️ Layer Collision Matrix 활용</h4>
+                <p><strong>TransparentFX 레이어</strong>: 물리 충돌에 영향 없이 NavMesh Bake만 가능</p>
+                <p><strong>Y축 분리</strong>: Air Unit Floor를 높은 위치에 배치하여 독립성 확보</p>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>🎮 노바1492 적용 포인트</h3>
+            <ul class="content-list">
+                <li><strong>다양한 로봇 타입</strong>: 지상형, 공중형, 수중형 로봇의 독립적인 네비게이션</li>
+                <li><strong>3D 전장</strong>: 높이 차이를 활용한 입체적인 전투 시스템</li>
+                <li><strong>전략적 깊이</strong>: 공중 유닛의 우위와 지상 유닛의 제약</li>
+                <li><strong>성능 최적화</strong>: 각 유닛 타입별 최적화된 NavMesh 설정</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h3>🚀 다음 단계</h3>
+            <ul class="content-list">
+                <li>수중 유닛을 위한 세 번째 NavMesh Surface 추가</li>
+                <li>Agent Type별 특화된 이동 속도와 회전 속도 설정</li>
+                <li>다층 NavMesh 간의 경로 찾기 최적화</li>
+                <li>동적 NavMesh 생성 시스템 구현</li>
+            </ul>
+        </div>
+    </div>
+
 </body>
 </html>

@@ -760,12 +760,13 @@ Assets/Scripts/
 <span class="comment">// sin(θ): Y 좌표 계산 (Unity에서는 Z)</span>
 <span class="comment">// 360° = 2π radians</span>
 
-<span class="comment">// 원형 배치 알고리즘</span>
-<span class="keyword">private void</span> MoveUnitsInFormation(Vector3 targetPoint)
+<span class="comment">// HandleRightClick 내부의 원형 배치 알고리즘 (실제 구현)</span>
+<span class="keyword">if</span> (Mouse.current.rightButton.wasReleasedThisFrame
+    && Physics.Raycast(cameraRay, <span class="keyword">out</span> RaycastHit hit, <span class="keyword">float</span>.MaxValue, floorLayers))
 {
     <span class="comment">// 선택된 유닛들 중 AbstractUnit만 필터링</span>
-    List&lt;AbstractUnit&gt; abstractUnits = <span class="keyword">new</span> List&lt;AbstractUnit&gt;(selectedUnits.Count);
-    <span class="keyword">foreach</span> (ISelectable selectable <span class="keyword">in</span> selectedUnits)
+    List&lt;AbstractUnit&gt; abstractUnits = <span class="keyword">new</span> (selectedUnits.Count);
+    <span class="keyword">foreach</span>(ISelectable selectable <span class="keyword">in</span> selectedUnits)
     {
         <span class="keyword">if</span> (selectable <span class="keyword">is</span> AbstractUnit unit)
             abstractUnits.Add(unit);
@@ -775,16 +776,16 @@ Assets/Scripts/
     <span class="keyword">int</span> layer = 0;                    <span class="comment">// 현재 레이어 (원의 반지름)</span>
     <span class="keyword">int</span> unitsOnLayer = 0;           <span class="comment">// 현재 레이어의 유닛 수</span>
     <span class="keyword">int</span> maxUnitsOnLayer = 1;        <span class="comment">// 현재 레이어에 배치할 수 있는 최대 유닛 수</span>
-    <span class="keyword">float</span> circleRadius = 0f;       <span class="comment">// 현재 원의 반지름</span>
-    <span class="keyword">float</span> radialOffset = 0f;       <span class="comment">// 각 유닛 간의 각도 차이</span>
+    <span class="keyword">float</span> circleRadius = 0;         <span class="comment">// 현재 원의 반지름</span>
+    <span class="keyword">float</span> radialOffset = 0;         <span class="comment">// 각 유닛 간의 각도 차이</span>
 
-    <span class="keyword">foreach</span> (AbstractUnit unit <span class="keyword">in</span> abstractUnits)
+    <span class="keyword">foreach</span>(AbstractUnit unit <span class="keyword">in</span> abstractUnits)
     {
         <span class="comment">// 목표 위치 계산 (삼각함수 활용)</span>
-        Vector3 targetPosition = <span class="keyword">new</span> Vector3(
-            targetPoint.x + circleRadius * Mathf.Cos(radialOffset * unitsOnLayer),
-            targetPoint.y,
-            targetPoint.z + circleRadius * Mathf.Sin(radialOffset * unitsOnLayer)
+        Vector3 targetPosition = <span class="keyword">new</span>(
+            hit.point.x + circleRadius * Mathf.Cos(radialOffset * unitsOnLayer),
+            hit.point.y,
+            hit.point.z + circleRadius * Mathf.Sin(radialOffset * unitsOnLayer)
         );
 
         unit.MoveTo(targetPosition);
@@ -794,19 +795,18 @@ Assets/Scripts/
         <span class="keyword">if</span> (unitsOnLayer >= maxUnitsOnLayer)
         {
             <span class="comment">// 다음 레이어로 이동</span>
-            unitsOnLayer = 0;
             layer++;
+            unitsOnLayer = 0;
             
             <span class="comment">// 새로운 원의 반지름 계산 (에이전트 반지름의 3.5배씩 증가)</span>
             circleRadius += unit.AgentRadius * 3.5f;
             
             <span class="comment">// 새로운 레이어에 배치할 수 있는 최대 유닛 수 계산</span>
             <span class="comment">// 원의 둘레 = 2πr, 유닛 직경 = 2 * AgentRadius</span>
-            <span class="keyword">float</span> circumference = 2f * Mathf.PI * circleRadius;
-            maxUnitsOnLayer = Mathf.FloorToInt(circumference / (unit.AgentRadius * 2f));
+            maxUnitsOnLayer = Mathf.FloorToInt(2 * Mathf.PI * circleRadius / (unit.AgentRadius * 2));
             
             <span class="comment">// 각 유닛 간의 각도 차이 계산</span>
-            radialOffset = 2f * Mathf.PI / maxUnitsOnLayer;
+            radialOffset = 2 * Mathf.PI / maxUnitsOnLayer;
         }
     }
 }
@@ -833,7 +833,8 @@ Assets/Scripts/
 <span class="comment">// 유닛직경 = 2 × AgentRadius</span>
 <span class="comment">// floor(): 소수점 버림 (정수로 변환)</span>
 
-<span class="keyword">int</span> maxUnitsOnLayer = Mathf.FloorToInt(circumference / (unit.AgentRadius * 2f));
+<span class="comment">// 실제 구현된 코드</span>
+<span class="keyword">int</span> maxUnitsOnLayer = Mathf.FloorToInt(2 * Mathf.PI * circleRadius / (unit.AgentRadius * 2));
                 </div>
 
                 <h4>각도 차이 계산</h4>
@@ -926,6 +927,134 @@ List&lt;AbstractUnit&gt; abstractUnits = <span class="keyword">new</span> List&l
                     <li>적과의 거리에 따른 동적 포메이션 조정</li>
                     <li>유닛 타입별 특화 배치 시스템</li>
                     <li>성능 최적화를 위한 포메이션 캐싱</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 강의 20: Multiple NavMeshes (다중 네비메시) -->
+        <div class="section">
+            <h2>강의 20: Multiple NavMeshes (다중 네비메시)</h2>
+            
+            <div class="subsection">
+                <h3>🎯 핵심 개념</h3>
+                <p>같은 씬에서 여러 개의 독립적인 NavMesh를 사용하여 다양한 유닛 타입을 지원하는 시스템입니다.</p>
+                
+                <div class="code-block">
+<span class="comment">// 다중 NavMesh 시스템</span>
+<span class="comment">// 1. Ground Units: 기존 NavMesh (Floor 레이어)</span>
+<span class="comment">// 2. Air Units: 새로운 NavMesh (TransparentFX 레이어)</span>
+<span class="comment">// 3. 높이 분리: Y축으로 NavMesh 격리</span>
+<span class="comment">// 4. Agent Type 분리: Humanoid vs Air Units</span>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🏗️ 시스템 구조</h3>
+                
+                <h4>NavMesh Surface 구성</h4>
+                <div class="code-block">
+<span class="comment">// Floor GameObject</span>
+<span class="comment">// ├── NavMesh Surface (Humanoid) - 기존</span>
+<span class="comment">// │   ├── Agent Type: Humanoid</span>
+<span class="comment">// │   ├── Layer Mask: Floor, Water</span>
+<span class="comment">// │   └── Y Position: 0 (지면)</span>
+<span class="comment">// └── NavMesh Surface (Air Units) - 새로 추가</span>
+<span class="comment">//     ├── Agent Type: Air Units</span>
+<span class="comment">//     ├── Layer Mask: TransparentFX</span>
+<span class="comment">//     └── Y Position: 1.26 (장애물 위)</span>
+                </div>
+
+                <h4>Air Unit Floor 설정</h4>
+                <div class="code-block">
+<span class="comment">// Air Unit Floor GameObject</span>
+<span class="comment">// ├── Transform: Y = 1.26 (높은 위치)</span>
+<span class="comment">// ├── Box Collider: Size(96, 1, 128)</span>
+<span class="comment">// ├── Layer: TransparentFX</span>
+<span class="comment">// └── Physics: 모든 레이어와 충돌 비활성화</span>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>⚙️ Unity 설정 변경사항</h3>
+                
+                <h4>Agent Types</h4>
+                <ul>
+                    <li><strong>Humanoid</strong>: 기존 지상 유닛용 (Worker, WorkerThreeRobot)</li>
+                    <li><strong>Air Units</strong>: 새로 추가된 공중 유닛용 (Air Transport)</li>
+                </ul>
+
+                <h4>Layer Collision Matrix</h4>
+                <div class="code-block">
+<span class="comment">// TransparentFX 레이어 설정</span>
+<span class="comment">// - 모든 레이어와의 충돌 비활성화</span>
+<span class="comment">// - NavMesh Bake에만 사용</span>
+<span class="comment">// - 물리 시뮬레이션에 영향 없음</span>
+                </div>
+
+                <h4>NavMeshAgent 설정</h4>
+                <div class="code-block">
+<span class="comment">// Air Transport NavMeshAgent</span>
+<span class="comment">// ├── Agent Type: Air Units</span>
+<span class="comment">// ├── Obstacle Avoidance: No Obstacle Avoidance</span>
+<span class="comment">// ├── Height: 2</span>
+<span class="comment">// └── Radius: 0.5</span>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>❓ 왜 필요한가?</h3>
+                
+                <h4>NavMesh Obstacle의 한계</h4>
+                <div class="code-block">
+<span class="comment">// 문제점:</span>
+<span class="comment">// - NavMesh Obstacle은 모든 NavMesh를 자동으로 carve</span>
+<span class="comment">// - 특정 Agent Type만 영향받게 할 수 없음</span>
+<span class="comment">// - 런타임에 동적으로 제어 불가능</span>
+
+<span class="comment">// 해결책:</span>
+<span class="comment">// - Multiple NavMesh Surface 사용</span>
+<span class="comment">// - Agent Type별 독립적인 네비게이션</span>
+<span class="comment">// - 높이와 레이어로 완전 분리</span>
+                </div>
+
+                <h4>Air Unit의 특수 요구사항</h4>
+                <div class="code-block">
+<span class="comment">// Air Unit이 필요한 기능:</span>
+<span class="comment">// - 물 위를 자유롭게 비행</span>
+<span class="comment">// - 미네랄과 가스 위를 통과</span>
+<span class="comment">// - 건물 위를 날아다님</span>
+<span class="comment">// - 지상 유닛과 독립적인 이동</span>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🎮 노바1492 적용 포인트</h3>
+                
+                <h4>다양한 로봇 타입 지원</h4>
+                <ul>
+                    <li><strong>지상형 로봇</strong>: 기존 NavMesh 사용, 장애물 회피</li>
+                    <li><strong>공중형 로봇</strong>: Air Units NavMesh 사용, 자유로운 비행</li>
+                    <li><strong>수중형 로봇</strong>: 향후 세 번째 NavMesh 추가 가능</li>
+                </ul>
+
+                <h4>전략적 깊이</h4>
+                <div class="code-block">
+<span class="comment">// 전술적 활용:</span>
+<span class="comment">// - 공중 유닛의 우위: 장애물 무시하고 직접 공격</span>
+<span class="comment">// - 지상 유닛의 제약: 장애물을 돌아서 이동</span>
+<span class="comment">// - 입체적 전투: 높이 차이를 활용한 전략</span>
+<span class="comment">// - 리소스 관리: 각 타입별 최적화된 경로</span>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🚀 향후 확장 방향</h3>
+                <ul>
+                    <li>수중 유닛을 위한 세 번째 NavMesh Surface</li>
+                    <li>Agent Type별 특화된 이동 속도와 회전 속도</li>
+                    <li>다층 NavMesh 간의 경로 찾기 최적화</li>
+                    <li>동적 NavMesh 생성 시스템</li>
+                    <li>유닛 타입별 특화된 포메이션 시스템</li>
                 </ul>
             </div>
         </div>
