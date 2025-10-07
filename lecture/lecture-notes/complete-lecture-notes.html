@@ -3619,5 +3619,197 @@ namespace GameDevTV.RTS.Units
         </div>
     </div>
 
+    <!-- 강의 22: Unifying Interactions with Buildings & Units (건물과 유닛 상호작용 통합) -->
+    <div class="lecture-section">
+        <h2 class="lecture-title">🔗 강의 22: Unifying Interactions with Buildings & Units (건물과 유닛 상호작용 통합)</h2>
+        
+        <div class="lecture-goal">
+            <h3>🎯 학습 목표</h3>
+            <ul class="content-list">
+                <li>AbstractCommandable 클래스를 통한 코드 중복 제거</li>
+                <li>유닛과 건물의 공통 기능을 상위 클래스로 리프트</li>
+                <li>상속 계층 구조 최적화 및 확장성 향상</li>
+                <li>DRY (Don't Repeat Yourself) 원칙 적용</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h3>📝 핵심 개념</h3>
+            <ul class="content-list">
+                <li><strong>AbstractCommandable</strong>: 유닛과 건물의 공통 기반 클래스</li>
+                <li><strong>Code Refactoring</strong>: 중복 코드를 상위 클래스로 이동</li>
+                <li><strong>Inheritance Hierarchy</strong>: 명확한 상속 계층 구조 구축</li>
+                <li><strong>DRY Principle</strong>: 코드 중복을 최소화하는 설계 원칙</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h3>💻 구현 과정</h3>
+            
+            <div class="step-guide">
+                <h5>1단계: AbstractCommandable 클래스 생성</h5>
+                <ol>
+                    <li>MonoBehaviour를 상속받는 추상 클래스 생성</li>
+                    <li>ISelectable 인터페이스 구현</li>
+                    <li>공통 필드와 메서드 정의</li>
+                </ol>
+            </div>
+
+            <div class="step-guide">
+                <h5>2단계: 공통 기능 리프트</h5>
+                <ol>
+                    <li>DecalProjector: 선택 시각적 피드백</li>
+                    <li>Health: Property Field로 안전한 관리</li>
+                    <li>Select/Deselect: 이벤트 발생 로직</li>
+                </ol>
+            </div>
+
+            <div class="step-guide">
+                <h5>3단계: 기존 클래스 리팩토링</h5>
+                <ol>
+                    <li>AbstractUnit: AbstractCommandable 상속</li>
+                    <li>SupplyHut: AbstractCommandable 상속</li>
+                    <li>중복 코드 제거 및 상속 구조 정리</li>
+                </ol>
+            </div>
+
+            <div class="step-guide">
+                <h5>4단계: 상속 계층 구조 최적화</h5>
+                <ol>
+                    <li>AbstractCommandable: 공통 기반</li>
+                    <li>AbstractUnit: 유닛 전용 기능 (NavMeshAgent)</li>
+                    <li>SupplyHut: 건물 전용 기능</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>🔧 핵심 코드</h3>
+            
+            <div class="code-block">// AbstractCommandable.cs - 공통 기반 클래스
+using GameDevTV.RTS.EventBus;
+using GameDevTV.RTS.Events;
+using UnityEngine;
+using UnityEngine.Rendering.Universal;
+
+namespace GameDevTV.RTS.Units
+{
+    public abstract class AbstractCommandable : MonoBehaviour, ISelectable
+    {
+        [SerializeField] private DecalProjector decalProjector;
+        [field: SerializeField] public int Health { get; private set; }
+
+        public void Select()
+        {
+            if (decalProjector != null)
+            {
+                decalProjector.gameObject.SetActive(true);
+            }
+            Bus<UnitSelectedEvent>.Raise(new UnitSelectedEvent(this));
+        }
+
+        public void Deselect()
+        {
+            if (decalProjector != null)
+            {
+                decalProjector.gameObject.SetActive(false);
+            }
+            Bus<UnitDeselectedEvent>.Raise(new UnitDeselectedEvent(this));
+        }
+    }
+}</div>
+
+            <div class="code-block">// AbstractUnit.cs - 유닛 전용 클래스
+using GameDevTV.RTS.EventBus;
+using GameDevTV.RTS.Events;
+using UnityEngine;
+using UnityEngine.AI;
+
+namespace GameDevTV.RTS.Units
+{
+    [RequireComponent(typeof(NavMeshAgent))]
+    public abstract class AbstractUnit : AbstractCommandable, IMoveable
+    {
+        public float AgentRadius => agent.radius;
+        private NavMeshAgent agent;
+
+        protected virtual void Awake()
+        {
+            agent = GetComponent<NavMeshAgent>();
+        }
+
+        private void Start()
+        {
+            Bus<UnitSpawnEvent>.Raise(new UnitSpawnEvent(this));
+        }
+
+        public void MoveTo(Vector3 position)
+        {
+            agent.SetDestination(position);
+        }
+    }
+}</div>
+
+            <div class="code-block">// SupplyHut.cs - 건물 클래스 (간소화됨)
+using GameDevTV.RTS.EventBus;
+using GameDevTV.RTS.Events;
+using UnityEngine;
+
+namespace GameDevTV.RTS.Units
+{
+    public class SupplyHut : AbstractCommandable
+    {
+        // 공통 기능은 AbstractCommandable에서 상속
+        // 건물 전용 기능만 여기에 추가
+    }
+}</div>
+        </div>
+
+        <div class="content-section">
+            <h3>❓ 왜 필요한가?</h3>
+            
+            <div class="tech-stack">
+                <h4>🔄 코드 중복 제거</h4>
+                <p><strong>DRY 원칙</strong>: 같은 코드를 여러 곳에 작성하지 않음</p>
+                <p><strong>유지보수성</strong>: 한 곳에서 수정하면 모든 곳에 적용</p>
+                <p><strong>일관성</strong>: 동일한 동작이 모든 클래스에서 보장</p>
+            </div>
+
+            <div class="tech-stack">
+                <h4>🏗️ 확장성 향상</h4>
+                <p><strong>새로운 건물 타입</strong>: AbstractCommandable만 상속하면 됨</p>
+                <p><strong>새로운 유닛 타입</strong>: AbstractUnit만 상속하면 됨</p>
+                <p><strong>공통 기능 추가</strong>: 상위 클래스에만 추가하면 모든 하위 클래스에 적용</p>
+            </div>
+
+            <div class="tech-stack">
+                <h4>🎯 명확한 책임 분리</h4>
+                <p><strong>AbstractCommandable</strong>: 선택 가능한 모든 객체의 공통 기능</p>
+                <p><strong>AbstractUnit</strong>: 이동 가능한 유닛의 전용 기능</p>
+                <p><strong>SupplyHut</strong>: 건물만의 고유 기능</p>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3>🎮 노바1492 적용 포인트</h3>
+            <ul class="content-list">
+                <li><strong>로봇 생산 건물</strong>: AbstractCommandable 상속으로 일관된 선택 시스템</li>
+                <li><strong>다양한 로봇 타입</strong>: AbstractUnit 상속으로 공통 이동 시스템</li>
+                <li><strong>방어 건물</strong>: AbstractCommandable 상속으로 공통 방어 시스템</li>
+                <li><strong>연구 건물</strong>: AbstractCommandable 상속으로 공통 연구 시스템</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h3>🚀 다음 단계</h3>
+            <ul class="content-list">
+                <li>더 많은 건물 타입 추가</li>
+                <li>건물별 고유 기능 구현</li>
+                <li>건물 건설 시스템 개발</li>
+                <li>건물 업그레이드 시스템 구현</li>
+            </ul>
+        </div>
+    </div>
+
 </body>
 </html>

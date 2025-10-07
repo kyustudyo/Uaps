@@ -931,6 +931,81 @@ List&lt;AbstractUnit&gt; abstractUnits = <span class="keyword">new</span> List&l
             </div>
         </div>
 
+        <!-- 강의 22: Unifying Interactions with Buildings & Units (건물과 유닛 상호작용 통합) -->
+        <div class="section">
+            <h2>강의 22: Unifying Interactions with Buildings & Units (건물과 유닛 상호작용 통합)</h2>
+            
+            <div class="subsection">
+                <h3>📋 새로운 클래스 추가</h3>
+                <div class="code-block">// AbstractCommandable.cs - 공통 기반 클래스
+public abstract class AbstractCommandable : MonoBehaviour, ISelectable
+{
+    [SerializeField] private DecalProjector decalProjector;
+    [field: SerializeField] public int Health { get; private set; }
+
+    public void Select()
+    {
+        if (decalProjector != null)
+        {
+            decalProjector.gameObject.SetActive(true);
+        }
+        Bus<UnitSelectedEvent>.Raise(new UnitSelectedEvent(this));
+    }
+
+    public void Deselect()
+    {
+        if (decalProjector != null)
+        {
+            decalProjector.gameObject.SetActive(false);
+        }
+        Bus<UnitDeselectedEvent>.Raise(new UnitDeselectedEvent(this));
+    }
+}</div>
+            </div>
+
+            <div class="subsection">
+                <h3>🔄 상속 계층 구조 변경</h3>
+                <div class="code-block">// 기존 구조:
+// AbstractUnit : MonoBehaviour, ISelectable, IMoveable
+// SupplyHut : MonoBehaviour, ISelectable
+
+// 새로운 구조:
+// AbstractCommandable : MonoBehaviour, ISelectable
+//   ├── AbstractUnit : AbstractCommandable, IMoveable
+//   └── SupplyHut : AbstractCommandable</div>
+            </div>
+
+            <div class="subsection">
+                <h3>🏗️ 리팩토링 결과</h3>
+                <ul>
+                    <li><strong>AbstractUnit</strong>: AbstractCommandable 상속, NavMeshAgent 기능 유지</li>
+                    <li><strong>SupplyHut</strong>: AbstractCommandable 상속, 중복 코드 제거</li>
+                    <li><strong>공통 기능</strong>: DecalProjector, Health, Select/Deselect 로직</li>
+                    <li><strong>코드 중복 제거</strong>: DRY 원칙 적용</li>
+                </ul>
+            </div>
+
+            <div class="subsection">
+                <h3>❓ 왜 필요한가?</h3>
+                <ul>
+                    <li><strong>코드 중복 제거</strong>: 같은 코드를 여러 곳에 작성하지 않음</li>
+                    <li><strong>유지보수성 향상</strong>: 한 곳에서 수정하면 모든 곳에 적용</li>
+                    <li><strong>확장성 향상</strong>: 새로운 건물/유닛 타입 추가가 쉬워짐</li>
+                    <li><strong>일관성 보장</strong>: 동일한 동작이 모든 클래스에서 보장</li>
+                </ul>
+            </div>
+
+            <div class="subsection">
+                <h3>🎮 노바1492 적용 포인트</h3>
+                <ul>
+                    <li><strong>로봇 생산 건물</strong>: AbstractCommandable 상속으로 일관된 선택 시스템</li>
+                    <li><strong>다양한 로봇 타입</strong>: AbstractUnit 상속으로 공통 이동 시스템</li>
+                    <li><strong>방어 건물</strong>: AbstractCommandable 상속으로 공통 방어 시스템</li>
+                    <li><strong>연구 건물</strong>: AbstractCommandable 상속으로 공통 연구 시스템</li>
+                </ul>
+            </div>
+        </div>
+
         <!-- 강의 21: Our First Building - The Supply Hut (첫 번째 건물 - 공급소) -->
         <div class="section">
             <h2>강의 21: Our First Building - The Supply Hut (첫 번째 건물 - 공급소)</h2>
