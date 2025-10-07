@@ -931,6 +931,95 @@ List&lt;AbstractUnit&gt; abstractUnits = <span class="keyword">new</span> List&l
             </div>
         </div>
 
+        <!-- 강의 23: ScriptableObjects as Configuration (설정을 위한 스크립터블 오브젝트) -->
+        <div class="section">
+            <h2>강의 23: ScriptableObjects as Configuration (설정을 위한 스크립터블 오브젝트)</h2>
+            
+            <div class="subsection">
+                <h3>📋 새로운 클래스 추가</h3>
+                <div class="code-block">// UnitSO.cs - ScriptableObject 클래스
+using UnityEngine;
+
+namespace GameDevTV.RTS.Units
+{
+    [CreateAssetMenu(fileName = "Unit", menuName = "Units/Unit")]
+    public class UnitSO : ScriptableObject
+    {
+        [field: SerializeField] public int Health { get; private set; } = 100;
+    }
+}</div>
+            </div>
+
+            <div class="subsection">
+                <h3>🔄 AbstractCommandable 수정</h3>
+                <div class="code-block">// AbstractCommandable.cs - 설정 데이터 통합
+public abstract class AbstractCommandable : MonoBehaviour, ISelectable
+{
+    [field: SerializeField] public int CurrentHealth { get; private set; }
+    [field: SerializeField] public int MaxHealth { get; private set; }
+    [SerializeField] private DecalProjector decalProjector;
+    [SerializeField] private UnitSO UnitSO;
+
+    protected virtual void Start()
+    {
+        CurrentHealth = UnitSO.Health;
+        MaxHealth = UnitSO.Health;
+    }
+}</div>
+            </div>
+
+            <div class="subsection">
+                <h3>🏗️ 상속 구조 처리</h3>
+                <div class="code-block">// AbstractUnit.cs - Start() 오버라이드
+public abstract class AbstractUnit : AbstractCommandable, IMoveable
+{
+    protected override void Start()
+    {
+        base.Start(); // 부모 클래스의 Start() 호출
+        Bus<UnitSpawnEvent>.Raise(new UnitSpawnEvent(this));
+    }
+}</div>
+            </div>
+
+            <div class="subsection">
+                <h3>📊 ScriptableObject 에셋 생성</h3>
+                <ul>
+                    <li><strong>Supply Hut.asset</strong>: Health 100</li>
+                    <li><strong>Worker.asset</strong>: Health 50</li>
+                    <li><strong>Air Transport.asset</strong>: Health 200</li>
+                </ul>
+            </div>
+
+            <div class="subsection">
+                <h3>❓ 왜 필요한가?</h3>
+                <ul>
+                    <li><strong>설정 데이터 분리</strong>: 코드와 데이터를 명확히 분리</li>
+                    <li><strong>디자이너 친화적</strong>: 프로그래머 없이도 설정 변경 가능</li>
+                    <li><strong>재사용성</strong>: 하나의 설정으로 여러 Prefab에 적용</li>
+                    <li><strong>버전 관리</strong>: 설정 변경사항을 Git으로 추적 가능</li>
+                </ul>
+            </div>
+
+            <div class="subsection">
+                <h3>⚠️ 주의사항</h3>
+                <ul>
+                    <li><strong>빌드 시점 데이터</strong>: 런타임에 변경된 데이터는 저장되지 않음</li>
+                    <li><strong>에디터 vs 플레이어</strong>: 에디터에서는 변경사항이 유지되지만 플레이어에서는 초기화</li>
+                    <li><strong>상속 처리</strong>: Start() 메서드 오버라이드 시 base.Start() 호출 필수</li>
+                </ul>
+            </div>
+
+            <div class="subsection">
+                <h3>🎮 노바1492 적용 포인트</h3>
+                <ul>
+                    <li><strong>로봇 타입별 설정</strong>: 각 로봇의 체력, 공격력, 방어력을 ScriptableObject로 관리</li>
+                    <li><strong>건물별 설정</strong>: 생산 속도, 비용, 업그레이드 정보를 ScriptableObject로 관리</li>
+                    <li><strong>무기 시스템</strong>: 각 무기의 데미지, 사거리, 발사 속도를 ScriptableObject로 관리</li>
+                    <li><strong>리소스 설정</strong>: 각 리소스의 수집량, 재생 속도를 ScriptableObject로 관리</li>
+                </ul>
+            </div>
+        </div>
+
         <!-- 강의 22: Unifying Interactions with Buildings & Units (건물과 유닛 상호작용 통합) -->
         <div class="section">
             <h2>강의 22: Unifying Interactions with Buildings & Units (건물과 유닛 상호작용 통합)</h2>
