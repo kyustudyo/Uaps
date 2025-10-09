@@ -1296,6 +1296,105 @@ public class SupplyHut : MonoBehaviour, ISelectable
             </div>
         </div>
 
+        <!-- 강의 24: Command Post Setup (커맨드 포스트 설정) -->
+        <div class="section">
+            <h2>🏢 강의 24: Command Post Setup (커맨드 포스트 설정)</h2>
+            
+            <div class="subsection">
+                <h3>📋 주요 변경사항</h3>
+                
+                <div class="code-block">
+<span class="comment">// 1. BaseBuilding 클래스 생성</span>
+<span class="keyword">namespace</span> GameDevTV.RTS.Units
+{
+    <span class="keyword">public class</span> <span class="class-name">BaseBuilding</span> : <span class="class-name">AbstractCommandable</span>
+    {
+        <span class="comment">// 모든 건물의 공통 기능을 AbstractCommandable에서 상속</span>
+        <span class="comment">// - Select/Deselect 기능</span>
+        <span class="comment">// - Health 관리</span>
+        <span class="comment">// - DecalProjector 시각화</span>
+        <span class="comment">// - UnitSO 설정</span>
+    }
+}
+
+<span class="comment">// 2. SupplyHut.cs 삭제</span>
+<span class="comment">// - 기존 SupplyHut 클래스는 BaseBuilding으로 대체</span>
+<span class="comment">// - Supply Hut prefab에서 BaseBuilding 스크립트 사용</span>
+
+<span class="comment">// 3. Command Post 설정</span>
+<span class="comment">// - Command Post.asset 생성 (Health: 400)</span>
+<span class="comment">// - DecalProjector 설정 (크기: 4x4)</span>
+<span class="comment">// - NavMeshObstacle 설정 (크기: 2x0.25x2)</span>
+<span class="comment">// - Layer를 Buildings로 변경</span>
+                </div>
+                
+                <div class="info-box">
+                    <h4>💡 왜 BaseBuilding이 필요한가?</h4>
+                    <ul>
+                        <li><strong>코드 중복 제거</strong>: SupplyHut과 Command Post가 동일한 기능을 가지고 있어서 공통 클래스로 통합</li>
+                        <li><strong>일관성 유지</strong>: 모든 건물이 동일한 선택/해제 시스템을 사용</li>
+                        <li><strong>확장성</strong>: 새로운 건물 추가 시 BaseBuilding을 상속받아 쉽게 구현</li>
+                        <li><strong>유지보수성</strong>: 건물 관련 공통 기능 수정 시 한 곳에서만 변경</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🏗️ 건물 시스템 아키텍처</h3>
+                
+                <div class="code-block">
+<span class="comment">// 건물 상속 구조</span>
+<span class="class-name">AbstractCommandable</span> (기본 선택/해제 기능)
+    ↓
+<span class="class-name">BaseBuilding</span> (모든 건물의 공통 기능)
+    ↓
+<span class="comment">// 향후 확장 가능:</span>
+<span class="comment">// - SupplyHut : BaseBuilding</span>
+<span class="comment">// - CommandPost : BaseBuilding</span>
+<span class="comment">// - Barracks : BaseBuilding (유닛 생산)</span>
+<span class="comment">// - Factory : BaseBuilding (기계 생산)</span>
+                </div>
+
+                <div class="info-box">
+                    <h4>💡 왜 이런 구조를 사용하는가?</h4>
+                    <ul>
+                        <li><strong>Template Method Pattern</strong>: 공통 기능은 부모 클래스에서, 특별한 기능은 자식 클래스에서 구현</li>
+                        <li><strong>DRY 원칙</strong>: Don't Repeat Yourself - 중복 코드 제거</li>
+                        <li><strong>확장성</strong>: 새로운 건물 타입 추가 시 BaseBuilding만 상속받으면 됨</li>
+                        <li><strong>일관성</strong>: 모든 건물이 동일한 인터페이스를 제공</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🎮 게임플레이 개선</h3>
+                
+                <div class="code-block">
+<span class="comment">// Command Post의 역할 (향후 확장 예정)</span>
+<span class="comment">// 1. 유닛 생산: Worker, Soldier 등 생산</span>
+<span class="comment">// 2. 자원 수집: Worker들이 수집한 자원을 저장</span>
+<span class="comment">// 3. 업그레이드: 건물과 유닛의 능력 향상</span>
+<span class="comment">// 4. 연구: 새로운 기술 개발</span>
+
+<span class="comment">// 현재 구현된 기능</span>
+<span class="comment">// - 선택/해제 (ISelectable)</span>
+<span class="comment">// - 체력 관리 (Health: 400)</span>
+<span class="comment">// - 시각적 피드백 (DecalProjector)</span>
+<span class="comment">// - NavMesh 장애물 (NavMeshObstacle)</span>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🚀 Nova 1492 적용 포인트</h3>
+                <ul>
+                    <li><strong>모듈화된 건물 시스템</strong>: BaseBuilding을 기반으로 한 확장 가능한 건물 구조</li>
+                    <li><strong>설정 기반 밸런싱</strong>: UnitSO를 통한 체력 관리로 게임 밸런스 조정</li>
+                    <li><strong>시각적 피드백</strong>: DecalProjector를 통한 명확한 선택 표시</li>
+                    <li><strong>전략적 깊이</strong>: 다양한 건물 타입으로 게임의 전략성 향상</li>
+                </ul>
+            </div>
+        </div>
+
         <!-- 문제 해결 가이드 -->
         <div class="section">
             <h2>🔧 문제 해결 가이드</h2>

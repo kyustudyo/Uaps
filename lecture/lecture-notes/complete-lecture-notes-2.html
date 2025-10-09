@@ -245,6 +245,139 @@
             </div>
         </div>
 
+        <!-- 강의 24: Command Post Setup (커맨드 포스트 설정) -->
+        <div class="lecture-section">
+            <h2 class="lecture-title">🏢 강의 24: Command Post Setup (커맨드 포스트 설정)</h2>
+            
+            <div class="tech-stack" style="margin-top: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">
+                <h4 style="color: #2c3e50; margin-top: 0;">🎯 이번 강의를 왜 해야 하는가?</h4>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">건물 시스템 확장</strong>: <span style="color: #2c3e50;">다양한 건물 타입을 지원하기 위한 기반 구축</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">코드 중복 제거</strong>: <span style="color: #2c3e50;">SupplyHut과 Command Post의 공통 기능을 BaseBuilding으로 통합</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">확장성 확보</strong>: <span style="color: #2c3e50;">새로운 건물 추가 시 BaseBuilding을 상속받아 쉽게 구현</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">RTS 게임 기반</strong>: <span style="color: #2c3e50;">Command Post는 향후 유닛 생산과 자원 수집의 중심이 될 건물</span></p>
+            </div>
+            
+            <div class="tech-stack" style="margin-top: 15px; background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px;">
+                <h4 style="color: #155724; margin-top: 0;">🧒 초딩도 이해하기 쉬운 설명</h4>
+                <p style="margin: 8px 0; color: #155724;"><strong>🏗️ 건물이 뭐야?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">게임에서 병사들이 살고 일하는 집이에요. Supply Hut은 창고 같은 곳이고, Command Post는 사령부 같은 곳이에요!</p>
+                
+                <p style="margin: 8px 0; color: #155724;"><strong>🎮 왜 필요한가요?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>다양한 건물</strong>: 게임에 여러 종류의 건물이 있어야 재미있어요</p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>코드 정리</strong>: 비슷한 건물들은 같은 코드를 사용해서 관리하기 쉬워요</p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>새 건물 만들기</strong>: 새로운 건물을 만들 때 기존 코드를 복사해서 쉽게 만들 수 있어요</p>
+                
+                <p style="margin: 8px 0; color: #155724;"><strong>🏠 집으로 비유하면?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">모든 집(건물)은 기본적으로 문, 창문, 지붕이 있어요. BaseBuilding은 이런 기본 기능을 담고 있고, 각 집은 이걸 상속받아서 특별한 기능을 추가해요!</p>
+            </div>
+
+            <div class="subsection">
+                <h3>📋 주요 변경사항</h3>
+                
+                <div class="code-block">
+<span class="comment">// 1. BaseBuilding 클래스 생성</span>
+<span class="keyword">namespace</span> GameDevTV.RTS.Units
+{
+    <span class="keyword">public class</span> <span class="class-name">BaseBuilding</span> : <span class="class-name">AbstractCommandable</span>
+    {
+        <span class="comment">// 모든 건물의 공통 기능을 AbstractCommandable에서 상속</span>
+        <span class="comment">// - Select/Deselect 기능</span>
+        <span class="comment">// - Health 관리</span>
+        <span class="comment">// - DecalProjector 시각화</span>
+        <span class="comment">// - UnitSO 설정</span>
+    }
+}
+                </div>
+
+                <div class="info-box">
+                    <h4>💡 왜 BaseBuilding이 필요한가?</h4>
+                    <ul>
+                        <li><strong>코드 중복 제거</strong>: SupplyHut과 Command Post가 동일한 기능을 가지고 있어서 공통 클래스로 통합</li>
+                        <li><strong>일관성 유지</strong>: 모든 건물이 동일한 선택/해제 시스템을 사용</li>
+                        <li><strong>확장성</strong>: 새로운 건물 추가 시 BaseBuilding을 상속받아 쉽게 구현</li>
+                        <li><strong>유지보수성</strong>: 건물 관련 공통 기능 수정 시 한 곳에서만 변경</li>
+                    </ul>
+                </div>
+
+                <div class="code-block">
+<span class="comment">// 2. SupplyHut.cs 삭제</span>
+<span class="comment">// - 기존 SupplyHut 클래스는 BaseBuilding으로 대체</span>
+<span class="comment">// - Supply Hut prefab에서 BaseBuilding 스크립트 사용</span>
+
+<span class="comment">// 3. Command Post 설정</span>
+<span class="comment">// - Command Post.asset 생성 (Health: 400)</span>
+<span class="comment">// - DecalProjector 설정 (크기: 4x4)</span>
+<span class="comment">// - NavMeshObstacle 설정 (크기: 2x0.25x2)</span>
+<span class="comment">// - Layer를 Buildings로 변경</span>
+                </div>
+
+                <div class="info-box">
+                    <h4>💡 왜 Command Post의 Health가 400인가?</h4>
+                    <ul>
+                        <li><strong>게임 밸런스</strong>: Supply Hut(100)보다 훨씬 강한 건물로 설정</li>
+                        <li><strong>전략적 중요성</strong>: Command Post는 게임의 핵심 건물이므로 파괴하기 어려워야 함</li>
+                        <li><strong>RTS 게임 관례</strong>: 메인 건물은 일반 건물보다 높은 체력을 가짐</li>
+                        <li><strong>플레이어 경험</strong>: 중요한 건물이 쉽게 파괴되면 좌절감을 느낄 수 있음</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🏗️ 건물 시스템 아키텍처</h3>
+                
+                <div class="code-block">
+<span class="comment">// 건물 상속 구조</span>
+<span class="class-name">AbstractCommandable</span> (기본 선택/해제 기능)
+    ↓
+<span class="class-name">BaseBuilding</span> (모든 건물의 공통 기능)
+    ↓
+<span class="comment">// 향후 확장 가능:</span>
+<span class="comment">// - SupplyHut : BaseBuilding</span>
+<span class="comment">// - CommandPost : BaseBuilding</span>
+<span class="comment">// - Barracks : BaseBuilding (유닛 생산)</span>
+<span class="comment">// - Factory : BaseBuilding (기계 생산)</span>
+                </div>
+
+                <div class="info-box">
+                    <h4>💡 왜 이런 구조를 사용하는가?</h4>
+                    <ul>
+                        <li><strong>Template Method Pattern</strong>: 공통 기능은 부모 클래스에서, 특별한 기능은 자식 클래스에서 구현</li>
+                        <li><strong>DRY 원칙</strong>: Don't Repeat Yourself - 중복 코드 제거</li>
+                        <li><strong>확장성</strong>: 새로운 건물 타입 추가 시 BaseBuilding만 상속받으면 됨</li>
+                        <li><strong>일관성</strong>: 모든 건물이 동일한 인터페이스를 제공</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🎮 게임플레이 개선</h3>
+                
+                <div class="code-block">
+<span class="comment">// Command Post의 역할 (향후 확장 예정)</span>
+<span class="comment">// 1. 유닛 생산: Worker, Soldier 등 생산</span>
+<span class="comment">// 2. 자원 수집: Worker들이 수집한 자원을 저장</span>
+<span class="comment">// 3. 업그레이드: 건물과 유닛의 능력 향상</span>
+<span class="comment">// 4. 연구: 새로운 기술 개발</span>
+
+<span class="comment">// 현재 구현된 기능</span>
+<span class="comment">// - 선택/해제 (ISelectable)</span>
+<span class="comment">// - 체력 관리 (Health: 400)</span>
+<span class="comment">// - 시각적 피드백 (DecalProjector)</span>
+<span class="comment">// - NavMesh 장애물 (NavMeshObstacle)</span>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🚀 Nova 1492 적용 포인트</h3>
+                <ul>
+                    <li><strong>모듈화된 건물 시스템</strong>: BaseBuilding을 기반으로 한 확장 가능한 건물 구조</li>
+                    <li><strong>설정 기반 밸런싱</strong>: UnitSO를 통한 체력 관리로 게임 밸런스 조정</li>
+                    <li><strong>시각적 피드백</strong>: DecalProjector를 통한 명확한 선택 표시</li>
+                    <li><strong>전략적 깊이</strong>: 다양한 건물 타입으로 게임의 전략성 향상</li>
+                </ul>
+            </div>
+        </div>
+
         <!-- 강의 23: Scriptable Objects for Configuration (설정을 위한 스크립터블 오브젝트) -->
         <div class="lecture-section">
             <h2 class="lecture-title">📋 강의 23: Scriptable Objects for Configuration (설정을 위한 스크립터블 오브젝트)</h2>
