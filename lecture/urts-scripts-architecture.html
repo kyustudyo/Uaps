@@ -1296,6 +1296,54 @@ public class SupplyHut : MonoBehaviour, ISelectable
             </div>
         </div>
 
+        <!-- 문제 해결 가이드 -->
+        <div class="section">
+            <h2>🔧 문제 해결 가이드</h2>
+            
+            <div class="subsection">
+                <h3>❌ WorkerThreeRobot 다중드래그 선택 문제</h3>
+                <div class="code-block">
+<span class="comment">// 문제: WorkerThreeRobot이 드래그 선택에 포함되지 않음</span>
+<span class="comment">// 원인: UnitSO 설정이 누락되어 AbstractCommandable 초기화 실패</span>
+
+<span class="comment">// 해결 방법:</span>
+<span class="comment">// 1. Unity에서 WorkerThreeRobot.prefab 선택</span>
+<span class="comment">// 2. Inspector에서 WorkerThreeRobot 스크립트 찾기</span>
+<span class="comment">// 3. UnitSO 필드에 Worker.asset 할당</span>
+<span class="comment">// 4. Apply 버튼 클릭</span>
+
+<span class="comment">// 결과: 다중드래그 선택 시 데칼(선택 표시)이 정상적으로 나타남</span>
+                </div>
+                
+                <div class="info-box">
+                    <h4>💡 왜 필요한가?</h4>
+                    <ul>
+                        <li><strong>AbstractCommandable 초기화</strong>: UnitSO가 없으면 Start() 메서드에서 Health 초기화 실패</li>
+                        <li><strong>이벤트 시스템 연동</strong>: UnitSpawnEvent가 제대로 발생하지 않아 aliveUnits에 추가되지 않음</li>
+                        <li><strong>선택 시스템 통합</strong>: 모든 유닛이 동일한 선택 시스템을 사용해야 일관성 유지</li>
+                        <li><strong>설정 데이터 관리</strong>: ScriptableObject를 통한 체계적인 설정 관리</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🔍 디버깅 체크리스트</h3>
+                <div class="code-block">
+<span class="comment">// 다중드래그 선택이 안 될 때 확인사항:</span>
+<span class="comment">// 1. UnitSO가 할당되어 있는가?</span>
+<span class="comment">// 2. DecalProjector가 설정되어 있는가?</span>
+<span class="comment">// 3. Layer가 selectableUnitsLayers에 포함되어 있는가?</span>
+<span class="comment">// 4. UnitSpawnEvent가 정상적으로 발생하는가?</span>
+<span class="comment">// 5. aliveUnits HashSet에 유닛이 추가되는가?</span>
+
+<span class="comment">// Console에서 확인할 수 있는 로그:</span>
+<span class="comment">// - "Unit Spawn Event raised"</span>
+<span class="comment">// - "Unit added to aliveUnits"</span>
+<span class="comment">// - "Unit selected"</span>
+                </div>
+            </div>
+        </div>
+
         <div style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 40px; border-radius: 15px;">
             <h2>🎉 URTS Architecture Master!</h2>
             <p style="font-size: 1.2rem; margin-top: 10px;">이제 확장 가능하고 유지보수하기 쉬운 RTS 시스템을 구축할 수 있습니다!</p>
