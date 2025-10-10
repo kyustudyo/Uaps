@@ -168,7 +168,10 @@
                 </ul>
                 <h4>2. Virtual Camera 생성 및 설정</h4>
                 <div class="code-block">
-// Cinemachine Virtual Camera 설정
+<span class="comment">// Cinemachine Virtual Camera 설정</span>
+<span class="comment">// Virtual Camera: 실제 카메라가 아닌 가상의 카메라 설정을 정의하는 컴포넌트</span>
+<span class="comment">// AddComponent: GameObject에 새로운 컴포넌트를 동적으로 추가하는 Unity 메서드</span>
+<span class="comment">// CinemachineVirtualCamera: Cinemachine 패키지에서 제공하는 가상 카메라 클래스</span>
 CinemachineVirtualCamera vcam = gameObject.AddComponent&lt;CinemachineVirtualCamera&gt;();
                 </div>
                 <h4>3. 카메라 위치 및 각도 설정</h4>
@@ -204,11 +207,19 @@ CinemachineVirtualCamera vcam = gameObject.AddComponent&lt;CinemachineVirtualCam
                 </ul>
                 <h4>2. 키보드 입력 처리</h4>
                 <div class="code-block">
-// 키보드 입력 확인
-if (Keyboard.current.upArrowKey.isPressed) {
+<span class="comment">// 키보드 입력 확인</span>
+<span class="comment">// Keyboard.current: 현재 키보드 상태에 접근하는 Unity Input System의 정적 프로퍼티</span>
+<span class="comment">// upArrowKey.isPressed: 위쪽 화살표 키가 현재 눌려있는지 확인하는 불린 값</span>
+<span class="comment">// keyboardPanSpeed: 카메라 이동 속도를 조절하는 변수 (Inspector에서 설정 가능)</span>
+<span class="keyword">if</span> (Keyboard.current.upArrowKey.isPressed) {
+    <span class="comment">// moveAmount.y: Y축(위/아래) 이동량을 누적</span>
+    <span class="comment">// += 연산자: 기존 값에 새로운 값을 더함 (연속 이동을 위해)</span>
     moveAmount.y += keyboardPanSpeed;
 }
-if (Keyboard.current.leftArrowKey.isPressed) {
+<span class="comment">// leftArrowKey.isPressed: 왼쪽 화살표 키가 눌려있는지 확인</span>
+<span class="keyword">if</span> (Keyboard.current.leftArrowKey.isPressed) {
+    <span class="comment">// moveAmount.x: X축(좌/우) 이동량을 누적</span>
+    <span class="comment">// -= 연산자: 왼쪽 이동이므로 음수 값을 더함</span>
     moveAmount.x -= keyboardPanSpeed;
 }
                 </div>
@@ -301,11 +312,17 @@ if (Keyboard.current.leftArrowKey.isPressed) {
                 </ul>
                 <h4>2. 화면 좌표계 이해</h4>
                 <div class="code-block">
-(0, 1080) ──────────── (1920, 1080)
+<span class="comment">// Unity 화면 좌표계 (왼쪽 하단이 원점)</span>
+<span class="comment">// 화면 해상도가 1920x1080일 때의 좌표 예시</span>
+<span class="comment">// (0, 1080): 화면 왼쪽 상단 모서리</span>
+<span class="comment">// (1920, 1080): 화면 오른쪽 상단 모서리</span>
+<span class="comment">// (0, 0): 화면 왼쪽 하단 모서리 (Unity 좌표계의 원점)</span>
+<span class="comment">// (1920, 0): 화면 오른쪽 하단 모서리</span>
+(<span class="number">0</span>, <span class="number">1080</span>) ──────────── (<span class="number">1920</span>, <span class="number">1080</span>)
     │                       │
     │                       │
     │                       │
-(0, 0) ────────────────── (1920, 0)
+(<span class="number">0</span>, <span class="number">0</span>) ────────────────── (<span class="number">1920</span>, <span class="number">0</span>)
                 </div>
             </div>
             <div class="project-application">
@@ -835,10 +852,18 @@ namespace GameDev.Units
                     <li>각 클래스가 독립적으로 선택/해제 동작 구현</li>
                 </ul>
 
-                <div class="code-block">public interface ISelectable
+                <div class="code-block"><span class="comment">// 선택 가능한 객체를 정의하는 인터페이스</span>
+<span class="comment">// Interface: 클래스가 반드시 구현해야 하는 메서드들을 정의하는 계약</span>
+<span class="comment">// ISelectable: "선택 가능한" 객체라는 의미를 가진 인터페이스 이름</span>
+<span class="keyword">public interface</span> ISelectable
 {
-    void Select();
-    void Deselect();
+    <span class="comment">// 객체를 선택할 때 호출되는 메서드</span>
+    <span class="comment">// Select: 선택 상태로 변경하고 시각적 표시를 활성화</span>
+    <span class="keyword">void</span> Select();
+    
+    <span class="comment">// 객체의 선택을 해제할 때 호출되는 메서드</span>
+    <span class="comment">// Deselect: 선택 해제 상태로 변경하고 시각적 표시를 비활성화</span>
+    <span class="keyword">void</span> Deselect();
 }</div>
 
                 <p><strong>Interface 장점</strong></p>
@@ -853,41 +878,76 @@ namespace GameDev.Units
                 <h3>💻 구현 코드</h3>
 
                 <h4>PlayerInput.cs</h4>
-                <div class="code-block">using GameDevTV.RTS.Units;
+                <div class="code-block"><span class="comment">// 플레이어 입력을 처리하는 클래스</span>
+<span class="comment">// GameDevTV.RTS.Units: 유닛 관련 클래스들을 포함하는 네임스페이스</span>
+<span class="keyword">using</span> GameDevTV.RTS.Units;
 
-public class PlayerInput : MonoBehaviour
+<span class="comment">// MonoBehaviour: Unity에서 GameObject에 컴포넌트로 추가할 수 있는 기본 클래스</span>
+<span class="comment">// PlayerInput: 플레이어의 입력(마우스, 키보드)을 처리하는 클래스</span>
+<span class="keyword">public class</span> PlayerInput : MonoBehaviour
 {
-    [SerializeField] private new Camera camera;
-    private ISelectable selectedUnit;
+    <span class="comment">// 카메라 참조 - 화면 좌표를 월드 좌표로 변환하기 위해 필요</span>
+    <span class="comment">// [SerializeField]: Inspector에서 할당 가능하도록 하는 Unity 어트리뷰트</span>
+    <span class="comment">// new Camera: 부모 클래스의 camera 필드를 숨기기 위해 new 키워드 사용</span>
+    [SerializeField] <span class="keyword">private new</span> Camera camera;
+    
+    <span class="comment">// 현재 선택된 유닛을 저장하는 변수</span>
+    <span class="comment">// ISelectable: 선택 가능한 객체를 나타내는 인터페이스</span>
+    <span class="keyword">private</span> ISelectable selectedUnit;
 
-    private void Update()
+    <span class="comment">// 매 프레임마다 호출되는 Unity 생명주기 메서드</span>
+    <span class="comment">// Update: 게임이 실행되는 동안 매 프레임마다 호출됨</span>
+    <span class="keyword">private void</span> Update()
     {
-        HandlePanning();
-        HandleZooming();
-        HandleRotation();
-        HandleLeftClick();
+        <span class="comment">// 각종 입력 처리 메서드들을 매 프레임 호출</span>
+        HandlePanning();    <span class="comment">// 카메라 팬닝 (이동) 처리</span>
+        HandleZooming();    <span class="comment">// 줌 인/아웃 처리</span>
+        HandleRotation();   <span class="comment">// 카메라 회전 처리</span>
+        HandleLeftClick();  <span class="comment">// 왼쪽 마우스 클릭 처리</span>
     }
 
-    private void HandleLeftClick()
+    <span class="comment">// 왼쪽 마우스 클릭을 처리하는 메서드</span>
+    <span class="keyword">private void</span> HandleLeftClick()
     {
-        if (camera == null) return;
+        <span class="comment">// 카메라가 없으면 메서드 종료 (Guardian Pattern)</span>
+        <span class="comment">// Guardian Pattern: 조건을 먼저 확인하여 안전하게 처리하는 패턴</span>
+        <span class="keyword">if</span> (camera == <span class="keyword">null</span>) <span class="keyword">return</span>;
 
+        <span class="comment">// 카메라에서 마우스 위치로 레이를 생성</span>
+        <span class="comment">// ScreenPointToRay: 화면의 픽셀 좌표를 3D 월드의 레이로 변환</span>
+        <span class="comment">// Mouse.current.position.ReadValue(): 현재 마우스 위치를 Vector2로 반환</span>
         Ray cameraRay = camera.ScreenPointToRay(Mouse.current.position.ReadValue());
 
-        if (Mouse.current.leftButton.wasReleasedThisFrame)
+        <span class="comment">// 왼쪽 마우스 버튼이 이번 프레임에 놓아졌는지 확인</span>
+        <span class="comment">// wasReleasedThisFrame: 버튼이 눌렸다가 놓아진 순간을 감지</span>
+        <span class="keyword">if</span> (Mouse.current.leftButton.wasReleasedThisFrame)
         {
-            // 기존 선택 해제
-            if (selectedUnit != null)
+            <span class="comment">// 기존 선택 해제</span>
+            <span class="comment">// 이전에 선택된 유닛이 있으면 선택 해제</span>
+            <span class="keyword">if</span> (selectedUnit != <span class="keyword">null</span>)
             {
+                <span class="comment">// 선택된 유닛의 Deselect 메서드 호출</span>
                 selectedUnit.Deselect();
-                selectedUnit = null;
+                <span class="comment">// 선택된 유닛 참조를 null로 초기화</span>
+                selectedUnit = <span class="keyword">null</span>;
             }
 
-            // 새 유닛 선택
-            if (Physics.Raycast(cameraRay, out RaycastHit hit, float.MaxValue, LayerMask.GetMask("Default"))
-                && hit.collider.TryGetComponent(out ISelectable selectable))
+            <span class="comment">// 새 유닛 선택</span>
+            <span class="comment">// 레이캐스팅으로 클릭한 지점의 오브젝트 감지</span>
+            <span class="comment">// Physics.Raycast: 레이를 발사하여 충돌하는 오브젝트를 찾는 Unity 메서드</span>
+            <span class="comment">// out RaycastHit hit: 충돌 정보를 담을 변수 (out 키워드로 참조 전달)</span>
+            <span class="comment">// float.MaxValue: 무한대 거리까지 레이를 발사</span>
+            <span class="comment">// LayerMask.GetMask("Default"): Default 레이어에 있는 오브젝트만 감지</span>
+            <span class="keyword">if</span> (Physics.Raycast(cameraRay, <span class="keyword">out</span> RaycastHit hit, <span class="keyword">float</span>.MaxValue, LayerMask.GetMask(<span class="string">"Default"</span>))
+                <span class="comment">// 충돌한 오브젝트에서 ISelectable 컴포넌트를 찾음</span>
+                <span class="comment">// && 연산자: 앞의 조건이 true일 때만 뒤의 조건을 확인 (단축 평가)</span>
+                <span class="comment">// TryGetComponent: 컴포넌트를 찾고 성공 여부를 bool로 반환</span>
+                <span class="comment">// out ISelectable selectable: 찾은 ISelectable 컴포넌트를 담을 변수</span>
+                && hit.collider.TryGetComponent(<span class="keyword">out</span> ISelectable selectable))
             {
+                <span class="comment">// 새로 클릭한 유닛을 선택</span>
                 selectable.Select();
+                <span class="comment">// 현재 선택된 유닛으로 설정</span>
                 selectedUnit = selectable;
             }
         }
@@ -895,36 +955,69 @@ public class PlayerInput : MonoBehaviour
 }</div>
 
                 <h4>ISelectable.cs</h4>
-                <div class="code-block">namespace GameDevTV.RTS.Units
+                <div class="code-block"><span class="comment">// 네임스페이스: 관련된 클래스들을 그룹화하는 C# 기능</span>
+<span class="comment">// GameDevTV.RTS.Units: 유닛 관련 클래스들을 포함하는 네임스페이스</span>
+<span class="keyword">namespace</span> GameDevTV.RTS.Units
 {
-    public interface ISelectable
+    <span class="comment">// 선택 가능한 객체를 정의하는 인터페이스</span>
+    <span class="comment">// Interface: 클래스가 반드시 구현해야 하는 메서드들을 정의하는 계약</span>
+    <span class="comment">// ISelectable: "선택 가능한" 객체라는 의미를 가진 인터페이스 이름</span>
+    <span class="keyword">public interface</span> ISelectable
     {
-        void Select();
-        void Deselect();
+        <span class="comment">// 객체를 선택할 때 호출되는 메서드</span>
+        <span class="comment">// Select: 선택 상태로 변경하고 시각적 표시를 활성화</span>
+        <span class="keyword">void</span> Select();
+        
+        <span class="comment">// 객체의 선택을 해제할 때 호출되는 메서드</span>
+        <span class="comment">// Deselect: 선택 해제 상태로 변경하고 시각적 표시를 비활성화</span>
+        <span class="keyword">void</span> Deselect();
     }
 }</div>
 
                 <h4>Worker.cs</h4>
-                <div class="code-block">using UnityEngine.Rendering.Universal;
+                <div class="code-block"><span class="comment">// URP Decal Projector를 사용하기 위한 네임스페이스</span>
+<span class="comment">// UnityEngine.Rendering.Universal: URP(Universal Render Pipeline) 관련 클래스들</span>
+<span class="keyword">using</span> UnityEngine.Rendering.Universal;
 
-[RequireComponent(typeof(NavMeshAgent))]
-public class Worker : MonoBehaviour, ISelectable
+<span class="comment">// RequireComponent: 이 컴포넌트가 추가되면 자동으로 NavMeshAgent 컴포넌트도 추가됨</span>
+<span class="comment">// typeof(NavMeshAgent): NavMeshAgent 타입을 가져오는 C# 연산자</span>
+[RequireComponent(<span class="keyword">typeof</span>(NavMeshAgent))]
+<span class="comment">// Worker 클래스: MonoBehaviour를 상속받고 ISelectable 인터페이스를 구현</span>
+<span class="comment">// MonoBehaviour: Unity에서 GameObject에 컴포넌트로 추가할 수 있는 기본 클래스</span>
+<span class="comment">// ISelectable: 선택 가능한 객체를 나타내는 인터페이스</span>
+<span class="keyword">public class</span> Worker : MonoBehaviour, ISelectable
 {
-    [SerializeField] private DecalProjector decalProjector;
+    <span class="comment">// Decal Projector 컴포넌트 참조</span>
+    <span class="comment">// [SerializeField]: Inspector에서 할당 가능하도록 하는 Unity 어트리뷰트</span>
+    <span class="comment">// DecalProjector: URP에서 데칼(투영) 효과를 만드는 컴포넌트</span>
+    [SerializeField] <span class="keyword">private</span> DecalProjector decalProjector;
 
-    public void Select()
+    <span class="comment">// ISelectable 인터페이스의 Select 메서드 구현</span>
+    <span class="comment">// 유닛이 선택되었을 때 호출되는 메서드</span>
+    <span class="keyword">public void</span> Select()
     {
-        if (decalProjector != null)
+        <span class="comment">// Decal Projector가 null이 아닌지 확인 (Guardian Pattern)</span>
+        <span class="comment">// null 체크: 컴포넌트가 할당되지 않았을 때 오류를 방지</span>
+        <span class="keyword">if</span> (decalProjector != <span class="keyword">null</span>)
         {
-            decalProjector.gameObject.SetActive(true);
+            <span class="comment">// Decal Projector의 GameObject를 활성화</span>
+            <span class="comment">// SetActive(true): GameObject를 활성화하여 시각적으로 표시</span>
+            <span class="comment">// 선택된 유닛 위에 원형 표시가 나타남</span>
+            decalProjector.gameObject.SetActive(<span class="keyword">true</span>);
         }
     }
 
-    public void Deselect()
+    <span class="comment">// ISelectable 인터페이스의 Deselect 메서드 구현</span>
+    <span class="comment">// 유닛의 선택이 해제되었을 때 호출되는 메서드</span>
+    <span class="keyword">public void</span> Deselect()
     {
-        if (decalProjector != null)
+        <span class="comment">// Decal Projector가 null이 아닌지 확인 (Guardian Pattern)</span>
+        <span class="keyword">if</span> (decalProjector != <span class="keyword">null</span>)
         {
-            decalProjector.gameObject.SetActive(false);
+            <span class="comment">// Decal Projector의 GameObject를 비활성화</span>
+            <span class="comment">// SetActive(false): GameObject를 비활성화하여 시각적으로 숨김</span>
+            <span class="comment">// 선택 해제된 유닛의 원형 표시가 사라짐</span>
+            decalProjector.gameObject.SetActive(<span class="keyword">false</span>);
         }
     }
 }</div>
