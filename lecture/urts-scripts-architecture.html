@@ -1619,61 +1619,96 @@ public class SupplyHut : MonoBehaviour, ISelectable
             <h2>🎉 URTS Architecture Master!</h2>
             <p style="font-size: 1.2rem; margin-top: 10px;">이제 확장 가능하고 유지보수하기 쉬운 RTS 시스템을 구축할 수 있습니다!</p>
         </div>
-        <!-- 강의 25: Actions with the Command Pattern (커맨드 패턴을 사용한 액션 시스템) -->
+        <!-- 강의 25-26: Command Pattern & Command Context (커맨드 패턴과 컨텍스트 시스템) -->
         <div class="section">
-            <h2>⚡ 강의 25: Actions with the Command Pattern (커맨드 패턴을 사용한 액션 시스템)</h2>
+            <h2>⚡ 강의 25-26: Command Pattern & Command Context (커맨드 패턴과 컨텍스트 시스템)</h2>
             
             <div class="subsection">
-                <h3>📋 주요 변경사항</h3>
+                <h3>📋 주요 변경사항 (강의 25 → 26)</h3>
                 
                 <div class="code-block">
-<span class="comment">// 1. ICommand 인터페이스 생성</span>
-<span class="keyword">namespace</span> GameDevTV.RTS.Commands
+<span class="comment">// 강의 25: 기본 Command Pattern</span>
+<span class="keyword">public interface</span> <span class="class-name">ICommand</span>
 {
-    <span class="keyword">public interface</span> <span class="class-name">ICommand</span>
-    {
-        <span class="keyword">bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit);
-        <span class="keyword">void</span> <span class="method-name">Handle</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit);
-    }
+    <span class="keyword">bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit);
+    <span class="keyword">void</span> <span class="method-name">Handle</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit);
 }
 
-<span class="comment">// 2. ActionBase 추상 클래스 생성</span>
-<span class="keyword">namespace</span> GameDevTV.RTS.Commands
+<span class="comment">// 강의 26: CommandContext 도입으로 개선</span>
+<span class="keyword">public struct</span> <span class="class-name">CommandContext</span>
 {
-    <span class="keyword">public abstract class</span> <span class="class-name">ActionBase</span> : <span class="class-name">ScriptableObject</span>, <span class="class-name">ICommand</span>
-    {
-        <span class="keyword">public abstract bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit);
-        <span class="keyword">public abstract void</span> <span class="method-name">Handle</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit);
-    }
+    <span class="keyword">public</span> <span class="class-name">AbstractCommandable</span> <span class="property-name">Commandable</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+    <span class="keyword">public</span> <span class="class-name">RaycastHit</span> <span class="property-name">Hit</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+    <span class="keyword">public int</span> <span class="property-name">UnitIndex</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
 }
 
-<span class="comment">// 3. MoveCommand 구현</span>
-<span class="keyword">namespace</span> GameDevTV.RTS.Commands
+<span class="keyword">public interface</span> <span class="class-name">ICommand</span>
 {
-    [<span class="class-name">CreateAssetMenu</span>(fileName = <span class="string">"Move Action"</span>, menuName = <span class="string">"AI/Actions/Move"</span>, order = 100)]
-    <span class="keyword">public class</span> <span class="class-name">MoveCommand</span> : <span class="class-name">ActionBase</span>
+    <span class="keyword">bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">CommandContext</span> context);
+    <span class="keyword">void</span> <span class="method-name">Handle</span>(<span class="class-name">CommandContext</span> context);
+}
+                </div>
+                
+                <div class="code-block">
+<span class="comment">// 강의 26: 개선된 MoveCommand (radial placement 포함)</span>
+<span class="keyword">public class</span> <span class="class-name">MoveCommand</span> : <span class="class-name">ActionBase</span>
+{
+    [<span class="class-name">SerializeField</span>] <span class="keyword">private float</span> radiusMultiplier = <span class="number">3.5f</span>;
+    
+    <span class="keyword">private int</span> unitsOnLayer = <span class="number">0</span>;
+    <span class="keyword">private int</span> maxUnitsOnLayer = <span class="number">1</span>;
+    <span class="keyword">private float</span> circleRadius = <span class="number">0</span>;
+    <span class="keyword">private float</span> radialOffset = <span class="number">0</span>;
+    
+    <span class="keyword">public override bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">CommandContext</span> context)
     {
-        <span class="keyword">public override bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit)
+        <span class="keyword">return</span> context.<span class="property-name">Commandable</span> <span class="keyword">is</span> <span class="class-name">AbstractUnit</span>;
+    }
+
+    <span class="keyword">public override void</span> <span class="method-name">Handle</span>(<span class="class-name">CommandContext</span> context)
+    {
+        <span class="class-name">AbstractUnit</span> unit = (<span class="class-name">AbstractUnit</span>)context.<span class="property-name">Commandable</span>;
+
+        <span class="comment">// 첫 번째 유닛일 때 초기화</span>
+        <span class="keyword">if</span> (context.<span class="property-name">UnitIndex</span> == <span class="number">0</span>)
         {
-            <span class="keyword">return</span> commandable <span class="keyword">is</span> <span class="class-name">IMoveable</span>;
+            unitsOnLayer = <span class="number">0</span>;
+            maxUnitsOnLayer = <span class="number">1</span>;
+            circleRadius = <span class="number">0</span>;
+            radialOffset = <span class="number">0</span>;
         }
+        
+        <span class="comment">// 원형 배치 계산</span>
+        <span class="class-name">Vector3</span> targetPosition = <span class="keyword">new</span>(
+            context.<span class="property-name">Hit</span>.<span class="property-name">point</span>.<span class="property-name">x</span> + circleRadius * <span class="class-name">Mathf</span>.<span class="property-name">Cos</span>(radialOffset * unitsOnLayer),
+            context.<span class="property-name">Hit</span>.<span class="property-name">point</span>.<span class="property-name">y</span>,
+            context.<span class="property-name">Hit</span>.<span class="property-name">point</span>.<span class="property-name">z</span> + circleRadius * <span class="class-name">Mathf</span>.<span class="property-name">Sin</span>(radialOffset * unitsOnLayer)
+        );
 
-        <span class="keyword">public override void</span> <span class="method-name">Handle</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit)
+        unit.<span class="method-name">MoveTo</span>(targetPosition);
+        unitsOnLayer++;
+
+        <span class="comment">// 다음 레이어로 넘어가기</span>
+        <span class="keyword">if</span> (unitsOnLayer >= maxUnitsOnLayer)
         {
-            <span class="class-name">IMoveable</span> moveable = (<span class="class-name">IMoveable</span>)commandable;
-            moveable.<span class="method-name">MoveTo</span>(hit.point);
+            unitsOnLayer = <span class="number">0</span>;
+            circleRadius += unit.<span class="property-name">AgentRadius</span> * radiusMultiplier;
+            maxUnitsOnLayer = <span class="class-name">Mathf</span>.<span class="method-name">FloorToInt</span>(<span class="number">2</span> * <span class="class-name">Mathf</span>.<span class="property-name">PI</span> * circleRadius / (unit.<span class="property-name">AgentRadius</span> * <span class="number">2</span>));
+            radialOffset = <span class="number">2</span> * <span class="class-name">Mathf</span>.<span class="property-name">PI</span> / maxUnitsOnLayer;
         }
     }
 }
                 </div>
                 
                 <div class="info-box">
-                    <h4>💡 왜 Command Pattern이 필요한가?</h4>
+                    <h4>💡 왜 Command Pattern과 CommandContext가 필요한가?</h4>
                     <ul>
                         <li><strong>액션 시스템 확장</strong>: RTS 게임의 다양한 명령(Move, Attack, Build 등)을 체계적으로 관리</li>
                         <li><strong>코드 결합도 감소</strong>: PlayerInput과 유닛 간의 직접적인 의존성 제거</li>
                         <li><strong>유연한 명령 시스템</strong>: 새로운 액션 추가 시 기존 코드 수정 없이 확장 가능</li>
-                        <li><strong>디자인 패턴 적용</strong>: Command Pattern을 통한 확장 가능한 아키텍처 구축</li>
+                        <li><strong>복잡한 명령 지원</strong>: CommandContext를 통해 유닛 인덱스, 클릭 정보 등 다양한 데이터 전달</li>
+                        <li><strong>성능 최적화</strong>: struct 사용으로 가비지 컬렉션 부담 감소</li>
+                        <li><strong>자연스러운 유닛 배치</strong>: radial placement 알고리즘으로 원형 배치 구현</li>
                     </ul>
                 </div>
 
@@ -1685,18 +1720,22 @@ public class SupplyHut : MonoBehaviour, ISelectable
     <span class="comment">// ... 기타 필드들</span>
 }
 
-<span class="comment">// 5. PlayerInput 리팩토링</span>
+<span class="comment">// 5. PlayerInput에서 CommandContext 사용 (강의 26)</span>
 <span class="keyword">private void</span> <span class="method-name">HandleRightClick</span>()
 {
     <span class="comment">// ... 기존 코드 ...</span>
     
-    <span class="keyword">foreach</span>(<span class="class-name">AbstractUnit</span> unit <span class="keyword">in</span> abstractUnits)
+    <span class="comment">// CommandContext를 생성하여 유닛 인덱스 전달</span>
+    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i < abstractUnits.<span class="property-name">Count</span>; i++)
     {
-        <span class="keyword">foreach</span>(<span class="class-name">ICommand</span> command <span class="keyword">in</span> unit.<span class="property-name">AvailableCommands</span>)
+        <span class="class-name">CommandContext</span> context = <span class="keyword">new</span>(abstractUnits[i], hit, i);
+
+        <span class="keyword">foreach</span>(<span class="class-name">ICommand</span> command <span class="keyword">in</span> abstractUnits[i].<span class="property-name">AvailableCommands</span>)
         {
-            <span class="keyword">if</span> (command.<span class="method-name">CanHandle</span>(unit, hit))
+            <span class="keyword">if</span> (command.<span class="method-name">CanHandle</span>(context))
             {
-                command.<span class="method-name">Handle</span>(unit, hit);
+                command.<span class="method-name">Handle</span>(context);
+                <span class="keyword">break</span>; <span class="comment">// 하나의 명령만 실행</span>
             }
         }
     }
@@ -1761,6 +1800,9 @@ public class SupplyHut : MonoBehaviour, ISelectable
                     <li><strong>모듈화된 명령 시스템</strong>: Command Pattern을 통한 확장 가능한 액션 구조</li>
                     <li><strong>유닛별 특화 명령</strong>: 각 로봇 타입별로 다른 명령 세트 제공</li>
                     <li><strong>설정 기반 명령</strong>: ScriptableObject를 통한 명령 관리</li>
+                    <li><strong>자연스러운 유닛 배치</strong>: CommandContext를 통한 radial placement 구현</li>
+                    <li><strong>성능 최적화</strong>: struct 사용으로 메모리 효율성 개선</li>
+                    <li><strong>런타임 설정 조정</strong>: Inspector에서 실시간으로 게임 밸런스 조정</li>
                     <li><strong>전략적 깊이</strong>: 다양한 명령 조합으로 게임의 전략성 향상</li>
                 </ul>
             </div>
