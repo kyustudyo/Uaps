@@ -299,6 +299,12 @@ package "GameDevTV.RTS.Commands" {
         +CanHandle(context: CommandContext): bool
         +Handle(context: CommandContext): void
     }
+    
+    class BuildUnitCommand {
+        +Unit: UnitSO
+        +CanHandle(context: CommandContext): bool
+        +Handle(context: CommandContext): void
+    }
 }
 
 package "GameDevTV.RTS.UI" {
@@ -357,6 +363,8 @@ package "GameDevTV.RTS.Units" {
     class BaseBuilding {
         +Select(): void
         +Deselect(): void
+        +BuildUnit(unit: UnitSO): void
+        -DoBuildUnit(unit: UnitSO): IEnumerator
     }
     
     class RobotPart {
@@ -1151,6 +1159,8 @@ namespace GameDevTV.RTS.Units
     public class UnitSO : ScriptableObject
     {
         [field: SerializeField] public int Health { get; private set; } = 100;
+        [field: SerializeField] public GameObject Prefab { get; private set; }
+        [field: SerializeField] public float BuildTime { get; private set; } = 5;
     }
 }</div>
             </div>
@@ -1738,6 +1748,9 @@ public class SupplyHut : MonoBehaviour, ISelectable
                         <li><strong>일관된 UI 배치</strong>: 같은 명령은 항상 같은 슬롯에 표시</li>
                         <li><strong>UI 버튼 클릭 명령</strong>: UI 버튼 클릭으로 명령 활성화 후 월드 클릭으로 실행</li>
                         <li><strong>UI/월드 클릭 구분</strong>: UI 클릭과 월드 클릭을 명확히 구분하여 처리</li>
+                        <li><strong>건물 기반 유닛 생산</strong>: Command Post에서 Worker 생산 가능</li>
+                        <li><strong>시간 기반 생산 시스템</strong>: 코루틴을 사용한 현실적인 빌드 타임</li>
+                        <li><strong>즉시 실행 명령</strong>: RequiresClickToActivate로 다양한 명령 타입 지원</li>
                     </ul>
                 </div>
 

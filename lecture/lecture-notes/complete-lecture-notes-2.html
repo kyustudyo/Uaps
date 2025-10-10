@@ -1328,6 +1328,173 @@ unit.<span class="method-name">MoveTo</span>(targetPosition);
             </div>
         </div>
 
+        <!-- Lecture 29: The Build Unit Command -->
+        <div class="lecture-section">
+            <h2>📚 Lecture 29: The Build Unit Command</h2>
+            
+            <div class="subsection">
+                <h3>🎯 강의 목표</h3>
+                <p>건물에서 유닛을 빌드하는 Build Unit Command 시스템을 구현하여 RTS 게임의 핵심 기능인 유닛 생산을 가능하게 합니다.</p>
+            </div>
+
+            <div class="subsection">
+                <h3>🤔 왜 필요한가?</h3>
+                <ul>
+                    <li><strong>RTS 게임의 핵심 기능</strong>: 건물에서 유닛을 생산하는 것은 모든 RTS 게임의 기본 기능</li>
+                    <li><strong>게임 경제 시스템</strong>: 자원을 소모하여 유닛을 생산하는 경제적 전략 요소</li>
+                    <li><strong>시간 기반 생산</strong>: 즉시 생성이 아닌 시간이 걸리는 현실적인 생산 시스템</li>
+                    <li><strong>명령 패턴 확장</strong>: 기존 Command Pattern을 건물 명령으로 확장</li>
+                    <li><strong>UI 통합</strong>: 건물 선택 시 빌드 명령이 UI에 표시되는 통합된 시스템</li>
+                </ul>
+            </div>
+
+            <div class="subsection">
+                <h3>👶 초딩도 이해하기 쉬운 설명</h3>
+                <p>🏭 <strong>공장에서 장난감 만들기</strong>: 공장(건물)에서 장난감(유닛)을 만드는 것처럼, 게임에서도 건물을 클릭하고 "이 유닛 만들어줘!"라고 명령하면 시간이 걸려서 유닛이 나타납니다. 마치 공장에서 장난감을 만드는 것처럼요!</p>
+            </div>
+
+            <div class="subsection">
+                <h3>🔧 주요 구현 내용</h3>
+                
+                <h4>1. BuildUnitCommand 클래스</h4>
+                <div class="code-block">
+<span class="keyword">using</span> UnityEngine;
+<span class="keyword">using</span> GameDevTV.RTS.Units;
+
+<span class="keyword">namespace</span> GameDevTV.RTS.Commands
+{
+    [CreateAssetMenu(fileName = <span class="string">"Build Unit"</span>, menuName = <span class="string">"Buildings/Commands/Build Unit"</span>, order = <span class="number">120</span>)]
+    <span class="keyword">public class</span> BuildUnitCommand : ActionBase
+    {
+        [field: SerializeField] <span class="keyword">public</span> UnitSO Unit { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+
+        <span class="keyword">public override bool</span> CanHandle(CommandContext context)
+        {
+            <span class="keyword">return</span> context.Commandable <span class="keyword">is</span> BaseBuilding;
+        }
+
+        <span class="keyword">public override void</span> Handle(CommandContext context)
+        {
+            BaseBuilding building = (BaseBuilding)context.Commandable;
+            building.BuildUnit(Unit);
+        }
+    }
+}
+                </div>
+
+                <h4>2. UnitSO 확장 (Prefab과 BuildTime 추가)</h4>
+                <div class="code-block">
+<span class="keyword">using</span> UnityEngine;
+
+<span class="keyword">namespace</span> GameDevTV.RTS.Units
+{
+    [CreateAssetMenu(fileName = <span class="string">"Unit"</span>, menuName = <span class="string">"Units/Unit"</span>)]
+    <span class="keyword">public class</span> UnitSO : ScriptableObject
+    {
+        [field: SerializeField] <span class="keyword">public</span> <span class="keyword">int</span> Health { <span class="keyword">get</span>; <span class="keyword">private set</span>; } = <span class="number">100</span>;
+        [field: SerializeField] <span class="keyword">public</span> GameObject Prefab { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+        [field: SerializeField] <span class="keyword">public</span> <span class="keyword">float</span> BuildTime { <span class="keyword">get</span>; <span class="keyword">private set</span>; } = <span class="number">5</span>;
+    }
+}
+                </div>
+
+                <h4>3. BaseBuilding에 BuildUnit 메서드와 코루틴 추가</h4>
+                <div class="code-block">
+<span class="keyword">using</span> System.Collections;
+<span class="keyword">using</span> UnityEngine;
+
+<span class="keyword">namespace</span> GameDevTV.RTS.Units
+{
+    <span class="keyword">public class</span> BaseBuilding : AbstractCommandable
+    {
+        <span class="keyword">public void</span> BuildUnit(UnitSO unit)
+        {
+            StartCoroutine(DoBuildUnit(unit));
+        }
+
+        <span class="keyword">private IEnumerator</span> DoBuildUnit(UnitSO unit)
+        {
+            Debug.Log(<span class="string">"starting the coroutine!"</span>);
+            <span class="keyword">yield return new</span> WaitForSeconds(unit.BuildTime);
+            Debug.Log(<span class="string">"build time has elapsed! instantiating the unit!"</span>);
+            Instantiate(unit.Prefab, transform.position, Quaternion.identity);
+        }
+    }
+}
+                </div>
+
+                <h4>4. PlayerInput에서 AbstractCommandable 캐스팅 수정</h4>
+                <div class="code-block">
+<span class="comment">// 이전: AbstractUnit으로만 캐스팅 (건물 제외)</span>
+List&lt;AbstractUnit&gt; abstractUnits = selectedUnits
+    .Where((unit) =&gt; unit <span class="keyword">is</span> AbstractUnit)
+    .Cast&lt;AbstractUnit&gt;()
+    .ToList();
+
+<span class="comment">// 개선: AbstractCommandable로 캐스팅 (유닛과 건물 모두 포함)</span>
+List&lt;AbstractCommandable&gt; abstractCommandables = selectedUnits
+    .Where((unit) =&gt; unit <span class="keyword">is</span> AbstractCommandable)
+    .Cast&lt;AbstractCommandable&gt;()
+    .ToList();
+                </div>
+
+                <h4>5. ActionSelected에서 즉시 실행 로직 추가</h4>
+                <div class="code-block">
+<span class="keyword">private void</span> HandleActionSelected(ActionSelectedEvent evt)
+{
+    activeAction = evt.Action;
+    
+    <span class="comment">// RequiresClickToActivate가 false면 즉시 실행</span>
+    <span class="keyword">if</span> (!activeAction.RequiresClickToActivate)
+    {
+        ActivateAction(<span class="keyword">new</span> RaycastHit());
+    }
+}
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🔑 핵심 기술 개념</h3>
+                <ul>
+                    <li><strong>코루틴 (Coroutines)</strong>: 시간이 걸리는 작업을 여러 프레임에 걸쳐 실행</li>
+                    <li><strong>IEnumerator</strong>: 코루틴의 반환 타입, yield return으로 실행 제어</li>
+                    <li><strong>WaitForSeconds</strong>: 지정된 시간만큼 대기하는 코루틴 대기 객체</li>
+                    <li><strong>yield return</strong>: 코루틴에서 실행을 일시 정지하고 Unity에게 제어권 반환</li>
+                    <li><strong>StartCoroutine</strong>: 코루틴을 시작하는 MonoBehaviour 메서드</li>
+                    <li><strong>Instantiate</strong>: 런타임에 GameObject를 생성하는 Unity 메서드</li>
+                    <li><strong>RequiresClickToActivate</strong>: 클릭 없이 즉시 실행할지 결정하는 플래그</li>
+                    <li><strong>AbstractCommandable 캐스팅</strong>: 유닛과 건물 모두 명령을 받을 수 있도록 확장</li>
+                </ul>
+            </div>
+
+            <div class="subsection">
+                <h3>🎮 게임플레이 개선</h3>
+                
+                <div class="code-block">
+<span class="comment">// 이전: 건물 선택 시 아무 명령도 사용할 수 없음</span>
+<span class="comment">// 플레이어가 건물의 기능을 활용할 수 없어 게임이 단조로움</span>
+
+<span class="comment">// 개선: 완전한 건물 기반 유닛 생산 시스템</span>
+<span class="comment">// 1. 건물 선택 → 빌드 명령 UI 표시</span>
+<span class="comment">// 2. 빌드 명령 클릭 → 즉시 유닛 생산 시작</span>
+<span class="comment">// 3. 시간 경과 → 유닛이 건물 근처에 생성</span>
+<span class="comment">// 4. 경제적 전략 요소 추가</span>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🚀 Nova 1492 적용 포인트</h3>
+                <ul>
+                    <li><strong>건물 기반 유닛 생산</strong>: Command Post에서 Worker 생산 가능</li>
+                    <li><strong>시간 기반 생산 시스템</strong>: 현실적인 빌드 타임으로 전략적 요소 추가</li>
+                    <li><strong>코루틴 활용</strong>: 비동기 작업으로 게임 성능 최적화</li>
+                    <li><strong>명령 패턴 확장</strong>: 기존 시스템을 건물 명령으로 확장</li>
+                    <li><strong>UI 통합</strong>: 건물 선택 시 빌드 명령이 자동으로 UI에 표시</li>
+                    <li><strong>즉시 실행 명령</strong>: RequiresClickToActivate로 다양한 명령 타입 지원</li>
+                </ul>
+            </div>
+        </div>
+
     </div>
 </body>
 </html>
