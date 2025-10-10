@@ -930,6 +930,178 @@ unit.<span class="method-name">MoveTo</span>(targetPosition);
             </div>
         </div>
 
+        <div class="section">
+            <h2>🎯 강의 27: UI 명령 표시</h2>
+            
+            <div class="subsection">
+                <h3>🎯 이번 강의를 왜 해야 하는가?</h3>
+                <div class="info-box">
+                    <p><strong>문제점:</strong> 플레이어가 선택한 유닛들이 어떤 명령을 사용할 수 있는지 UI에서 확인할 수 없었습니다.</p>
+                    <p><strong>해결책:</strong> 선택된 유닛들의 사용 가능한 명령을 UI 버튼으로 표시하여 직관적인 인터페이스를 제공합니다.</p>
+                    <p><strong>목표:</strong> RTS 게임의 핵심인 명령 시스템을 시각적으로 표현하여 사용자 경험을 향상시킵니다.</p>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🧒 초딩도 이해하기 쉬운 설명</h3>
+                <div class="info-box">
+                    <p>🎮 <strong>게임에서 일어난 일:</strong></p>
+                    <p>• 로봇을 선택했는데 어떤 명령을 할 수 있는지 모르겠어요</p>
+                    <p>• 마치 리모컨에 버튼이 있지만 어떤 기능인지 표시가 안 되어 있는 것 같아요</p>
+                    <p>• 플레이어가 혼란스러워하고 게임을 제대로 즐기기 어려워요</p>
+                    
+                    <p>🔧 <strong>해결 방법:</strong></p>
+                    <p>• 로봇을 선택하면 화면 아래에 사용할 수 있는 명령 버튼들이 나타나요</p>
+                    <p>• 이동 명령은 화살표 아이콘으로 표시되어요</p>
+                    <p>• 마치 스마트폰 앱처럼 직관적으로 어떤 기능인지 알 수 있어요</p>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>📋 주요 변경사항</h3>
+                
+                <div class="code-block">
+<span class="comment">// 1. ActionBase에 UI 필드 추가</span>
+<span class="keyword">public abstract class</span> <span class="class-name">ActionBase</span> : <span class="class-name">ScriptableObject</span>, <span class="class-name">ICommand</span>
+{
+    [<span class="keyword">field:</span> <span class="class-name">SerializeField</span>] <span class="keyword">public</span> <span class="class-name">Sprite</span> <span class="property-name">Icon</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+    [<span class="keyword">field:</span> <span class="class-name">Range</span>(<span class="number">0</span>, <span class="number">8</span>)] [<span class="keyword">field:</span> <span class="class-name">SerializeField</span>] <span class="keyword">public int</span> <span class="property-name">Slot</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+    [<span class="keyword">field:</span> <span class="class-name">SerializeField</span>] <span class="keyword">public bool</span> <span class="property-name">RequiresClickToActivate</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; } = <span class="keyword">true</span>;
+
+    <span class="keyword">public abstract bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">CommandContext</span> context);
+    <span class="keyword">public abstract void</span> <span class="method-name">Handle</span>(<span class="class-name">CommandContext</span> context);
+}
+                </div>
+
+                <div class="code-block">
+<span class="comment">// 2. UIActionButton 클래스 생성</span>
+<span class="keyword">public class</span> <span class="class-name">UIActionButton</span> : <span class="class-name">MonoBehaviour</span>
+{
+    [<span class="class-name">SerializeField</span>] <span class="keyword">private</span> <span class="class-name">Image</span> <span class="property-name">Icon</span>;
+
+    <span class="keyword">public void</span> <span class="method-name">SetIcon</span>(<span class="class-name">Sprite</span> icon)
+    {
+        <span class="keyword">if</span> (icon == <span class="keyword">null</span>)
+        {
+            <span class="property-name">Icon</span>.<span class="property-name">enabled</span> = <span class="keyword">false</span>;
+        }
+        <span class="keyword">else</span>
+        {
+            <span class="property-name">Icon</span>.<span class="property-name">sprite</span> = icon;
+            <span class="property-name">Icon</span>.<span class="property-name">enabled</span> = <span class="keyword">true</span>;
+        }
+    }
+}
+                </div>
+
+                <div class="code-block">
+<span class="comment">// 3. ActionsUI 클래스 생성</span>
+<span class="keyword">public class</span> <span class="class-name">ActionsUI</span> : <span class="class-name">MonoBehaviour</span>
+{
+    [<span class="class-name">SerializeField</span>] <span class="keyword">private</span> <span class="class-name">UIActionButton</span>[] <span class="property-name">ActionButtons</span>;
+    <span class="keyword">private</span> <span class="class-name">HashSet</span>&lt;<span class="class-name">AbstractCommandable</span>&gt; selectedUnits = <span class="keyword">new</span>(<span class="number">12</span>);
+
+    <span class="keyword">private void</span> <span class="method-name">Awake</span>()
+    {
+        <span class="class-name">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.<span class="property-name">OnEvent</span> += <span class="method-name">HandleUnitSelected</span>;
+        <span class="class-name">Bus</span>&lt;<span class="class-name">UnitDeselectedEvent</span>&gt;.<span class="property-name">OnEvent</span> += <span class="method-name">HandleUnitDeselected</span>;
+
+        <span class="comment">// 모든 버튼을 기본적으로 비활성화</span>
+        <span class="keyword">foreach</span>(<span class="class-name">UIActionButton</span> actionButton <span class="keyword">in</span> <span class="property-name">ActionButtons</span>)
+        {
+            actionButton.<span class="method-name">SetIcon</span>(<span class="keyword">null</span>);
+        }
+    }
+
+    <span class="keyword">private void</span> <span class="method-name">RefreshButtons</span>()
+    {
+        <span class="class-name">HashSet</span>&lt;<span class="class-name">ActionBase</span>&gt; availableCommands = <span class="keyword">new</span>(<span class="number">9</span>);
+
+        <span class="comment">// 선택된 모든 유닛의 명령들을 수집</span>
+        <span class="keyword">foreach</span> (<span class="class-name">AbstractCommandable</span> commandable <span class="keyword">in</span> selectedUnits)
+        {
+            availableCommands.<span class="method-name">AddRange</span>(commandable.<span class="property-name">AvailableCommands</span>);
+        }
+
+        <span class="comment">// 각 슬롯에 맞는 명령 아이콘 설정</span>
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i < <span class="property-name">ActionButtons</span>.<span class="property-name">Length</span>; i++)
+        {
+            <span class="class-name">ActionBase</span> actionForSlot = availableCommands.<span class="method-name">Where</span>(action => action.<span class="property-name">Slot</span> == i).<span class="method-name">FirstOrDefault</span>();
+
+            <span class="keyword">if</span> (actionForSlot != <span class="keyword">null</span>)
+            {
+                <span class="property-name">ActionButtons</span>[i].<span class="method-name">SetIcon</span>(actionForSlot.<span class="property-name">Icon</span>);
+            }
+            <span class="keyword">else</span>
+            {
+                <span class="property-name">ActionButtons</span>[i].<span class="method-name">SetIcon</span>(<span class="keyword">null</span>);
+            }
+        }
+    }
+}
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🔧 핵심 기술 개념</h3>
+                
+                <div class="info-box">
+                    <h4>🎨 UI 시스템 설계</h4>
+                    <ul>
+                        <li><strong>Icon 필드</strong>: 명령을 나타내는 스프라이트 아이콘</li>
+                        <li><strong>Slot 필드</strong>: UI에서 표시될 위치 (0-8, 총 9개 슬롯)</li>
+                        <li><strong>RequiresClickToActivate</strong>: 명령 실행 시 추가 클릭이 필요한지 여부</li>
+                        <li><strong>Range 속성</strong>: Inspector에서 슬롯 값을 0-8 범위로 제한</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h4>🔄 이벤트 기반 UI 업데이트</h4>
+                    <ul>
+                        <li><strong>UnitSelectedEvent</strong>: 유닛 선택 시 UI 버튼 업데이트</li>
+                        <li><strong>UnitDeselectedEvent</strong>: 유닛 선택 해제 시 UI 버튼 업데이트</li>
+                        <li><strong>HashSet 사용</strong>: 중복 제거 및 빠른 검색을 위한 컬렉션</li>
+                        <li><strong>LINQ Where</span>: 특정 슬롯에 맞는 명령을 찾기 위한 필터링</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h4>🎯 UI 버튼 관리</h4>
+                    <ul>
+                        <li><strong>UIActionButton</strong>: 개별 버튼의 아이콘 관리</li>
+                        <li><strong>SetIcon 메서드</strong>: 아이콘 설정 및 활성화/비활성화</li>
+                        <li><strong>null 처리</strong>: 아이콘이 없을 때 버튼 비활성화</li>
+                        <li><strong>일관된 위치</strong>: 같은 명령은 항상 같은 슬롯에 표시</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🎮 게임플레이 개선</h3>
+                
+                <div class="code-block">
+<span class="comment">// 이전: 명령이 무엇인지 알 수 없음</span>
+<span class="comment">// 플레이어가 유닛을 선택해도 어떤 명령을 사용할 수 있는지 모름</span>
+
+<span class="comment">// 개선: 직관적인 UI 명령 표시</span>
+<span class="comment">// 1. 유닛 선택</span>
+<span class="comment">// 2. UI에 사용 가능한 명령 아이콘 표시</span>
+<span class="comment">// 3. 플레이어가 명령을 시각적으로 확인 가능</span>
+<span class="comment">// 4. 일관된 슬롯 위치로 혼란 방지</span>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🚀 Nova 1492 적용 포인트</h3>
+                <ul>
+                    <li><strong>직관적인 사용자 인터페이스</strong>: 명령 아이콘으로 사용자 경험 향상</li>
+                    <li><strong>일관된 UI 배치</strong>: 같은 명령은 항상 같은 위치에 표시</li>
+                    <li><strong>확장 가능한 명령 시스템</strong>: 새로운 명령 추가 시 UI 자동 업데이트</li>
+                    <li><strong>이벤트 기반 업데이트</strong>: 유닛 선택 상태에 따른 실시간 UI 반응</li>
+                </ul>
+            </div>
+        </div>
+
     </div>
 </body>
 </html>

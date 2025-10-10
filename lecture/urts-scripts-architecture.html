@@ -226,7 +226,7 @@ Assets/Scripts/
 ├── Commands/                    <span class="comment">// Command Pattern 시스템</span>
 │   ├── CommandContext.cs        <span class="comment">// 명령 컨텍스트 구조체</span>
 │   ├── ICommand.cs              <span class="comment">// 명령 인터페이스</span>
-│   ├── ActionBase.cs            <span class="comment">// 명령 추상 기본 클래스</span>
+│   ├── ActionBase.cs            <span class="comment">// 명령 추상 기본 클래스 (UI 필드 포함)</span>
 │   └── MoveCommand.cs           <span class="comment">// 이동 명령 구현 (radial placement)</span>
 ├── EventBus/                    <span class="comment">// 이벤트 시스템</span>
 │   ├── Bus.cs                   <span class="comment">// 제네릭 이벤트 버스</span>
@@ -237,6 +237,9 @@ Assets/Scripts/
 │   └── UnitSpawnEvent.cs        <span class="comment">// 유닛 스폰 이벤트</span>
 ├── Player/                      <span class="comment">// 플레이어 관련</span>
 │   └── PlayerInput.cs           <span class="comment">// 입력 처리 및 카메라 제어</span>
+├── UI/                          <span class="comment">// 사용자 인터페이스</span>
+│   ├── ActionsUI.cs             <span class="comment">// 명령 버튼 UI 관리</span>
+│   └── UIActionButton.cs        <span class="comment">// 개별 명령 버튼</span>
 └── Units/                       <span class="comment">// 유닛 관련</span>
     ├── AbstractCommandable.cs   <span class="comment">// 명령 가능한 객체 기본 클래스</span>
     ├── AbstractUnit.cs          <span class="comment">// 모든 유닛의 추상 기본 클래스</span>
@@ -279,6 +282,9 @@ package "GameDevTV.RTS.Commands" {
     }
     
     abstract class ActionBase {
+        +Icon: Sprite
+        +Slot: int
+        +RequiresClickToActivate: bool
         +CanHandle(context: CommandContext): bool
         +Handle(context: CommandContext): void
     }
@@ -291,6 +297,21 @@ package "GameDevTV.RTS.Commands" {
         -radialOffset: float
         +CanHandle(context: CommandContext): bool
         +Handle(context: CommandContext): void
+    }
+}
+
+package "GameDevTV.RTS.UI" {
+    class ActionsUI {
+        -ActionButtons: UIActionButton[]
+        -selectedUnits: HashSet&lt;AbstractCommandable&gt;
+        +HandleUnitSelected(event: UnitSelectedEvent): void
+        +HandleUnitDeselected(event: UnitDeselectedEvent): void
+        +RefreshButtons(): void
+    }
+    
+    class UIActionButton {
+        -Icon: Image
+        +SetIcon(icon: Sprite): void
     }
 }
 
@@ -406,6 +427,13 @@ ActionBase ..> CommandContext : CanHandle & Handle
 CommandContext *-- AbstractCommandable : contains
 CommandContext *-- RaycastHit : contains
 
+' UI 시스템 관계
+ActionsUI ..> Bus&lt;UnitSelectedEvent&gt; : subscribes
+ActionsUI ..> Bus&lt;UnitDeselectedEvent&gt; : subscribes
+ActionsUI *-- UIActionButton : ActionButtons
+ActionsUI ..> ActionBase : reads Icon & Slot
+UIActionButton ..> Image : Icon
+
 ' 이벤트 인터페이스
 IEvent <|.. UnitSelectedEvent
 IEvent <|.. UnitDeselectedEvent
@@ -429,8 +457,8 @@ IEvent <|.. UnitSpawnEvent
 
 <span class="comment">// 이벤트 구독</span>
 <span class="keyword">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.<span class="keyword">OnEvent</span> += <span class="method-name">HandleUnitSelected</span>;
-                </div>
             </div>
+        </div>
 
             <div class="package-box">
                 <div class="package-title">🏗️ Abstract Base Class Pattern</div>
@@ -462,7 +490,7 @@ IEvent <|.. UnitSpawnEvent
 <span class="keyword">HashSet</span>&lt;<span class="abstract-class">AbstractUnit</span>&gt; <span class="keyword">addedUnits</span> = <span class="keyword">new</span>(24);
                 </div>
             </div>
-        </div>
+            </div>
 
         <div class="section">
             <h2>🔄 Event Flow Diagram</h2>
@@ -514,8 +542,8 @@ IEvent <|.. UnitSpawnEvent
                     <h4>📝 선택 목록 업데이트</h4>
                     <p>selectedUnits.Add()</p>
                 </div>
+                </div>
             </div>
-        </div>
 
         <div class="section">
             <h2>🤖 Unit System Deep Dive</h2>
@@ -627,8 +655,8 @@ IEvent <|.. UnitSpawnEvent
                     • 성능 최적화된 Transform 캐싱<br>
                     • 확장 가능한 부품 타입 시스템
                 </div>
+                </div>
             </div>
-        </div>
 
         <div class="section">
             <h2>🎮 Player Input System</h2>
@@ -719,8 +747,8 @@ IEvent <|.. UnitSpawnEvent
                     • 성능 최적화된 입력 처리<br>
                     • <strong>End 키 줌 기능</strong>: 빠른 줌 인/아웃 지원
                 </div>
+                </div>
             </div>
-        </div>
 
         <div class="section">
             <h2>📊 Data Structures & Performance</h2>
@@ -822,8 +850,8 @@ IEvent <|.. UnitSpawnEvent
     <span class="keyword">if</span> (selectable <span class="keyword">is</span> <span class="interface-name">IMoveable</span> moveable)
         moveable.<span class="method-name">MoveTo</span>(hit.point);
 }
-                </div>
             </div>
+        </div>
 
             <div class="package-box">
                 <div class="package-title">📢 Observer Pattern</div>
@@ -1355,7 +1383,7 @@ public class SupplyHut : MonoBehaviour, ISelectable
 <span class="comment">// 3. 높이 분리: Y축으로 NavMesh 격리</span>
 <span class="comment">// 4. Agent Type 분리: Humanoid vs Air Units</span>
                 </div>
-            </div>
+        </div>
 
             <div class="subsection">
                 <h3>🏗️ 시스템 구조</h3>
@@ -1390,7 +1418,7 @@ public class SupplyHut : MonoBehaviour, ISelectable
                 <ul>
                     <li><strong>Humanoid</strong>: 기존 지상 유닛용 (Worker, WorkerThreeRobot)</li>
                     <li><strong>Air Units</strong>: 새로 추가된 공중 유닛용 (Air Transport)</li>
-                </ul>
+            </ul>
 
                 <h4>Layer Collision Matrix</h4>
                 <div class="code-block">
@@ -1408,7 +1436,7 @@ public class SupplyHut : MonoBehaviour, ISelectable
 <span class="comment">// ├── Height: 2</span>
 <span class="comment">// └── Radius: 0.5</span>
                 </div>
-            </div>
+        </div>
 
             <div class="subsection">
                 <h3>❓ 왜 필요한가?</h3>
@@ -1498,8 +1526,8 @@ public class SupplyHut : MonoBehaviour, ISelectable
 <span class="comment">// - DecalProjector 설정 (크기: 4x4)</span>
 <span class="comment">// - NavMeshObstacle 설정 (크기: 2x0.25x2)</span>
 <span class="comment">// - Layer를 Buildings로 변경</span>
-                </div>
-                
+            </div>
+
                 <div class="info-box">
                     <h4>💡 왜 BaseBuilding이 필요한가?</h4>
                     <ul>
@@ -1534,9 +1562,9 @@ public class SupplyHut : MonoBehaviour, ISelectable
                         <li><strong>DRY 원칙</strong>: Don't Repeat Yourself - 중복 코드 제거</li>
                         <li><strong>확장성</strong>: 새로운 건물 타입 추가 시 BaseBuilding만 상속받으면 됨</li>
                         <li><strong>일관성</strong>: 모든 건물이 동일한 인터페이스를 제공</li>
-                    </ul>
-                </div>
+                </ul>
             </div>
+        </div>
 
             <div class="subsection">
                 <h3>🎮 게임플레이 개선</h3>
@@ -1584,7 +1612,7 @@ public class SupplyHut : MonoBehaviour, ISelectable
 <span class="comment">// 4. Apply 버튼 클릭</span>
 
 <span class="comment">// 결과: 다중드래그 선택 시 데칼(선택 표시)이 정상적으로 나타남</span>
-                </div>
+        </div>
                 
                 <div class="info-box">
                     <h4>💡 왜 필요한가?</h4>
@@ -1636,6 +1664,10 @@ public class SupplyHut : MonoBehaviour, ISelectable
     → <span class="class-name">PlayerInput</span>.<span class="method-name">DeselectAllUnits</span>()
     → <span class="class-name">PlayerInput</span>.<span class="method-name">HandleLeftClick</span>()
     → <span class="property-name">selectedUnits</span>.<span class="method-name">Add</span>(unit)
+    → <span class="class-name">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.<span class="method-name">Raise</span>()
+    → <span class="class-name">ActionsUI</span>.<span class="method-name">HandleUnitSelected</span>()
+    → <span class="class-name">ActionsUI</span>.<span class="method-name">RefreshButtons</span>()
+    → <span class="class-name">UIActionButton</span>.<span class="method-name">SetIcon</span>(action.<span class="property-name">Icon</span>)
 
 <span class="comment">// 3. 유닛 이동 명령 시</span>
 <span class="class-name">PlayerInput</span>.<span class="method-name">HandleRightClick</span>()
@@ -1676,6 +1708,8 @@ public class SupplyHut : MonoBehaviour, ISelectable
                         <li><strong>이벤트 기반 시스템</strong>: 유닛 선택/해제/스폰 이벤트</li>
                         <li><strong>Command Pattern</strong>: 확장 가능한 명령 시스템</li>
                         <li><strong>ScriptableObject 설정</strong>: Inspector에서 실시간 조정</li>
+                        <li><strong>UI 명령 표시</strong>: 선택된 유닛의 사용 가능한 명령을 아이콘으로 표시</li>
+                        <li><strong>일관된 UI 배치</strong>: 같은 명령은 항상 같은 슬롯에 표시</li>
                     </ul>
                 </div>
 
