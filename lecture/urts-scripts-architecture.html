@@ -1615,197 +1615,87 @@ public class SupplyHut : MonoBehaviour, ISelectable
             </div>
         </div>
 
+        <div class="section">
+            <h2>🔄 시스템 동작 순서</h2>
+            
+            <div class="subsection">
+                <h3>📋 유닛 선택 및 이동 플로우</h3>
+                
+                <div class="code-block">
+<span class="comment">// 1. 유닛 스폰 시</span>
+<span class="class-name">AbstractUnit</span>.<span class="method-name">Start</span>() 
+    → <span class="class-name">Bus</span>&lt;<span class="class-name">UnitSpawnEvent</span>&gt;.<span class="method-name">Raise</span>()
+    → <span class="class-name">PlayerInput</span>.<span class="method-name">HandleUnitSpawn</span>()
+    → <span class="property-name">aliveUnits</span>.<span class="method-name">Add</span>(unit)
+
+<span class="comment">// 2. 유닛 선택 시</span>
+<span class="class-name">PlayerInput</span>.<span class="method-name">HandleDragSelect</span>()
+    → <span class="class-name">PlayerInput</span>.<span class="method-name">HandleMouseDown</span>() <span class="comment">// 드래그 시작</span>
+    → <span class="class-name">PlayerInput</span>.<span class="method-name">HandleMouseDrag</span>() <span class="comment">// 드래그 중</span>
+    → <span class="class-name">PlayerInput</span>.<span class="method-name">HandleMouseUp</span>() <span class="comment">// 드래그 종료</span>
+    → <span class="class-name">PlayerInput</span>.<span class="method-name">DeselectAllUnits</span>()
+    → <span class="class-name">PlayerInput</span>.<span class="method-name">HandleLeftClick</span>()
+    → <span class="property-name">selectedUnits</span>.<span class="method-name">Add</span>(unit)
+
+<span class="comment">// 3. 유닛 이동 명령 시</span>
+<span class="class-name">PlayerInput</span>.<span class="method-name">HandleRightClick</span>()
+    → <span class="class-name">Physics</span>.<span class="method-name">Raycast</span>() <span class="comment">// 클릭 지점 감지</span>
+    → <span class="keyword">for</span> (각 선택된 유닛)
+        → <span class="class-name">CommandContext</span> <span class="keyword">new</span>(unit, hit, unitIndex)
+        → <span class="keyword">foreach</span> (유닛의 AvailableCommands)
+            → <span class="class-name">MoveCommand</span>.<span class="method-name">CanHandle</span>(context)
+            → <span class="class-name">MoveCommand</span>.<span class="method-name">Handle</span>(context)
+                → <span class="comment">// Radial Placement 계산</span>
+                → unit.<span class="method-name">MoveTo</span>(targetPosition)
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🎯 Command Pattern 실행 흐름</h3>
+                
+                <div class="code-block">
+<span class="comment">// Command Pattern 실행 순서</span>
+<span class="number">1.</span> <span class="class-name">PlayerInput</span> → 사용자 입력 감지
+<span class="number">2.</span> <span class="class-name">CommandContext</span> → 명령 컨텍스트 생성 (유닛, 클릭정보, 인덱스)
+<span class="number">3.</span> <span class="class-name">AbstractCommandable</span>.<span class="property-name">AvailableCommands</span> → 사용 가능한 명령들 조회
+<span class="number">4.</span> <span class="class-name">ICommand</span>.<span class="method-name">CanHandle</span>(context) → 명령 실행 가능 여부 확인
+<span class="number">5.</span> <span class="class-name">ICommand</span>.<span class="method-name">Handle</span>(context) → 실제 명령 실행
+<span class="number">6.</span> <span class="class-name">AbstractUnit</span>.<span class="method-name">MoveTo</span>() → 유닛 이동 실행
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🎮 게임플레이 시스템</h3>
+                
+                <div class="info-box">
+                    <h4>📊 현재 구현된 기능</h4>
+                    <ul>
+                        <li><strong>다중 유닛 선택</strong>: 드래그로 여러 유닛 선택</li>
+                        <li><strong>Shift 키 추가 선택</strong>: 기존 선택에 유닛 추가</li>
+                        <li><strong>원형 배치 이동</strong>: 유닛들이 원형으로 자연스럽게 배치</li>
+                        <li><strong>이벤트 기반 시스템</strong>: 유닛 선택/해제/스폰 이벤트</li>
+                        <li><strong>Command Pattern</strong>: 확장 가능한 명령 시스템</li>
+                        <li><strong>ScriptableObject 설정</strong>: Inspector에서 실시간 조정</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h4>🚀 향후 확장 가능한 기능</h4>
+                    <ul>
+                        <li><strong>AttackCommand</strong>: 적 유닛/건물 공격</li>
+                        <li><strong>BuildCommand</strong>: 건물 건설</li>
+                        <li><strong>StopCommand</strong>: 현재 행동 중단</li>
+                        <li><strong>HoldPositionCommand</strong>: 위치 고수</li>
+                        <li><strong>PatrolCommand</strong>: 순찰</li>
+                        <li><strong>FollowCommand</strong>: 다른 유닛 따라가기</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
         <div style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 40px; border-radius: 15px;">
             <h2>🎉 URTS Architecture Master!</h2>
             <p style="font-size: 1.2rem; margin-top: 10px;">이제 확장 가능하고 유지보수하기 쉬운 RTS 시스템을 구축할 수 있습니다!</p>
-        </div>
-        <!-- 강의 25-26: Command Pattern & Command Context (커맨드 패턴과 컨텍스트 시스템) -->
-        <div class="section">
-            <h2>⚡ 강의 25-26: Command Pattern & Command Context (커맨드 패턴과 컨텍스트 시스템)</h2>
-            
-            <div class="subsection">
-                <h3>📋 주요 변경사항 (강의 25 → 26)</h3>
-                
-                <div class="code-block">
-<span class="comment">// 강의 25: 기본 Command Pattern</span>
-<span class="keyword">public interface</span> <span class="class-name">ICommand</span>
-{
-    <span class="keyword">bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit);
-    <span class="keyword">void</span> <span class="method-name">Handle</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit);
-}
-
-<span class="comment">// 강의 26: CommandContext 도입으로 개선</span>
-<span class="keyword">public struct</span> <span class="class-name">CommandContext</span>
-{
-    <span class="keyword">public</span> <span class="class-name">AbstractCommandable</span> <span class="property-name">Commandable</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
-    <span class="keyword">public</span> <span class="class-name">RaycastHit</span> <span class="property-name">Hit</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
-    <span class="keyword">public int</span> <span class="property-name">UnitIndex</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
-}
-
-<span class="keyword">public interface</span> <span class="class-name">ICommand</span>
-{
-    <span class="keyword">bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">CommandContext</span> context);
-    <span class="keyword">void</span> <span class="method-name">Handle</span>(<span class="class-name">CommandContext</span> context);
-}
-                </div>
-                
-                <div class="code-block">
-<span class="comment">// 강의 26: 개선된 MoveCommand (radial placement 포함)</span>
-<span class="keyword">public class</span> <span class="class-name">MoveCommand</span> : <span class="class-name">ActionBase</span>
-{
-    [<span class="class-name">SerializeField</span>] <span class="keyword">private float</span> radiusMultiplier = <span class="number">3.5f</span>;
-    
-    <span class="keyword">private int</span> unitsOnLayer = <span class="number">0</span>;
-    <span class="keyword">private int</span> maxUnitsOnLayer = <span class="number">1</span>;
-    <span class="keyword">private float</span> circleRadius = <span class="number">0</span>;
-    <span class="keyword">private float</span> radialOffset = <span class="number">0</span>;
-    
-    <span class="keyword">public override bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">CommandContext</span> context)
-    {
-        <span class="keyword">return</span> context.<span class="property-name">Commandable</span> <span class="keyword">is</span> <span class="class-name">AbstractUnit</span>;
-    }
-
-    <span class="keyword">public override void</span> <span class="method-name">Handle</span>(<span class="class-name">CommandContext</span> context)
-    {
-        <span class="class-name">AbstractUnit</span> unit = (<span class="class-name">AbstractUnit</span>)context.<span class="property-name">Commandable</span>;
-
-        <span class="comment">// 첫 번째 유닛일 때 초기화</span>
-        <span class="keyword">if</span> (context.<span class="property-name">UnitIndex</span> == <span class="number">0</span>)
-        {
-            unitsOnLayer = <span class="number">0</span>;
-            maxUnitsOnLayer = <span class="number">1</span>;
-            circleRadius = <span class="number">0</span>;
-            radialOffset = <span class="number">0</span>;
-        }
-        
-        <span class="comment">// 원형 배치 계산</span>
-        <span class="class-name">Vector3</span> targetPosition = <span class="keyword">new</span>(
-            context.<span class="property-name">Hit</span>.<span class="property-name">point</span>.<span class="property-name">x</span> + circleRadius * <span class="class-name">Mathf</span>.<span class="property-name">Cos</span>(radialOffset * unitsOnLayer),
-            context.<span class="property-name">Hit</span>.<span class="property-name">point</span>.<span class="property-name">y</span>,
-            context.<span class="property-name">Hit</span>.<span class="property-name">point</span>.<span class="property-name">z</span> + circleRadius * <span class="class-name">Mathf</span>.<span class="property-name">Sin</span>(radialOffset * unitsOnLayer)
-        );
-
-        unit.<span class="method-name">MoveTo</span>(targetPosition);
-        unitsOnLayer++;
-
-        <span class="comment">// 다음 레이어로 넘어가기</span>
-        <span class="keyword">if</span> (unitsOnLayer >= maxUnitsOnLayer)
-        {
-            unitsOnLayer = <span class="number">0</span>;
-            circleRadius += unit.<span class="property-name">AgentRadius</span> * radiusMultiplier;
-            maxUnitsOnLayer = <span class="class-name">Mathf</span>.<span class="method-name">FloorToInt</span>(<span class="number">2</span> * <span class="class-name">Mathf</span>.<span class="property-name">PI</span> * circleRadius / (unit.<span class="property-name">AgentRadius</span> * <span class="number">2</span>));
-            radialOffset = <span class="number">2</span> * <span class="class-name">Mathf</span>.<span class="property-name">PI</span> / maxUnitsOnLayer;
-        }
-    }
-}
-                </div>
-                
-                <div class="info-box">
-                    <h4>💡 왜 Command Pattern과 CommandContext가 필요한가?</h4>
-                    <ul>
-                        <li><strong>액션 시스템 확장</strong>: RTS 게임의 다양한 명령(Move, Attack, Build 등)을 체계적으로 관리</li>
-                        <li><strong>코드 결합도 감소</strong>: PlayerInput과 유닛 간의 직접적인 의존성 제거</li>
-                        <li><strong>유연한 명령 시스템</strong>: 새로운 액션 추가 시 기존 코드 수정 없이 확장 가능</li>
-                        <li><strong>복잡한 명령 지원</strong>: CommandContext를 통해 유닛 인덱스, 클릭 정보 등 다양한 데이터 전달</li>
-                        <li><strong>성능 최적화</strong>: struct 사용으로 가비지 컬렉션 부담 감소</li>
-                        <li><strong>자연스러운 유닛 배치</strong>: radial placement 알고리즘으로 원형 배치 구현</li>
-                    </ul>
-                </div>
-
-                <div class="code-block">
-<span class="comment">// 4. AbstractCommandable에 AvailableCommands 필드 추가</span>
-<span class="keyword">public abstract class</span> <span class="class-name">AbstractCommandable</span> : <span class="class-name">MonoBehaviour</span>, <span class="class-name">ISelectable</span>
-{
-    [<span class="keyword">field:</span> <span class="class-name">SerializeField</span>] <span class="keyword">public</span> <span class="class-name">ActionBase</span>[] <span class="property-name">AvailableCommands</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
-    <span class="comment">// ... 기타 필드들</span>
-}
-
-<span class="comment">// 5. PlayerInput에서 CommandContext 사용 (강의 26)</span>
-<span class="keyword">private void</span> <span class="method-name">HandleRightClick</span>()
-{
-    <span class="comment">// ... 기존 코드 ...</span>
-    
-    <span class="comment">// CommandContext를 생성하여 유닛 인덱스 전달</span>
-    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i < abstractUnits.<span class="property-name">Count</span>; i++)
-    {
-        <span class="class-name">CommandContext</span> context = <span class="keyword">new</span>(abstractUnits[i], hit, i);
-
-        <span class="keyword">foreach</span>(<span class="class-name">ICommand</span> command <span class="keyword">in</span> abstractUnits[i].<span class="property-name">AvailableCommands</span>)
-        {
-            <span class="keyword">if</span> (command.<span class="method-name">CanHandle</span>(context))
-            {
-                command.<span class="method-name">Handle</span>(context);
-                <span class="keyword">break</span>; <span class="comment">// 하나의 명령만 실행</span>
-            }
-        }
-    }
-}
-                </div>
-            </div>
-
-            <div class="subsection">
-                <h3>🏗️ Command Pattern 아키텍처</h3>
-                
-                <div class="code-block">
-<span class="comment">// Command Pattern 구조 (강의 26 업데이트)</span>
-<span class="class-name">CommandContext</span> (구조체)
-    ↓
-<span class="class-name">ICommand</span> (인터페이스)
-    ↓
-<span class="class-name">ActionBase</span> (추상 클래스, ScriptableObject)
-    ↓
-<span class="comment">// 구체적인 명령들:</span>
-<span class="comment">// - MoveCommand : 이동 명령 (radial placement 포함)</span>
-<span class="comment">// - AttackCommand : 공격 명령 (향후)</span>
-<span class="comment">// - BuildCommand : 건설 명령 (향후)</span>
-<span class="comment">// - StopCommand : 정지 명령 (향후)</span>
-
-<span class="comment">// 사용 흐름:</span>
-<span class="comment">// PlayerInput → CommandContext 생성 → AbstractCommandable.AvailableCommands → ICommand.CanHandle(context) → ICommand.Handle(context)</span>
-                </div>
-
-                <div class="info-box">
-                    <h4>💡 왜 이런 구조를 사용하는가?</h4>
-                    <ul>
-                        <li><strong>Command Pattern</strong>: 명령의 요청과 실행을 분리하여 결합도 감소</li>
-                        <li><strong>Strategy Pattern</strong>: 다양한 명령 알고리즘을 동적으로 교체</li>
-                        <li><strong>Template Method Pattern</strong>: ActionBase에서 공통 구조 정의</li>
-                        <li><strong>Factory Pattern</strong>: ScriptableObject를 통한 명령 생성</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="subsection">
-                <h3>🎮 게임플레이 개선</h3>
-                
-                <div class="code-block">
-<span class="comment">// 향후 확장 가능한 명령들</span>
-<span class="comment">// 1. AttackCommand: 적 유닛/건물 공격</span>
-<span class="comment">// 2. BuildCommand: 건물 건설</span>
-<span class="comment">// 3. StopCommand: 현재 행동 중단</span>
-<span class="comment">// 4. HoldPositionCommand: 위치 고수</span>
-<span class="comment">// 5. PatrolCommand: 순찰</span>
-<span class="comment">// 6. FollowCommand: 다른 유닛 따라가기</span>
-
-<span class="comment">// 유닛별 명령 제한 예시</span>
-<span class="comment">// - Worker: Move, Build, Gather</span>
-<span class="comment">// - Soldier: Move, Attack, Stop, HoldPosition</span>
-<span class="comment">// - Air Transport: Move, Stop, Follow</span>
-                </div>
-            </div>
-
-            <div class="subsection">
-                <h3>🚀 Nova 1492 적용 포인트</h3>
-                <ul>
-                    <li><strong>모듈화된 명령 시스템</strong>: Command Pattern을 통한 확장 가능한 액션 구조</li>
-                    <li><strong>유닛별 특화 명령</strong>: 각 로봇 타입별로 다른 명령 세트 제공</li>
-                    <li><strong>설정 기반 명령</strong>: ScriptableObject를 통한 명령 관리</li>
-                    <li><strong>자연스러운 유닛 배치</strong>: CommandContext를 통한 radial placement 구현</li>
-                    <li><strong>성능 최적화</strong>: struct 사용으로 메모리 효율성 개선</li>
-                    <li><strong>런타임 설정 조정</strong>: Inspector에서 실시간으로 게임 밸런스 조정</li>
-                    <li><strong>전략적 깊이</strong>: 다양한 명령 조합으로 게임의 전략성 향상</li>
-                </ul>
-            </div>
         </div>
 
     </div>
