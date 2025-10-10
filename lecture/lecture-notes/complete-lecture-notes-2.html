@@ -314,54 +314,133 @@
                 <h3>🔧 핵심 코드</h3>
                 
                 <div class="code-block">// UnitSO.cs - ScriptableObject 클래스
-using UnityEngine;
+<span class="comment">// UnitSO: 유닛의 설정 데이터를 저장하는 ScriptableObject</span>
+<span class="comment">// ScriptableObject: Unity에서 데이터를 저장하는 자산 타입</span>
+<span class="comment">// CreateAssetMenu: Unity Inspector에서 에셋을 생성할 수 있는 메뉴 추가</span>
+<span class="keyword">using</span> UnityEngine;
 
-namespace GameDevTV.RTS.Units
+<span class="keyword">namespace</span> GameDevTV.RTS.Units
 {
-    [CreateAssetMenu(fileName = "Unit", menuName = "Units/Unit")]
-    public class UnitSO : ScriptableObject
+    <span class="comment">// Unity에서 에셋을 생성할 수 있는 메뉴 설정</span>
+    <span class="comment">// CreateAssetMenu: Unity Inspector에서 우클릭으로 에셋 생성 가능</span>
+    <span class="comment">// fileName: 생성될 파일의 기본 이름</span>
+    <span class="comment">// menuName: 메뉴에서 보일 경로</span>
+    [<span class="class-name">CreateAssetMenu</span>(fileName = <span class="string">"Unit"</span>, menuName = <span class="string">"Units/Unit"</span>)]
+    <span class="comment">// 유닛의 설정 데이터를 저장하는 클래스</span>
+    <span class="comment">// UnitSO: "Unit ScriptableObject"의 줄임말</span>
+    <span class="comment">// ScriptableObject: MonoBehaviour가 아닌 데이터 저장용 클래스</span>
+    <span class="keyword">public class</span> <span class="class-name">UnitSO</span> : <span class="class-name">ScriptableObject</span>
     {
-        [field: SerializeField] public int Health { get; private set; } = 100;
+        <span class="comment">// 유닛의 체력 설정</span>
+        <span class="comment">// [field: SerializeField]: 프로퍼티를 Inspector에서 할당 가능하도록 함</span>
+        <span class="comment">// int: 정수 타입</span>
+        <span class="comment">// Health: 체력 값</span>
+        <span class="comment">// { get; private set; }: 읽기 전용 프로퍼티 (외부에서 수정 불가)</span>
+        <span class="comment">// = 100: 기본값을 100으로 설정</span>
+        [<span class="keyword">field:</span> <span class="class-name">SerializeField</span>] <span class="keyword">public int</span> <span class="property-name">Health</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; } = <span class="number">100</span>;
     }
 }</div>
 
                 <div class="code-block">// AbstractCommandable.cs - 수정된 부분
-public abstract class AbstractCommandable : MonoBehaviour, ISelectable
+<span class="comment">// AbstractCommandable: 명령을 받을 수 있는 모든 객체의 기본 클래스</span>
+<span class="comment">// MonoBehaviour: Unity에서 GameObject에 컴포넌트로 추가할 수 있는 기본 클래스</span>
+<span class="comment">// ISelectable: 선택 가능한 객체를 나타내는 인터페이스</span>
+<span class="keyword">public abstract class</span> <span class="class-name">AbstractCommandable</span> : <span class="class-name">MonoBehaviour</span>, <span class="class-name">ISelectable</span>
 {
-    [field: SerializeField] public int CurrentHealth { get; private set; }
-    [field: SerializeField] public int MaxHealth { get; private set; }
-    [SerializeField] private DecalProjector decalProjector;
-    [SerializeField] private UnitSO UnitSO;
+    <span class="comment">// 현재 체력</span>
+    <span class="comment">// [field: SerializeField]: 프로퍼티를 Inspector에서 할당 가능하도록 함</span>
+    <span class="comment">// int: 정수 타입</span>
+    <span class="comment">// CurrentHealth: 현재 체력 값</span>
+    <span class="comment">// { get; private set; }: 읽기 전용 프로퍼티 (외부에서 수정 불가)</span>
+    [<span class="keyword">field:</span> <span class="class-name">SerializeField</span>] <span class="keyword">public int</span> <span class="property-name">CurrentHealth</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+    
+    <span class="comment">// 최대 체력</span>
+    <span class="comment">// MaxHealth: 최대 체력 값</span>
+    [<span class="keyword">field:</span> <span class="class-name">SerializeField</span>] <span class="keyword">public int</span> <span class="property-name">MaxHealth</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+    
+    <span class="comment">// 선택 시 표시할 데칼 프로젝터</span>
+    <span class="comment">// [SerializeField]: Inspector에서 할당 가능하도록 함</span>
+    <span class="comment">// DecalProjector: URP에서 데칼(투영) 효과를 만드는 컴포넌트</span>
+    [<span class="class-name">SerializeField</span>] <span class="keyword">private</span> <span class="class-name">DecalProjector</span> decalProjector;
+    
+    <span class="comment">// 유닛의 설정 데이터</span>
+    <span class="comment">// UnitSO: 유닛의 설정을 담고 있는 ScriptableObject</span>
+    [<span class="class-name">SerializeField</span>] <span class="keyword">private</span> <span class="class-name">UnitSO</span> UnitSO;
 
-    protected virtual void Start()
+    <span class="comment">// 컴포넌트 초기화 - Start보다 먼저 실행됨</span>
+    <span class="comment">// protected: 상속받은 클래스에서만 접근 가능</span>
+    <span class="comment">// virtual: 하위 클래스에서 오버라이드 가능</span>
+    <span class="comment">// void: 반환값이 없음</span>
+    <span class="keyword">protected virtual void</span> <span class="method-name">Start</span>()
     {
-        CurrentHealth = UnitSO.Health;
-        MaxHealth = UnitSO.Health;
+        <span class="comment">// UnitSO에서 설정된 체력 값을 현재 체력으로 설정</span>
+        <span class="comment">// UnitSO.Health: ScriptableObject에 저장된 체력 값</span>
+        <span class="property-name">CurrentHealth</span> = UnitSO.<span class="property-name">Health</span>;
+        
+        <span class="comment">// UnitSO에서 설정된 체력 값을 최대 체력으로 설정</span>
+        <span class="comment">// MaxHealth: 최대 체력 값 (일반적으로 초기 체력과 동일)</span>
+        <span class="property-name">MaxHealth</span> = UnitSO.<span class="property-name">Health</span>;
     }
 
-    // Select/Deselect 메서드는 동일...
+    <span class="comment">// Select/Deselect 메서드는 동일...</span>
 }</div>
 
                 <div class="code-block">// AbstractUnit.cs - Start() 오버라이드
-public abstract class AbstractUnit : AbstractCommandable, IMoveable
+<span class="comment">// AbstractUnit: 모든 유닛의 기본 클래스</span>
+<span class="comment">// AbstractCommandable: 명령을 받을 수 있는 객체의 기본 클래스 상속</span>
+<span class="comment">// IMoveable: 이동 가능한 객체를 나타내는 인터페이스 구현</span>
+<span class="keyword">public abstract class</span> <span class="class-name">AbstractUnit</span> : <span class="class-name">AbstractCommandable</span>, <span class="class-name">IMoveable</span>
 {
-    public float AgentRadius => agent.radius;
-    private NavMeshAgent agent;
+    <span class="comment">// NavMeshAgent의 반지름을 반환하는 프로퍼티</span>
+    <span class="comment">// AgentRadius: AI 에이전트의 반지름</span>
+    <span class="comment">// =>: 람다 표현식 (간단한 프로퍼티)</span>
+    <span class="comment">// agent.radius: NavMeshAgent의 반지름 값</span>
+    <span class="keyword">public float</span> <span class="property-name">AgentRadius</span> => agent.<span class="property-name">radius</span>;
+    
+    <span class="comment">// NavMeshAgent 컴포넌트 참조</span>
+    <span class="comment">// NavMeshAgent: Unity의 AI 이동을 담당하는 컴포넌트</span>
+    <span class="keyword">private</span> <span class="class-name">NavMeshAgent</span> agent;
 
-    protected virtual void Awake()
+    <span class="comment">// 컴포넌트 초기화 - Start보다 먼저 실행됨</span>
+    <span class="comment">// protected: 상속받은 클래스에서만 접근 가능</span>
+    <span class="comment">// virtual: 하위 클래스에서 오버라이드 가능</span>
+    <span class="keyword">protected virtual void</span> <span class="method-name">Awake</span>()
     {
-        agent = GetComponent<NavMeshAgent>();
+        <span class="comment">// 같은 GameObject에서 NavMeshAgent 컴포넌트를 가져옴</span>
+        <span class="comment">// GetComponent: GameObject에 연결된 특정 컴포넌트를 찾는 Unity 메서드</span>
+        <span class="comment">// NavMeshAgent: AI 이동을 담당하는 컴포넌트</span>
+        agent = <span class="keyword">GetComponent</span>&lt;<span class="class-name">NavMeshAgent</span>&gt;();
     }
 
-    protected override void Start()
+    <span class="comment">// 부모 클래스의 Start 메서드를 호출</span>
+    <span class="comment">// protected: 상속받은 클래스에서만 접근 가능</span>
+    <span class="comment">// override: 부모 클래스의 메서드를 재정의</span>
+    <span class="keyword">protected override void</span> <span class="method-name">Start</span>()
     {
-        base.Start(); // 부모 클래스의 Start() 호출
-        Bus<UnitSpawnEvent>.Raise(new UnitSpawnEvent(this));
+        <span class="comment">// 부모 클래스(AbstractCommandable)의 Start 메서드 호출</span>
+        <span class="comment">// base: 부모 클래스를 가리키는 키워드</span>
+        <span class="comment">// Start(): 부모 클래스의 Start 메서드 실행</span>
+        <span class="comment">// 이렇게 해야 UnitSO의 설정값이 올바르게 적용됨</span>
+        <span class="keyword">base</span>.<span class="method-name">Start</span>(); 
+        
+        <span class="comment">// 유닛 스폰 이벤트 발생</span>
+        <span class="comment">// Bus: 이벤트 버스 패턴을 사용한 이벤트 시스템</span>
+        <span class="comment">// UnitSpawnEvent: 유닛이 생성되었을 때 발생하는 이벤트</span>
+        <span class="comment">// Raise: 이벤트를 발생시키는 메서드</span>
+        <span class="comment">// new UnitSpawnEvent(this): 현재 유닛을 포함한 이벤트 생성</span>
+        <span class="class-name">Bus</span>&lt;<span class="class-name">UnitSpawnEvent</span>&gt;.<span class="method-name">Raise</span>(<span class="keyword">new</span> <span class="class-name">UnitSpawnEvent</span>(<span class="keyword">this</span>));
     }
 
-    public void MoveTo(Vector3 position)
+    <span class="comment">// IMoveable 인터페이스의 MoveTo 메서드 구현</span>
+    <span class="comment">// 유닛을 지정된 위치로 이동시키는 메서드</span>
+    <span class="comment">// Vector3 position: 이동할 목표 위치</span>
+    <span class="keyword">public void</span> <span class="method-name">MoveTo</span>(<span class="class-name">Vector3</span> position)
     {
-        agent.SetDestination(position);
+        <span class="comment">// NavMeshAgent에게 목표 지점을 설정</span>
+        <span class="comment">// SetDestination: AI가 이동할 목표 지점을 지정하는 메서드</span>
+        <span class="comment">// position: 이동할 목표 위치 (Vector3)</span>
+        <span class="comment">// AI가 자동으로 최적의 경로를 계산하여 이동함</span>
+        agent.<span class="method-name">SetDestination</span>(position);
     }
 }</div>
             </div>
@@ -444,15 +523,23 @@ public abstract class AbstractUnit : AbstractCommandable, IMoveable
                 
                 <div class="code-block">
 <span class="comment">// 1. BaseBuilding 클래스 생성</span>
+<span class="comment">// BaseBuilding: 모든 건물의 기본 클래스</span>
+<span class="comment">// AbstractCommandable: 명령을 받을 수 있는 모든 객체의 기본 클래스</span>
+<span class="comment">// 상속: BaseBuilding이 AbstractCommandable의 모든 기능을 상속받음</span>
 <span class="keyword">namespace</span> GameDevTV.RTS.Units
 {
+    <span class="comment">// 모든 건물의 기본 클래스</span>
+    <span class="comment">// BaseBuilding: "건물의 기본"이라는 의미</span>
+    <span class="comment">// AbstractCommandable: 명령을 받을 수 있는 객체의 기본 클래스 상속</span>
+    <span class="comment">// MonoBehaviour: Unity에서 GameObject에 컴포넌트로 추가할 수 있는 기본 클래스</span>
     <span class="keyword">public class</span> <span class="class-name">BaseBuilding</span> : <span class="class-name">AbstractCommandable</span>
     {
         <span class="comment">// 모든 건물의 공통 기능을 AbstractCommandable에서 상속</span>
-        <span class="comment">// - Select/Deselect 기능</span>
-        <span class="comment">// - Health 관리</span>
-        <span class="comment">// - DecalProjector 시각화</span>
-        <span class="comment">// - UnitSO 설정</span>
+        <span class="comment">// - Select/Deselect 기능: 건물 선택/해제</span>
+        <span class="comment">// - Health 관리: 건물의 체력 시스템</span>
+        <span class="comment">// - DecalProjector 시각화: 선택 시 원형 표시</span>
+        <span class="comment">// - UnitSO 설정: 건물의 기본 정보 (체력, 이름 등)</span>
+        <span class="comment">// - AvailableCommands: 건물이 사용할 수 있는 명령들</span>
     }
 }
                 </div>
@@ -577,11 +664,25 @@ public abstract class AbstractUnit : AbstractCommandable, IMoveable
                 
                 <div class="code-block">
 <span class="comment">// 1. ICommand 인터페이스 생성</span>
+<span class="comment">// ICommand: 모든 명령이 구현해야 하는 기본 계약</span>
+<span class="comment">// interface: 클래스가 반드시 구현해야 하는 메서드들을 정의</span>
+<span class="comment">// Command Pattern: 명령을 객체로 캡슐화하여 요청과 실행을 분리하는 디자인 패턴</span>
 <span class="keyword">namespace</span> GameDevTV.RTS.Commands
 {
+    <span class="comment">// 모든 명령의 기본 인터페이스</span>
+    <span class="comment">// ICommand: "명령"이라는 의미를 가진 인터페이스 이름</span>
     <span class="keyword">public interface</span> <span class="class-name">ICommand</span>
     {
+        <span class="comment">// 명령이 특정 상황에서 실행 가능한지 확인하는 메서드</span>
+        <span class="comment">// CanHandle: "처리할 수 있는가?"라는 의미</span>
+        <span class="comment">// AbstractCommandable: 명령을 받을 수 있는 객체 (유닛 또는 건물)</span>
+        <span class="comment">// RaycastHit: 마우스 클릭 지점의 정보</span>
+        <span class="comment">// bool: 참/거짓 값 반환</span>
         <span class="keyword">bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit);
+        
+        <span class="comment">// 실제 명령을 실행하는 메서드</span>
+        <span class="comment">// Handle: "처리하다"라는 의미</span>
+        <span class="comment">// void: 반환값이 없음 (명령 실행만 함)</span>
         <span class="keyword">void</span> <span class="method-name">Handle</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit);
     }
 }
@@ -599,11 +700,28 @@ public abstract class AbstractUnit : AbstractCommandable, IMoveable
 
                 <div class="code-block">
 <span class="comment">// 2. ActionBase 추상 클래스 생성</span>
+<span class="comment">// ActionBase: 모든 명령의 기본 클래스</span>
+<span class="comment">// abstract class: 직접 인스턴스를 만들 수 없고, 하위 클래스에서 상속받아 사용</span>
+<span class="comment">// ScriptableObject: Unity에서 데이터를 저장하는 자산 타입</span>
+<span class="comment">// ICommand: 위에서 정의한 명령 인터페이스</span>
 <span class="keyword">namespace</span> GameDevTV.RTS.Commands
 {
+    <span class="comment">// 모든 액션의 기본 추상 클래스</span>
+    <span class="comment">// ActionBase: "액션의 기본"이라는 의미</span>
+    <span class="comment">// ScriptableObject: Unity Inspector에서 설정 가능한 에셋</span>
+    <span class="comment">// ICommand: 명령 패턴의 인터페이스 구현</span>
     <span class="keyword">public abstract class</span> <span class="class-name">ActionBase</span> : <span class="class-name">ScriptableObject</span>, <span class="class-name">ICommand</span>
     {
+        <span class="comment">// 명령이 특정 상황에서 실행 가능한지 확인하는 추상 메서드</span>
+        <span class="comment">// abstract: 하위 클래스에서 반드시 구현해야 함</span>
+        <span class="comment">// AbstractCommandable: 명령을 받을 수 있는 객체</span>
+        <span class="comment">// RaycastHit: 마우스 클릭 지점의 정보</span>
+        <span class="comment">// bool: 참/거짓 값 반환</span>
         <span class="keyword">public abstract bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit);
+        
+        <span class="comment">// 실제 명령을 실행하는 추상 메서드</span>
+        <span class="comment">// abstract: 하위 클래스에서 반드시 구현해야 함</span>
+        <span class="comment">// void: 반환값이 없음 (명령 실행만 함)</span>
         <span class="keyword">public abstract void</span> <span class="method-name">Handle</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit);
     }
 }
@@ -621,19 +739,49 @@ public abstract class AbstractUnit : AbstractCommandable, IMoveable
 
                 <div class="code-block">
 <span class="comment">// 3. MoveCommand 구현</span>
+<span class="comment">// MoveCommand: 이동 명령을 처리하는 구체적인 클래스</span>
+<span class="comment">// CreateAssetMenu: Unity에서 에셋을 생성할 수 있는 메뉴 추가</span>
+<span class="comment">// ActionBase: 위에서 정의한 추상 클래스 상속</span>
 <span class="keyword">namespace</span> GameDevTV.RTS.Commands
 {
+    <span class="comment">// Unity에서 에셋을 생성할 수 있는 메뉴 설정</span>
+    <span class="comment">// CreateAssetMenu: Unity Inspector에서 우클릭으로 에셋 생성 가능</span>
+    <span class="comment">// fileName: 생성될 파일의 기본 이름</span>
+    <span class="comment">// menuName: 메뉴에서 보일 경로</span>
+    <span class="comment">// order: 메뉴에서의 순서 (낮을수록 위에 표시)</span>
     [<span class="class-name">CreateAssetMenu</span>(fileName = <span class="string">"Move Action"</span>, menuName = <span class="string">"AI/Actions/Move"</span>, order = 100)]
+    <span class="comment">// 이동 명령을 처리하는 구체적인 클래스</span>
+    <span class="comment">// MoveCommand: "이동 명령"이라는 의미</span>
+    <span class="comment">// ActionBase: 모든 명령의 기본 클래스 상속</span>
     <span class="keyword">public class</span> <span class="class-name">MoveCommand</span> : <span class="class-name">ActionBase</span>
     {
+        <span class="comment">// 이동 명령이 실행 가능한지 확인하는 메서드</span>
+        <span class="comment">// override: 부모 클래스의 추상 메서드를 구현</span>
+        <span class="comment">// AbstractCommandable: 명령을 받을 수 있는 객체</span>
+        <span class="comment">// RaycastHit: 마우스 클릭 지점의 정보</span>
         <span class="keyword">public override bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit)
         {
+            <span class="comment">// 객체가 IMoveable 인터페이스를 구현했는지 확인</span>
+            <span class="comment">// is: 타입 확인 연산자</span>
+            <span class="comment">// IMoveable: 이동 가능한 객체를 나타내는 인터페이스</span>
+            <span class="comment">// 이동 가능한 객체만 이동 명령을 받을 수 있음</span>
             <span class="keyword">return</span> commandable <span class="keyword">is</span> <span class="class-name">IMoveable</span>;
         }
 
+        <span class="comment">// 실제 이동 명령을 실행하는 메서드</span>
+        <span class="comment">// override: 부모 클래스의 추상 메서드를 구현</span>
+        <span class="comment">// AbstractCommandable: 명령을 받을 객체</span>
+        <span class="comment">// RaycastHit: 마우스 클릭 지점의 정보</span>
         <span class="keyword">public override void</span> <span class="method-name">Handle</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit)
         {
+            <span class="comment">// AbstractCommandable을 IMoveable로 캐스팅</span>
+            <span class="comment">// (IMoveable): 명시적 타입 변환</span>
+            <span class="comment">// IMoveable: 이동 가능한 객체의 인터페이스</span>
             <span class="class-name">IMoveable</span> moveable = (<span class="class-name">IMoveable</span>)commandable;
+            
+            <span class="comment">// 객체를 클릭한 지점으로 이동</span>
+            <span class="comment">// MoveTo: 이동 목표 지점을 받아서 해당 위치로 이동</span>
+            <span class="comment">// hit.point: 레이캐스트가 충돌한 지점의 3D 좌표</span>
             moveable.<span class="method-name">MoveTo</span>(hit.point);
         }
     }
@@ -652,8 +800,15 @@ public abstract class AbstractUnit : AbstractCommandable, IMoveable
 
                 <div class="code-block">
 <span class="comment">// 4. AbstractCommandable에 AvailableCommands 필드 추가</span>
+<span class="comment">// AbstractCommandable: 명령을 받을 수 있는 모든 객체의 기본 클래스</span>
+<span class="comment">// AvailableCommands: 각 객체가 사용할 수 있는 명령들의 배열</span>
+<span class="comment">// [field: SerializeField]: 프로퍼티를 Inspector에서 설정 가능하게 함</span>
 <span class="keyword">public abstract class</span> <span class="class-name">AbstractCommandable</span> : <span class="class-name">MonoBehaviour</span>, <span class="class-name">ISelectable</span>
 {
+    <span class="comment">// 각 객체가 사용할 수 있는 명령들의 배열</span>
+    <span class="comment">// [field: SerializeField]: 프로퍼티를 Inspector에서 할당 가능하도록 함</span>
+    <span class="comment">// ActionBase[]: 모든 명령의 기본 클래스 배열</span>
+    <span class="comment">// { get; private set; }: 읽기 전용 프로퍼티 (외부에서 수정 불가)</span>
     [<span class="keyword">field:</span> <span class="class-name">SerializeField</span>] <span class="keyword">public</span> <span class="class-name">ActionBase</span>[] <span class="property-name">AvailableCommands</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
     <span class="comment">// ... 기타 필드들</span>
 }
@@ -671,16 +826,34 @@ public abstract class AbstractUnit : AbstractCommandable, IMoveable
 
                 <div class="code-block">
 <span class="comment">// 5. PlayerInput 리팩토링</span>
+<span class="comment">// PlayerInput: 플레이어의 입력을 처리하는 클래스</span>
+<span class="comment">// HandleRightClick: 오른쪽 클릭을 처리하는 메서드</span>
+<span class="comment">// Command Pattern: 명령 패턴을 사용하여 입력과 실행을 분리</span>
 <span class="keyword">private void</span> <span class="method-name">HandleRightClick</span>()
 {
     <span class="comment">// ... 기존 코드 ...</span>
     
+    <span class="comment">// 선택된 모든 유닛에 대해 반복</span>
+    <span class="comment">// foreach: 배열이나 컬렉션의 모든 요소를 순회</span>
+    <span class="comment">// AbstractUnit: 모든 유닛의 기본 클래스</span>
+    <span class="comment">// abstractUnits: 선택된 유닛들의 컬렉션</span>
     <span class="keyword">foreach</span>(<span class="class-name">AbstractUnit</span> unit <span class="keyword">in</span> abstractUnits)
     {
+        <span class="comment">// 각 유닛의 사용 가능한 명령들에 대해 반복</span>
+        <span class="comment">// AvailableCommands: 유닛이 사용할 수 있는 명령들의 배열</span>
+        <span class="comment">// ICommand: 모든 명령의 기본 인터페이스</span>
         <span class="keyword">foreach</span>(<span class="class-name">ICommand</span> command <span class="keyword">in</span> unit.<span class="property-name">AvailableCommands</span>)
         {
+            <span class="comment">// 명령이 현재 상황에서 실행 가능한지 확인</span>
+            <span class="comment">// CanHandle: 명령이 특정 상황에서 실행 가능한지 확인하는 메서드</span>
+            <span class="comment">// unit: 명령을 받을 유닛</span>
+            <span class="comment">// hit: 마우스 클릭 지점의 정보</span>
             <span class="keyword">if</span> (command.<span class="method-name">CanHandle</span>(unit, hit))
             {
+                <span class="comment">// 명령을 실제로 실행</span>
+                <span class="comment">// Handle: 실제 명령을 실행하는 메서드</span>
+                <span class="comment">// unit: 명령을 받을 유닛</span>
+                <span class="comment">// hit: 마우스 클릭 지점의 정보</span>
                 command.<span class="method-name">Handle</span>(unit, hit);
             }
         }
@@ -791,14 +964,31 @@ public abstract class AbstractUnit : AbstractCommandable, IMoveable
                 
                 <div class="code-block">
 <span class="comment">// 1. CommandContext 구조체 생성</span>
+<span class="comment">// CommandContext: 명령 실행에 필요한 모든 정보를 담는 구조체</span>
+<span class="comment">// struct: 값 타입으로 성능 최적화 (클래스보다 가벼움)</span>
 <span class="keyword">public struct</span> <span class="class-name">CommandContext</span>
 {
+    <span class="comment">// 명령을 받을 수 있는 객체 (유닛 또는 건물)</span>
+    <span class="comment">// AbstractCommandable: 명령을 받을 수 있는 모든 객체의 기본 클래스</span>
+    <span class="comment">// { get; private set; }: 읽기 전용 프로퍼티</span>
     <span class="keyword">public</span> <span class="class-name">AbstractCommandable</span> <span class="property-name">Commandable</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+    
+    <span class="comment">// 레이캐스트 충돌 정보</span>
+    <span class="comment">// RaycastHit: 레이캐스트가 충돌한 지점의 정보 (위치, 노멀 등)</span>
     <span class="keyword">public</span> <span class="class-name">RaycastHit</span> <span class="property-name">Hit</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+    
+    <span class="comment">// 유닛의 순서 인덱스 (0부터 시작)</span>
+    <span class="comment">// int: 정수 타입</span>
+    <span class="comment">// 원형 배치에서 유닛의 위치를 계산하는 데 사용</span>
     <span class="keyword">public int</span> <span class="property-name">UnitIndex</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
 
+    <span class="comment">// CommandContext 생성자</span>
+    <span class="comment">// commandable: 명령을 받을 객체</span>
+    <span class="comment">// hit: 레이캐스트 충돌 정보</span>
+    <span class="comment">// unitIndex: 유닛 순서 (기본값 0)</span>
     <span class="keyword">public</span> <span class="class-name">CommandContext</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit, <span class="keyword">int</span> unitIndex = <span class="number">0</span>)
     {
+        <span class="comment">// 전달받은 값들을 프로퍼티에 저장</span>
         <span class="property-name">Commandable</span> = commandable;
         <span class="property-name">Hit</span> = hit;
         <span class="property-name">UnitIndex</span> = unitIndex;
@@ -817,35 +1007,72 @@ public abstract class AbstractUnit : AbstractCommandable, IMoveable
 
                 <div class="code-block">
 <span class="comment">// 3. MoveCommand에 radial placement 알고리즘 재구현</span>
+<span class="comment">// Handle: 실제 이동 명령을 실행하는 메서드</span>
+<span class="comment">// CommandContext: 명령 실행에 필요한 모든 정보</span>
 <span class="keyword">public override void</span> <span class="method-name">Handle</span>(<span class="class-name">CommandContext</span> context)
 {
+    <span class="comment">// Commandable을 AbstractUnit으로 캐스팅</span>
+    <span class="comment">// AbstractUnit: 모든 유닛의 기본 클래스</span>
+    <span class="comment">// (AbstractUnit): 명시적 타입 변환</span>
     <span class="class-name">AbstractUnit</span> unit = (<span class="class-name">AbstractUnit</span>)context.<span class="property-name">Commandable</span>;
 
+    <span class="comment">// 첫 번째 유닛일 때 원형 배치 변수들 초기화</span>
+    <span class="comment">// UnitIndex == 0: 첫 번째 유닛임을 의미</span>
     <span class="keyword">if</span> (context.<span class="property-name">UnitIndex</span> == <span class="number">0</span>)
     {
-        <span class="comment">// 첫 번째 유닛일 때 초기화</span>
+        <span class="comment">// 현재 레이어의 유닛 수 초기화</span>
         unitsOnLayer = <span class="number">0</span>;
+        <span class="comment">// 현재 레이어에 배치할 수 있는 최대 유닛 수</span>
         maxUnitsOnLayer = <span class="number">1</span>;
+        <span class="comment">// 현재 원의 반지름</span>
         circleRadius = <span class="number">0</span>;
+        <span class="comment">// 각 유닛 간의 각도 간격</span>
         radialOffset = <span class="number">0</span>;
     }
     
     <span class="comment">// 원형 배치 계산</span>
+    <span class="comment">// Vector3: 3차원 벡터 (x, y, z 좌표)</span>
+    <span class="comment">// new Vector3: 새로운 벡터 생성</span>
     <span class="class-name">Vector3</span> targetPosition = <span class="keyword">new</span>(
+        <span class="comment">// X 좌표: 클릭 지점 + 원의 반지름 * 코사인 값</span>
+        <span class="comment">// Mathf.Cos: 코사인 함수 (각도를 라디안으로 변환)</span>
+        <span class="comment">// radialOffset * unitsOnLayer: 현재 유닛의 각도</span>
         context.<span class="property-name">Hit</span>.<span class="property-name">point</span>.<span class="property-name">x</span> + circleRadius * <span class="class-name">Mathf</span>.<span class="property-name">Cos</span>(radialOffset * unitsOnLayer),
+        <span class="comment">// Y 좌표: 클릭 지점과 동일 (높이 변화 없음)</span>
         context.<span class="property-name">Hit</span>.<span class="property-name">point</span>.<span class="property-name">y</span>,
+        <span class="comment">// Z 좌표: 클릭 지점 + 원의 반지름 * 사인 값</span>
+        <span class="comment">// Mathf.Sin: 사인 함수 (각도를 라디안으로 변환)</span>
         context.<span class="property-name">Hit</span>.<span class="property-name">point</span>.<span class="property-name">z</span> + circleRadius * <span class="class-name">Mathf</span>.<span class="property-name">Sin</span>(radialOffset * unitsOnLayer)
     );
 
+    <span class="comment">// 계산된 위치로 유닛 이동</span>
+    <span class="comment">// MoveTo: 유닛을 지정된 위치로 이동시키는 메서드</span>
     unit.<span class="method-name">MoveTo</span>(targetPosition);
+    
+    <span class="comment">// 현재 레이어의 유닛 수 증가</span>
     unitsOnLayer++;
 
     <span class="comment">// 다음 레이어로 넘어가기</span>
+    <span class="comment">// 현재 레이어가 가득 찬 경우 새로운 레이어 생성</span>
     <span class="keyword">if</span> (unitsOnLayer >= maxUnitsOnLayer)
     {
+        <span class="comment">// 새로운 레이어 시작</span>
         unitsOnLayer = <span class="number">0</span>;
+        
+        <span class="comment">// 원의 반지름을 유닛 크기만큼 증가</span>
+        <span class="comment">// AgentRadius: NavMeshAgent의 반지름</span>
+        <span class="comment">// radiusMultiplier: 반지름 증가 배수 (설정 가능)</span>
         circleRadius += unit.<span class="property-name">AgentRadius</span> * radiusMultiplier;
+        
+        <span class="comment">// 새로운 레이어의 최대 유닛 수 계산</span>
+        <span class="comment">// Mathf.FloorToInt: 소수를 정수로 내림</span>
+        <span class="comment">// 2 * Mathf.PI * circleRadius: 원의 둘레</span>
+        <span class="comment">// unit.AgentRadius * 2: 유닛 간 최소 거리</span>
         maxUnitsOnLayer = <span class="class-name">Mathf</span>.<span class="method-name">FloorToInt</span>(<span class="number">2</span> * <span class="class-name">Mathf</span>.<span class="property-name">PI</span> * circleRadius / (unit.<span class="property-name">AgentRadius</span> * <span class="number">2</span>));
+        
+        <span class="comment">// 각 유닛 간의 각도 간격 계산</span>
+        <span class="comment">// 2 * Mathf.PI: 전체 원의 각도 (360도)</span>
+        <span class="comment">// maxUnitsOnLayer: 레이어에 배치할 수 있는 유닛 수</span>
         radialOffset = <span class="number">2</span> * <span class="class-name">Mathf</span>.<span class="property-name">PI</span> / maxUnitsOnLayer;
     }
 }
@@ -962,32 +1189,66 @@ unit.<span class="method-name">MoveTo</span>(targetPosition);
                 
                 <div class="code-block">
 <span class="comment">// 1. ActionBase에 UI 필드 추가</span>
+<span class="comment">// ActionBase: 모든 명령의 기본 클래스 (ScriptableObject)</span>
+<span class="comment">// ScriptableObject: Unity에서 데이터를 저장하는 자산 타입</span>
+<span class="comment">// ICommand: 명령 패턴의 인터페이스</span>
 <span class="keyword">public abstract class</span> <span class="class-name">ActionBase</span> : <span class="class-name">ScriptableObject</span>, <span class="class-name">ICommand</span>
 {
+    <span class="comment">// UI에 표시될 아이콘 스프라이트</span>
+    <span class="comment">// [field: SerializeField]: 프로퍼티를 Inspector에서 설정 가능하게 함</span>
+    <span class="comment">// Sprite: Unity의 2D 이미지 타입</span>
     [<span class="keyword">field:</span> <span class="class-name">SerializeField</span>] <span class="keyword">public</span> <span class="class-name">Sprite</span> <span class="property-name">Icon</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+    
+    <span class="comment">// UI 슬롯 번호 (0-8, 총 9개 슬롯)</span>
+    <span class="comment">// [Range(0, 8)]: Inspector에서 슬라이더로 0-8 범위 제한</span>
+    <span class="comment">// int: 정수 타입</span>
     [<span class="keyword">field:</span> <span class="class-name">Range</span>(<span class="number">0</span>, <span class="number">8</span>)] [<span class="keyword">field:</span> <span class="class-name">SerializeField</span>] <span class="keyword">public int</span> <span class="property-name">Slot</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+    
+    <span class="comment">// 명령 실행 시 추가 클릭이 필요한지 여부</span>
+    <span class="comment">// bool: 참/거짓 값</span>
+    <span class="comment">// = true: 기본값을 true로 설정</span>
     [<span class="keyword">field:</span> <span class="class-name">SerializeField</span>] <span class="keyword">public bool</span> <span class="property-name">RequiresClickToActivate</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; } = <span class="keyword">true</span>;
 
+    <span class="comment">// 명령이 특정 상황에서 실행 가능한지 확인하는 추상 메서드</span>
+    <span class="comment">// abstract: 하위 클래스에서 반드시 구현해야 함</span>
+    <span class="comment">// CommandContext: 명령 실행에 필요한 정보를 담은 구조체</span>
     <span class="keyword">public abstract bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">CommandContext</span> context);
+    
+    <span class="comment">// 실제 명령을 실행하는 추상 메서드</span>
+    <span class="comment">// void: 반환값이 없음</span>
     <span class="keyword">public abstract void</span> <span class="method-name">Handle</span>(<span class="class-name">CommandContext</span> context);
 }
                 </div>
 
                 <div class="code-block">
 <span class="comment">// 2. UIActionButton 클래스 생성</span>
+<span class="comment">// UIActionButton: UI에서 명령을 표시하는 개별 버튼 컴포넌트</span>
+<span class="comment">// MonoBehaviour: Unity에서 GameObject에 컴포넌트로 추가할 수 있는 기본 클래스</span>
 <span class="keyword">public class</span> <span class="class-name">UIActionButton</span> : <span class="class-name">MonoBehaviour</span>
 {
+    <span class="comment">// 아이콘을 표시할 Image 컴포넌트</span>
+    <span class="comment">// [SerializeField]: Inspector에서 할당 가능하도록 함</span>
+    <span class="comment">// Image: Unity UI에서 이미지를 표시하는 컴포넌트</span>
     [<span class="class-name">SerializeField</span>] <span class="keyword">private</span> <span class="class-name">Image</span> <span class="property-name">Icon</span>;
 
+    <span class="comment">// 아이콘을 설정하는 메서드</span>
+    <span class="comment">// Sprite icon: 설정할 아이콘 스프라이트</span>
+    <span class="comment">// void: 반환값이 없음</span>
     <span class="keyword">public void</span> <span class="method-name">SetIcon</span>(<span class="class-name">Sprite</span> icon)
     {
+        <span class="comment">// 아이콘이 null인 경우 (명령이 없을 때)</span>
+        <span class="comment">// Image 컴포넌트를 비활성화하여 빈 버튼으로 만듦</span>
         <span class="keyword">if</span> (icon == <span class="keyword">null</span>)
         {
+            <span class="comment">// enabled = false: Image 컴포넌트를 비활성화</span>
             <span class="property-name">Icon</span>.<span class="property-name">enabled</span> = <span class="keyword">false</span>;
         }
+        <span class="comment">// 아이콘이 있는 경우 (명령이 있을 때)</span>
         <span class="keyword">else</span>
         {
+            <span class="comment">// sprite: Image에 표시할 스프라이트 설정</span>
             <span class="property-name">Icon</span>.<span class="property-name">sprite</span> = icon;
+            <span class="comment">// enabled = true: Image 컴포넌트를 활성화</span>
             <span class="property-name">Icon</span>.<span class="property-name">enabled</span> = <span class="keyword">true</span>;
         }
     }
@@ -996,44 +1257,83 @@ unit.<span class="method-name">MoveTo</span>(targetPosition);
 
                 <div class="code-block">
 <span class="comment">// 3. ActionsUI 클래스 생성</span>
+<span class="comment">// ActionsUI: 전체 명령 UI를 관리하는 메인 컨트롤러</span>
+<span class="comment">// MonoBehaviour: Unity에서 GameObject에 컴포넌트로 추가할 수 있는 기본 클래스</span>
 <span class="keyword">public class</span> <span class="class-name">ActionsUI</span> : <span class="class-name">MonoBehaviour</span>
 {
+    <span class="comment">// UI 버튼들의 배열</span>
+    <span class="comment">// [SerializeField]: Inspector에서 할당 가능하도록 함</span>
+    <span class="comment">// UIActionButton[]: 개별 버튼 컴포넌트들의 배열</span>
     [<span class="class-name">SerializeField</span>] <span class="keyword">private</span> <span class="class-name">UIActionButton</span>[] <span class="property-name">ActionButtons</span>;
+    
+    <span class="comment">// 현재 선택된 유닛들을 저장하는 HashSet</span>
+    <span class="comment">// HashSet: 중복을 허용하지 않는 컬렉션</span>
+    <span class="comment">// AbstractCommandable: 유닛과 건물 모두 포함 (명령을 받을 수 있는 모든 객체)</span>
+    <span class="comment">// new(12): 초기 용량을 12로 설정 (성능 최적화)</span>
     <span class="keyword">private</span> <span class="class-name">HashSet</span>&lt;<span class="class-name">AbstractCommandable</span>&gt; selectedUnits = <span class="keyword">new</span>(<span class="number">12</span>);
 
+    <span class="comment">// 컴포넌트 초기화 - Start보다 먼저 실행됨</span>
+    <span class="comment">// Awake: GameObject가 생성될 때 한 번만 호출되는 Unity 생명주기 메서드</span>
     <span class="keyword">private void</span> <span class="method-name">Awake</span>()
     {
+        <span class="comment">// 유닛 선택 이벤트 구독</span>
+        <span class="comment">// Bus: 이벤트 버스 패턴을 사용한 이벤트 시스템</span>
+        <span class="comment">// UnitSelectedEvent: 유닛이 선택되었을 때 발생하는 이벤트</span>
+        <span class="comment">// +=: 이벤트 핸들러 추가 (구독)</span>
         <span class="class-name">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.<span class="property-name">OnEvent</span> += <span class="method-name">HandleUnitSelected</span>;
+        
+        <span class="comment">// 유닛 선택 해제 이벤트 구독</span>
+        <span class="comment">// UnitDeselectedEvent: 유닛의 선택이 해제되었을 때 발생하는 이벤트</span>
         <span class="class-name">Bus</span>&lt;<span class="class-name">UnitDeselectedEvent</span>&gt;.<span class="property-name">OnEvent</span> += <span class="method-name">HandleUnitDeselected</span>;
 
         <span class="comment">// 모든 버튼을 기본적으로 비활성화</span>
+        <span class="comment">// foreach: 배열의 모든 요소를 순회</span>
         <span class="keyword">foreach</span>(<span class="class-name">UIActionButton</span> actionButton <span class="keyword">in</span> <span class="property-name">ActionButtons</span>)
         {
+            <span class="comment">// SetIcon(null): 아이콘을 제거하여 빈 버튼으로 만듦</span>
             actionButton.<span class="method-name">SetIcon</span>(<span class="keyword">null</span>);
         }
     }
 
+    <span class="comment">// UI 버튼들을 업데이트하는 메서드</span>
+    <span class="comment">// 선택된 유닛들의 사용 가능한 명령에 따라 버튼 상태를 변경</span>
     <span class="keyword">private void</span> <span class="method-name">RefreshButtons</span>()
     {
+        <span class="comment">// 사용 가능한 명령들을 저장할 HashSet</span>
+        <span class="comment">// HashSet: 중복을 허용하지 않는 컬렉션</span>
+        <span class="comment">// ActionBase: 모든 명령의 기본 클래스</span>
+        <span class="comment">// new(9): 초기 용량을 9로 설정 (최대 9개 슬롯)</span>
         <span class="class-name">HashSet</span>&lt;<span class="class-name">ActionBase</span>&gt; availableCommands = <span class="keyword">new</span>(<span class="number">9</span>);
 
         <span class="comment">// 선택된 모든 유닛의 명령들을 수집</span>
+        <span class="comment">// foreach: HashSet의 모든 요소를 순회</span>
         <span class="keyword">foreach</span> (<span class="class-name">AbstractCommandable</span> commandable <span class="keyword">in</span> selectedUnits)
         {
+            <span class="comment">// 각 유닛/건물의 AvailableCommands를 HashSet에 추가</span>
+            <span class="comment">// AddRange: 배열의 모든 요소를 HashSet에 추가 (중복 자동 제거)</span>
             availableCommands.<span class="method-name">AddRange</span>(commandable.<span class="property-name">AvailableCommands</span>);
         }
 
         <span class="comment">// 각 슬롯에 맞는 명령 아이콘 설정</span>
+        <span class="comment">// for: 배열의 인덱스를 사용한 반복</span>
+        <span class="comment">// ActionButtons.Length: UI 버튼의 개수</span>
         <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i < <span class="property-name">ActionButtons</span>.<span class="property-name">Length</span>; i++)
         {
+            <span class="comment">// LINQ를 사용하여 특정 슬롯에 맞는 명령 찾기</span>
+            <span class="comment">// Where: 조건에 맞는 요소만 필터링</span>
+            <span class="comment">// FirstOrDefault: 첫 번째 요소를 반환하거나 없으면 null</span>
             <span class="class-name">ActionBase</span> actionForSlot = availableCommands.<span class="method-name">Where</span>(action => action.<span class="property-name">Slot</span> == i).<span class="method-name">FirstOrDefault</span>();
 
+            <span class="comment">// 해당 슬롯에 명령이 있는 경우</span>
             <span class="keyword">if</span> (actionForSlot != <span class="keyword">null</span>)
             {
+                <span class="comment">// 버튼에 명령의 아이콘 설정</span>
                 <span class="property-name">ActionButtons</span>[i].<span class="method-name">SetIcon</span>(actionForSlot.<span class="property-name">Icon</span>);
             }
+            <span class="comment">// 해당 슬롯에 명령이 없는 경우</span>
             <span class="keyword">else</span>
             {
+                <span class="comment">// 버튼을 빈 상태로 만듦</span>
                 <span class="property-name">ActionButtons</span>[i].<span class="method-name">SetIcon</span>(<span class="keyword">null</span>);
             }
         }
