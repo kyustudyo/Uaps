@@ -1102,6 +1102,232 @@ unit.<span class="method-name">MoveTo</span>(targetPosition);
             </div>
         </div>
 
+        <div class="section">
+            <h2>🎮 강의 28: UI 버튼 클릭으로 명령 실행</h2>
+            
+            <div class="subsection">
+                <h3>🎯 이번 강의를 왜 해야 하는가?</h3>
+                <div class="info-box">
+                    <p><strong>문제점:</strong> UI에 명령 아이콘은 표시되지만, 실제로 클릭해도 아무 일이 일어나지 않았습니다.</p>
+                    <p><strong>해결책:</strong> UI 버튼 클릭 시 해당 명령을 활성화하고, 월드 클릭 시 명령을 실행하는 시스템을 구현합니다.</p>
+                    <p><strong>목표:</strong> 완전한 UI 기반 명령 시스템을 구축하여 직관적인 RTS 게임플레이를 제공합니다.</p>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🧒 초딩도 이해하기 쉬운 설명</h3>
+                <div class="info-box">
+                    <p>🎮 <strong>게임에서 일어난 일:</strong></p>
+                    <p>• 화면 아래에 이동 버튼이 보이지만 클릭해도 아무 일이 안 일어나요</p>
+                    <p>• 마치 리모컨의 버튼을 눌러도 TV가 켜지지 않는 것 같아요</p>
+                    <p>• 플레이어가 버튼을 눌러도 로봇이 움직이지 않아서 답답해요</p>
+                    
+                    <p>🔧 <strong>해결 방법:</strong></p>
+                    <p>• 이동 버튼을 클릭하면 "이동 모드"가 활성화되어요</p>
+                    <p>• 그 다음에 땅을 클릭하면 로봇들이 그곳으로 이동해요</p>
+                    <p>• 마치 스마트폰에서 앱을 선택하고 위치를 지정하는 것 같아요</p>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>📋 주요 변경사항</h3>
+                
+                <div class="code-block">
+<span class="comment">// 1. UIActionButton에 Button 참조 및 클릭 핸들러 추가</span>
+[<span class="class-name">RequireComponent</span>(<span class="keyword">typeof</span>(<span class="class-name">Button</span>))]
+<span class="keyword">public class</span> <span class="class-name">UIActionButton</span> : <span class="class-name">MonoBehaviour</span>
+{
+    [<span class="class-name">SerializeField</span>] <span class="keyword">private</span> <span class="class-name">Image</span> <span class="property-name">icon</span>;
+    <span class="keyword">private</span> <span class="class-name">Button</span> <span class="property-name">button</span>;
+
+    <span class="keyword">private void</span> <span class="method-name">Awake</span>()
+    {
+        <span class="property-name">button</span> = <span class="method-name">GetComponent</span>&lt;<span class="class-name">Button</span>&gt;();
+    }
+
+    <span class="keyword">public void</span> <span class="method-name">EnableFor</span>(<span class="class-name">ActionBase</span> action, <span class="class-name">UnityAction</span> onClick)
+    {
+        <span class="method-name">SetIcon</span>(action.<span class="property-name">Icon</span>);
+        <span class="property-name">button</span>.<span class="property-name">interactable</span> = <span class="keyword">true</span>;
+        <span class="property-name">button</span>.<span class="property-name">onClick</span>.<span class="method-name">AddListener</span>(onClick);
+    }
+
+    <span class="keyword">public void</span> <span class="method-name">Disable</span>()
+    {
+        <span class="method-name">SetIcon</span>(<span class="keyword">null</span>);
+        <span class="property-name">button</span>.<span class="property-name">interactable</span> = <span class="keyword">false</span>;
+        <span class="property-name">button</span>.<span class="property-name">onClick</span>.<span class="method-name">RemoveAllListeners</span>();
+    }
+}
+                </div>
+
+                <div class="code-block">
+<span class="comment">// 2. ActionSelectedEvent 이벤트 생성</span>
+<span class="keyword">public struct</span> <span class="class-name">ActionSelectedEvent</span> : <span class="class-name">IEvent</span>
+{
+    <span class="keyword">public</span> <span class="class-name">ActionBase</span> <span class="property-name">Action</span> { <span class="keyword">get</span>; }
+
+    <span class="keyword">public</span> <span class="method-name">ActionSelectedEvent</span>(<span class="class-name">ActionBase</span> action)
+    {
+        <span class="property-name">Action</span> = action;
+    }
+}
+                </div>
+
+                <div class="code-block">
+<span class="comment">// 3. ActionsUI에서 Enable/Disable 메서드 사용</span>
+<span class="keyword">private void</span> <span class="method-name">RefreshButtons</span>()
+{
+    <span class="class-name">HashSet</span>&lt;<span class="class-name">ActionBase</span>&gt; availableCommands = <span class="keyword">new</span>(<span class="number">9</span>);
+
+    <span class="comment">// 선택된 모든 유닛의 명령들을 수집</span>
+    <span class="keyword">foreach</span> (<span class="class-name">AbstractCommandable</span> commandable <span class="keyword">in</span> selectedUnits)
+    {
+        availableCommands.<span class="method-name">AddRange</span>(commandable.<span class="property-name">AvailableCommands</span>);
+    }
+
+    <span class="comment">// 각 슬롯에 맞는 명령 버튼 활성화/비활성화</span>
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i < actionButtons.<span class="property-name">Length</span>; i++)
+    {
+        <span class="class-name">ActionBase</span> actionForSlot = availableCommands.<span class="method-name">Where</span>(action => action.<span class="property-name">Slot</span> == i).<span class="method-name">FirstOrDefault</span>();
+
+        <span class="keyword">if</span> (actionForSlot != <span class="keyword">null</span>)
+        {
+            actionButtons[i].<span class="method-name">EnableFor</span>(actionForSlot, <span class="method-name">HandleClick</span>(actionForSlot));
+        }
+        <span class="keyword">else</span>
+        {
+            actionButtons[i].<span class="method-name">Disable</span>();
+        }
+    }
+}
+
+<span class="keyword">private</span> <span class="class-name">UnityAction</span> <span class="method-name">HandleClick</span>(<span class="class-name">ActionBase</span> action)
+{
+    <span class="keyword">return</span> () => <span class="class-name">Bus</span>&lt;<span class="class-name">ActionSelectedEvent</span>&gt;.<span class="method-name">Raise</span>(<span class="keyword">new</span> <span class="class-name">ActionSelectedEvent</span>(action));
+}
+                </div>
+
+                <div class="code-block">
+<span class="comment">// 4. PlayerInput에서 ActionSelectedEvent 처리 및 UI/월드 클릭 구분</span>
+<span class="keyword">private</span> <span class="class-name">ActionBase</span> activeAction;
+<span class="keyword">private bool</span> wasMouseDownOnUI;
+
+<span class="keyword">private void</span> <span class="method-name">Awake</span>()
+{
+    <span class="comment">// ... 기존 코드 ...</span>
+    <span class="class-name">Bus</span>&lt;<span class="class-name">ActionSelectedEvent</span>&gt;.<span class="property-name">OnEvent</span> += <span class="method-name">HandleActionSelected</span>;
+}
+
+<span class="keyword">private void</span> <span class="method-name">HandleActionSelected</span>(<span class="class-name">ActionSelectedEvent</span> evt) => activeAction = evt.<span class="property-name">Action</span>;
+
+<span class="keyword">private void</span> <span class="method-name">HandleMouseDown</span>()
+{
+    wasMouseDownOnUI = <span class="class-name">EventSystem</span>.<span class="property-name">current</span>.<span class="method-name">IsPointerOverGameObject</span>();
+    <span class="comment">// ... 기존 코드 ...</span>
+}
+
+<span class="keyword">private void</span> <span class="method-name">HandleLeftClick</span>()
+{
+    <span class="keyword">if</span> (activeAction == <span class="keyword">null</span> 
+        && <span class="class-name">Physics</span>.<span class="method-name">Raycast</span>(cameraRay, <span class="keyword">out</span> <span class="class-name">RaycastHit</span> hit, <span class="keyword">float</span>.<span class="property-name">MaxValue</span>, selectableUnitsLayers)
+        && hit.<span class="property-name">collider</span>.<span class="method-name">TryGetComponent</span>(<span class="keyword">out</span> <span class="class-name">ISelectable</span> selectable))
+    {
+        <span class="comment">// 일반적인 유닛 선택</span>
+        selectable.<span class="method-name">Select</span>();
+    }
+    <span class="keyword">else if</span> (activeAction != <span class="keyword">null</span>
+        && !<span class="class-name">EventSystem</span>.<span class="property-name">current</span>.<span class="method-name">IsPointerOverGameObject</span>()
+        && <span class="class-name">Physics</span>.<span class="method-name">Raycast</span>(cameraRay, <span class="keyword">out</span> hit, <span class="keyword">float</span>.<span class="property-name">MaxValue</span>, floorLayers))
+    {
+        <span class="comment">// 활성화된 명령 실행</span>
+        <span class="class-name">List</span>&lt;<span class="class-name">AbstractUnit</span>&gt; abstractUnits = selectedUnits
+            .<span class="method-name">Where</span>((unit) => unit <span class="keyword">is</span> <span class="class-name">AbstractUnit</span>)
+            .<span class="method-name">Cast</span>&lt;<span class="class-name">AbstractUnit</span>&gt;()
+            .<span class="method-name">ToList</span>();
+        
+        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i < abstractUnits.<span class="property-name">Count</span>; i++)
+        {
+            <span class="class-name">CommandContext</span> context = <span class="keyword">new</span>(abstractUnits[i], hit, i);
+            activeAction.<span class="method-name">Handle</span>(context);
+        }
+
+        activeAction = <span class="keyword">null</span>;
+    }
+}
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🔧 핵심 기술 개념</h3>
+                
+                <div class="info-box">
+                    <h4>🎮 UI 버튼 상호작용</h4>
+                    <ul>
+                        <li><strong>RequireComponent</strong>: Button 컴포넌트가 반드시 있어야 함을 보장</li>
+                        <li><strong>UnityAction</strong>: Unity의 델리게이트 타입으로 버튼 클릭 이벤트 처리</li>
+                        <li><strong>EnableFor/Disable</strong>: 버튼의 활성화/비활성화 상태 관리</li>
+                        <li><strong>AddListener/RemoveAllListeners</strong>: 클릭 이벤트 리스너 관리</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h4>🔄 이벤트 기반 명령 시스템</h4>
+                    <ul>
+                        <li><strong>ActionSelectedEvent</strong>: UI 버튼 클릭 시 발생하는 이벤트</li>
+                        <li><strong>activeAction</strong>: 현재 활성화된 명령을 추적하는 상태</li>
+                        <li><strong>이벤트 버스</strong>: UI와 PlayerInput 간의 느슨한 결합</li>
+                        <li><strong>델리게이트 함수</strong>: HandleClick에서 반환하는 UnityAction</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h4>🎯 UI와 월드 클릭 구분</h4>
+                    <ul>
+                        <li><strong>EventSystem.current.IsPointerOverGameObject()</strong>: 마우스가 UI 위에 있는지 확인</li>
+                        <li><strong>wasMouseDownOnUI</strong>: 드래그 시작 시점의 UI 상태 기록</li>
+                        <li><strong>Guardian Pattern</strong>: activeAction이나 UI 클릭 시 드래그 비활성화</li>
+                        <li><strong>레이어 구분</strong>: selectableUnitsLayers vs floorLayers</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h4>🔗 LINQ 활용</h4>
+                    <ul>
+                        <li><strong>Where + Cast + ToList</strong>: 타입 필터링과 캐스팅을 한 번에 처리</li>
+                        <li><strong>코드 간소화</strong>: 반복문과 조건문을 LINQ로 대체</li>
+                        <li><strong>타입 안전성</strong>: 컴파일 타임에 타입 검증</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🎮 게임플레이 개선</h3>
+                
+                <div class="code-block">
+<span class="comment">// 이전: UI 버튼이 표시되지만 클릭해도 아무 일이 일어나지 않음</span>
+<span class="comment">// 플레이어가 혼란스러워하고 게임을 제대로 즐기기 어려움</span>
+
+<span class="comment">// 개선: 완전한 UI 기반 명령 시스템</span>
+<span class="comment">// 1. UI 버튼 클릭 → 명령 활성화</span>
+<span class="comment">// 2. 월드 클릭 → 활성화된 명령 실행</span>
+<span class="comment">// 3. UI와 월드 클릭을 명확히 구분</span>
+<span class="comment">// 4. 직관적인 2단계 명령 시스템</span>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🚀 Nova 1492 적용 포인트</h3>
+                <ul>
+                    <li><strong>완전한 UI 명령 시스템</strong>: 버튼 클릭부터 명령 실행까지 완전한 플로우</li>
+                    <li><strong>직관적인 사용자 경험</strong>: 2단계 명령 시스템으로 명확한 피드백</li>
+                    <li><strong>UI와 게임월드 분리</strong>: 클릭 컨텍스트에 따른 다른 동작</li>
+                    <li><strong>이벤트 기반 아키텍처</strong>: 느슨한 결합으로 확장성 향상</li>
+                    <li><strong>상태 기반 명령 관리</strong>: activeAction으로 명령 상태 추적</li>
+                </ul>
+            </div>
+        </div>
+
     </div>
 </body>
 </html>

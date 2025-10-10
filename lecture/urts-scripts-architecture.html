@@ -234,7 +234,8 @@ Assets/Scripts/
 ├── Events/                      <span class="comment">// 이벤트 데이터 구조</span>
 │   ├── UnitSelectedEvent.cs     <span class="comment">// 유닛 선택 이벤트</span>
 │   ├── UnitDeselectedEvent.cs    <span class="comment">// 유닛 선택 해제 이벤트</span>
-│   └── UnitSpawnEvent.cs        <span class="comment">// 유닛 스폰 이벤트</span>
+│   ├── UnitSpawnEvent.cs        <span class="comment">// 유닛 스폰 이벤트</span>
+│   └── ActionSelectedEvent.cs   <span class="comment">// 명령 선택 이벤트</span>
 ├── Player/                      <span class="comment">// 플레이어 관련</span>
 │   └── PlayerInput.cs           <span class="comment">// 입력 처리 및 카메라 제어</span>
 ├── UI/                          <span class="comment">// 사용자 인터페이스</span>
@@ -388,6 +389,7 @@ package "GameDevTV.RTS.Events" {
     class UnitSelectedEvent
     class UnitDeselectedEvent
     class UnitSpawnEvent
+    class ActionSelectedEvent
 }
 
 ' 상속 관계
@@ -430,14 +432,17 @@ CommandContext *-- RaycastHit : contains
 ' UI 시스템 관계
 ActionsUI ..> Bus&lt;UnitSelectedEvent&gt; : subscribes
 ActionsUI ..> Bus&lt;UnitDeselectedEvent&gt; : subscribes
+ActionsUI ..> Bus&lt;ActionSelectedEvent&gt; : raises
 ActionsUI *-- UIActionButton : ActionButtons
 ActionsUI ..> ActionBase : reads Icon & Slot
 UIActionButton ..> Image : Icon
+PlayerInput ..> Bus&lt;ActionSelectedEvent&gt; : subscribes
 
 ' 이벤트 인터페이스
 IEvent <|.. UnitSelectedEvent
 IEvent <|.. UnitDeselectedEvent
 IEvent <|.. UnitSpawnEvent
+IEvent <|.. ActionSelectedEvent
 
 @enduml
             </div>
@@ -1669,7 +1674,28 @@ public class SupplyHut : MonoBehaviour, ISelectable
     → <span class="class-name">ActionsUI</span>.<span class="method-name">RefreshButtons</span>()
     → <span class="class-name">UIActionButton</span>.<span class="method-name">SetIcon</span>(action.<span class="property-name">Icon</span>)
 
-<span class="comment">// 3. 유닛 이동 명령 시</span>
+<span class="comment">// 3. UI 버튼 클릭으로 명령 활성화</span>
+<span class="class-name">UIActionButton</span>.<span class="method-name">EnableFor</span>()
+    → <span class="class-name">Button</span>.<span class="property-name">onClick</span>.<span class="method-name">AddListener</span>()
+    → <span class="class-name">ActionsUI</span>.<span class="method-name">HandleClick</span>()
+    → <span class="class-name">Bus</span>&lt;<span class="class-name">ActionSelectedEvent</span>&gt;.<span class="method-name">Raise</span>()
+    → <span class="class-name">PlayerInput</span>.<span class="method-name">HandleActionSelected</span>()
+    → <span class="property-name">activeAction</span> = evt.<span class="property-name">Action</span>
+
+<span class="comment">// 4. 월드 클릭으로 명령 실행</span>
+<span class="class-name">PlayerInput</span>.<span class="method-name">HandleLeftClick</span>()
+    → <span class="class-name">EventSystem</span>.<span class="method-name">IsPointerOverGameObject</span>() <span class="comment">// UI 클릭 확인</span>
+    → <span class="class-name">Physics</span>.<span class="method-name">Raycast</span>() <span class="comment">// 월드 클릭 지점 감지</span>
+    → <span class="keyword">if</span> (activeAction != null)
+        → <span class="class-name">List</span>&lt;<span class="class-name">AbstractUnit</span>&gt; = selectedUnits.<span class="method-name">Where</span>().<span class="method-name">Cast</span>().<span class="method-name">ToList</span>()
+        → <span class="keyword">for</span> (각 선택된 유닛)
+            → <span class="class-name">CommandContext</span> <span class="keyword">new</span>(unit, hit, unitIndex)
+            → activeAction.<span class="method-name">Handle</span>(context)
+                → <span class="comment">// Radial Placement 계산</span>
+                → unit.<span class="method-name">MoveTo</span>(targetPosition)
+        → activeAction = null
+
+<span class="comment">// 5. 우클릭으로 직접 명령 실행 (기존 방식)</span>
 <span class="class-name">PlayerInput</span>.<span class="method-name">HandleRightClick</span>()
     → <span class="class-name">Physics</span>.<span class="method-name">Raycast</span>() <span class="comment">// 클릭 지점 감지</span>
     → <span class="keyword">for</span> (각 선택된 유닛)
@@ -1710,6 +1736,8 @@ public class SupplyHut : MonoBehaviour, ISelectable
                         <li><strong>ScriptableObject 설정</strong>: Inspector에서 실시간 조정</li>
                         <li><strong>UI 명령 표시</strong>: 선택된 유닛의 사용 가능한 명령을 아이콘으로 표시</li>
                         <li><strong>일관된 UI 배치</strong>: 같은 명령은 항상 같은 슬롯에 표시</li>
+                        <li><strong>UI 버튼 클릭 명령</strong>: UI 버튼 클릭으로 명령 활성화 후 월드 클릭으로 실행</li>
+                        <li><strong>UI/월드 클릭 구분</strong>: UI 클릭과 월드 클릭을 명확히 구분하여 처리</li>
                     </ul>
                 </div>
 
