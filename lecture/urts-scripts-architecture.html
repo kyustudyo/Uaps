@@ -361,10 +361,12 @@ package "GameDevTV.RTS.Units" {
     }
     
     class BaseBuilding {
+        -buildingQueue: Queue&lt;UnitSO&gt;
+        -maxQueueSize: int
         +Select(): void
         +Deselect(): void
         +BuildUnit(unit: UnitSO): void
-        -DoBuildUnit(unit: UnitSO): IEnumerator
+        -DoBuildUnits(): IEnumerator
     }
     
     class RobotPart {
@@ -1751,6 +1753,9 @@ public class SupplyHut : MonoBehaviour, ISelectable
                         <li><strong>건물 기반 유닛 생산</strong>: Command Post에서 Worker 생산 가능</li>
                         <li><strong>시간 기반 생산 시스템</strong>: 코루틴을 사용한 현실적인 빌드 타임</li>
                         <li><strong>즉시 실행 명령</strong>: RequiresClickToActivate로 다양한 명령 타입 지원</li>
+                        <li><strong>Building Queue 시스템</strong>: 최대 5개까지 유닛 생산 대기열</li>
+                        <li><strong>FIFO 큐 처리</strong>: 먼저 주문한 유닛부터 순서대로 생산</li>
+                        <li><strong>UI 클릭 선택 해제 방지</strong>: 빌드 버튼 클릭 시 유닛 선택 유지</li>
                     </ul>
                 </div>
 

@@ -1618,6 +1618,162 @@ List&lt;AbstractCommandable&gt; abstractCommandables = selectedUnits
             </div>
         </div>
 
+        <!-- 강의 30: Building Queue 시스템 -->
+        <div class="lecture-section" id="lecture30">
+            <h2 class="lecture-title">🏗️ 강의 30: Building Queue 시스템 (건물 큐 시스템)</h2>
+            
+            <div class="lecture-goal">
+                <h3>🎯 강의 목표</h3>
+                <p>건물에서 여러 유닛을 동시에 생산하는 대신 <strong>Queue(큐)</strong>를 사용해서 순서대로 하나씩 생산하는 시스템을 구현합니다.</p>
+            </div>
+
+            <div class="content-section">
+                <h3>📋 주요 내용</h3>
+                
+                <h4>1. Queue(큐)란? (쉽게 설명)</h4>
+                <ul class="content-list">
+                    <li><strong>Queue</strong>: 줄서기와 같은 개념 - 먼저 온 순서대로 처리</li>
+                    <li><strong>FIFO</strong>: First In, First Out (먼저 들어온 것이 먼저 나감)</li>
+                    <li><strong>Enqueue</strong>: 줄에 추가하기 (큐에 항목 추가)</li>
+                    <li><strong>Dequeue</strong>: 줄에서 빼기 (큐에서 항목 제거)</li>
+                    <li><strong>Peek</strong>: 다음에 나올 항목 미리보기 (큐 변경 없이 확인)</li>
+                </ul>
+
+                <h4>2. 왜 필요한가?</h4>
+                <ul class="content-list">
+                    <li><strong>현실적인 제약</strong>: 건물에서 한 번에 여러 유닛을 만들 수 없음</li>
+                    <li><strong>게임 밸런스</strong>: 무한정 빠른 생산을 방지</li>
+                    <li><strong>전략적 요소</strong>: 생산 순서를 고려한 전략 수립</li>
+                    <li><strong>자원 관리</strong>: 생산 비용과 시간의 균형</li>
+                </ul>
+
+                <h4>3. 초딩도 이해하기 쉬운 설명</h4>
+                <p>피자집에서 피자를 만드는 것과 같아요! 피자집에는 오븐이 하나밖에 없어서 피자를 하나씩만 구울 수 있어요. 
+                손님이 여러 개 주문해도 첫 번째 피자부터 차례대로 만들어야 해요. 
+                게임에서도 건물이 하나의 "오븐"이고, 유닛들이 "피자"예요!</p>
+
+                <h4>4. 핵심 코드 구현</h4>
+                
+                <h5>BaseBuilding.cs - Queue 시스템</h5>
+                <div class="code-block"><span class="comment">// 건물 큐: 생산할 유닛들을 순서대로 저장하는 큐</span>
+<span class="comment">// Queue&lt;UnitSO&gt;: FIFO(First In, First Out) 방식으로 유닛을 처리</span>
+<span class="comment">// System.Collections.Generic.Queue: C#의 표준 큐 컬렉션</span>
+<span class="keyword">private</span> Queue&lt;UnitSO&gt; buildingQueue = <span class="keyword">new</span> Queue&lt;UnitSO&gt;(<span class="number">5</span>);
+
+<span class="comment">// 최대 큐 크기: 무한정 큐가 커지는 것을 방지</span>
+<span class="comment">// const: 컴파일 타임에 값이 결정되는 상수</span>
+<span class="comment">// private: 이 클래스 내부에서만 접근 가능</span>
+<span class="keyword">private const int</span> maxQueueSize = <span class="number">5</span>;
+
+<span class="comment">// 유닛 생산 요청 메서드</span>
+<span class="keyword">public void</span> BuildUnit(UnitSO unit)
+{
+    <span class="comment">// Guardian Pattern: 큐가 가득 찬 경우 요청을 거부</span>
+    <span class="comment">// buildingQueue.Count: 현재 큐에 있는 유닛의 개수</span>
+    <span class="comment">// maxQueueSize: 허용되는 최대 큐 크기</span>
+    <span class="keyword">if</span> (buildingQueue.Count &gt;= maxQueueSize)
+    {
+        <span class="comment">// 큐가 가득 찬 경우 에러 로그 출력</span>
+        <span class="comment">// 이는 코드의 버그를 나타내는 신호일 수 있음</span>
+        Debug.LogError(<span class="string">$"BuildUnit was called when the queue was already full. This is not supported."</span>);
+        <span class="keyword">return</span>; <span class="comment">// 메서드 종료</span>
+    }
+
+    <span class="comment">// 큐에 새로운 유닛 추가</span>
+    <span class="comment">// Enqueue: 큐의 끝에 항목을 추가하는 메서드</span>
+    buildingQueue.Enqueue(unit);
+
+    <span class="comment">// 첫 번째 유닛을 추가한 경우에만 코루틴 시작</span>
+    <span class="comment">// 이미 코루틴이 실행 중인 경우 새로 시작하지 않음</span>
+    <span class="comment">// buildingQueue.Count == 1: 방금 첫 번째 유닛을 추가했음을 의미</span>
+    <span class="keyword">if</span> (buildingQueue.Count == <span class="number">1</span>)
+    {
+        <span class="comment">// DoBuildUnits 코루틴 시작 (매개변수 없음)</span>
+        <span class="comment">// 이 코루틴이 전체 큐를 처리함</span>
+        StartCoroutine(DoBuildUnits());
+    }
+}</div>
+
+                <h5>DoBuildUnits 코루틴 - 큐 처리</h5>
+                <div class="code-block"><span class="comment">// 큐에 있는 유닛들을 순서대로 생산하는 코루틴</span>
+<span class="keyword">private</span> IEnumerator DoBuildUnits()
+{
+    <span class="comment">// 큐에 유닛이 있는 동안 반복</span>
+    <span class="comment">// while loop: 큐가 비어있을 때까지 계속 처리</span>
+    <span class="keyword">while</span> (buildingQueue.Count &gt; <span class="number">0</span>)
+    {
+        <span class="comment">// Peek: 큐의 첫 번째 항목을 확인하되 제거하지 않음</span>
+        <span class="comment">// 현재 처리할 유닛의 정보를 가져옴</span>
+        UnitSO unit = buildingQueue.Peek();
+
+        <span class="comment">// 해당 유닛의 빌드 시간만큼 대기</span>
+        <span class="comment">// yield return: 코루틴을 일시 정지하고 다음 프레임에 재개</span>
+        <span class="comment">// WaitForSeconds: 지정된 시간(초) 동안 대기</span>
+        <span class="keyword">yield return new</span> WaitForSeconds(unit.BuildTime);
+
+        <span class="comment">// 유닛 생성</span>
+        <span class="comment">// Instantiate: GameObject를 복제하여 씬에 생성</span>
+        <span class="comment">// transform.position: 건물의 위치에서 유닛 생성</span>
+        <span class="comment">// Quaternion.identity: 회전 없음 (기본 회전)</span>
+        Instantiate(unit.Prefab, transform.position, Quaternion.identity);
+
+        <span class="comment">// Dequeue: 큐의 첫 번째 항목을 제거하고 반환</span>
+        <span class="comment">// 빌드가 완료된 유닛을 큐에서 제거</span>
+        <span class="comment">// 반환값은 사용하지 않으므로 변수에 저장하지 않음</span>
+        buildingQueue.Dequeue();
+    }
+}</div>
+
+                <h5>PlayerInput.cs - UI 클릭 시 선택 해제 방지</h5>
+                <div class="code-block"><span class="comment">// UI 클릭 시 선택 해제 방지 로직 추가</span>
+<span class="keyword">private void</span> HandleMouseUp()
+{
+    <span class="comment">// UI 클릭 시 선택 해제 방지 로직 추가</span>
+    <span class="comment">// activeAction == null: 현재 활성화된 액션이 없음</span>
+    <span class="comment">// !wasMouseDownOnUI: 마우스가 UI에서 시작되지 않음 (월드에서 시작됨)</span>
+    <span class="comment">// !Keyboard.current.shiftKey.isPressed: Shift 키가 눌려있지 않음</span>
+    <span class="comment">// 이 세 조건이 모두 만족될 때만 유닛 선택 해제</span>
+    <span class="keyword">if</span> (activeAction == <span class="keyword">null</span> &amp;&amp; !wasMouseDownOnUI &amp;&amp; !Keyboard.current.shiftKey.isPressed)
+    {
+        DeselectAllUnits();
+    }
+
+    HandleLeftClick();
+    <span class="keyword">foreach</span> (AbstractUnit unit <span class="keyword">in</span> addedUnits)
+    {
+        unit.Select();
+    }
+    selectionBox.gameObject.SetActive(<span class="keyword">false</span>);
+}</div>
+            </div>
+
+            <div class="subsection">
+                <h3>🔧 핵심 기술 개념</h3>
+                <ul>
+                    <li><strong>Queue&lt;T&gt;</strong>: FIFO 방식의 컬렉션 자료구조</li>
+                    <li><strong>Enqueue()</strong>: 큐에 항목 추가</li>
+                    <li><strong>Dequeue()</strong>: 큐에서 항목 제거 및 반환</li>
+                    <li><strong>Peek()</strong>: 큐의 첫 번째 항목 확인 (제거하지 않음)</li>
+                    <li><strong>Count</strong>: 큐에 있는 항목의 개수</li>
+                    <li><strong>Guardian Pattern</strong>: 큐 크기 제한으로 오류 방지</li>
+                    <li><strong>Coroutine</strong>: 비동기 작업으로 큐 처리</li>
+                    <li><strong>UI Interaction</strong>: UI 클릭과 월드 클릭 구분</li>
+                </ul>
+            </div>
+
+            <div class="subsection">
+                <h3>🚀 Nova 1492 적용 포인트</h3>
+                <ul>
+                    <li><strong>건물 기반 유닛 생산</strong>: Command Post에서 Worker 생산 가능</li>
+                    <li><strong>큐 시스템</strong>: 최대 5개까지 유닛 생산 대기열</li>
+                    <li><strong>시간 기반 생산</strong>: 현실적인 빌드 타임으로 전략적 요소 추가</li>
+                    <li><strong>UI 개선</strong>: 빌드 버튼 클릭 시 유닛 선택 해제 방지</li>
+                    <li><strong>에러 처리</strong>: 큐가 가득 찬 경우 적절한 피드백</li>
+                    <li><strong>성능 최적화</strong>: 코루틴을 사용한 효율적인 큐 처리</li>
+                </ul>
+            </div>
+        </div>
+
     </div>
 </body>
 </html>
