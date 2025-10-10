@@ -759,6 +759,177 @@ public abstract class AbstractUnit : AbstractCommandable, IMoveable
             </div>
         </div>
 
+        <div class="section">
+            <h2>🎯 강의 26: Command Context 도입</h2>
+            
+            <div class="subsection">
+                <h3>🎯 이번 강의를 왜 해야 하는가?</h3>
+                <div class="info-box">
+                    <p><strong>문제점:</strong> 강의 25에서 Command Pattern을 도입했지만, 유닛들이 같은 위치로 이동하려고 해서 "춤추는" 현상이 발생했습니다.</p>
+                    <p><strong>해결책:</strong> Command Context를 도입하여 명령에 더 많은 정보를 전달하고, radial placement 알고리즘을 MoveCommand 안에서 재구현합니다.</p>
+                    <p><strong>목표:</strong> 유닛들이 원형으로 배치되어 자연스럽게 이동하도록 개선합니다.</p>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🧒 초딩도 이해하기 쉬운 설명</h3>
+                <div class="info-box">
+                    <p>🎮 <strong>게임에서 일어난 일:</strong></p>
+                    <p>• 여러 로봇을 선택하고 오른쪽 클릭하면 모두 같은 곳으로 가려고 해요</p>
+                    <p>• 그러면 로봇들이 서로 밀어내면서 "춤추는" 것처럼 보여요</p>
+                    <p>• 마치 학교에서 모두 같은 자리에 앉으려고 하면 서로 밀치는 것과 같아요</p>
+                    
+                    <p>🔧 <strong>해결 방법:</strong></p>
+                    <p>• 로봇들에게 "너는 몇 번째야"라는 정보를 주어요</p>
+                    <p>• 그러면 로봇들이 원 모양으로 예쁘게 배치되어요</p>
+                    <p>• 마치 원형 테이블에 앉는 것처럼 깔끔하게 정렬돼요</p>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>📋 주요 변경사항</h3>
+                
+                <div class="code-block">
+<span class="comment">// 1. CommandContext 구조체 생성</span>
+<span class="keyword">public struct</span> <span class="class-name">CommandContext</span>
+{
+    <span class="keyword">public</span> <span class="class-name">AbstractCommandable</span> <span class="property-name">Commandable</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+    <span class="keyword">public</span> <span class="class-name">RaycastHit</span> <span class="property-name">Hit</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+    <span class="keyword">public int</span> <span class="property-name">UnitIndex</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+
+    <span class="keyword">public</span> <span class="class-name">CommandContext</span>(<span class="class-name">AbstractCommandable</span> commandable, <span class="class-name">RaycastHit</span> hit, <span class="keyword">int</span> unitIndex = <span class="number">0</span>)
+    {
+        <span class="property-name">Commandable</span> = commandable;
+        <span class="property-name">Hit</span> = hit;
+        <span class="property-name">UnitIndex</span> = unitIndex;
+    }
+}
+                </div>
+
+                <div class="code-block">
+<span class="comment">// 2. ICommand 인터페이스 리팩토링</span>
+<span class="keyword">public interface</span> <span class="class-name">ICommand</span>
+{
+    <span class="keyword">bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">CommandContext</span> context);
+    <span class="keyword">void</span> <span class="method-name">Handle</span>(<span class="class-name">CommandContext</span> context);
+}
+                </div>
+
+                <div class="code-block">
+<span class="comment">// 3. MoveCommand에 radial placement 알고리즘 재구현</span>
+<span class="keyword">public override void</span> <span class="method-name">Handle</span>(<span class="class-name">CommandContext</span> context)
+{
+    <span class="class-name">AbstractUnit</span> unit = (<span class="class-name">AbstractUnit</span>)context.<span class="property-name">Commandable</span>;
+
+    <span class="keyword">if</span> (context.<span class="property-name">UnitIndex</span> == <span class="number">0</span>)
+    {
+        <span class="comment">// 첫 번째 유닛일 때 초기화</span>
+        unitsOnLayer = <span class="number">0</span>;
+        maxUnitsOnLayer = <span class="number">1</span>;
+        circleRadius = <span class="number">0</span>;
+        radialOffset = <span class="number">0</span>;
+    }
+    
+    <span class="comment">// 원형 배치 계산</span>
+    <span class="class-name">Vector3</span> targetPosition = <span class="keyword">new</span>(
+        context.<span class="property-name">Hit</span>.<span class="property-name">point</span>.<span class="property-name">x</span> + circleRadius * <span class="class-name">Mathf</span>.<span class="property-name">Cos</span>(radialOffset * unitsOnLayer),
+        context.<span class="property-name">Hit</span>.<span class="property-name">point</span>.<span class="property-name">y</span>,
+        context.<span class="property-name">Hit</span>.<span class="property-name">point</span>.<span class="property-name">z</span> + circleRadius * <span class="class-name">Mathf</span>.<span class="property-name">Sin</span>(radialOffset * unitsOnLayer)
+    );
+
+    unit.<span class="method-name">MoveTo</span>(targetPosition);
+    unitsOnLayer++;
+
+    <span class="comment">// 다음 레이어로 넘어가기</span>
+    <span class="keyword">if</span> (unitsOnLayer >= maxUnitsOnLayer)
+    {
+        unitsOnLayer = <span class="number">0</span>;
+        circleRadius += unit.<span class="property-name">AgentRadius</span> * radiusMultiplier;
+        maxUnitsOnLayer = <span class="class-name">Mathf</span>.<span class="method-name">FloorToInt</span>(<span class="number">2</span> * <span class="class-name">Mathf</span>.<span class="property-name">PI</span> * circleRadius / (unit.<span class="property-name">AgentRadius</span> * <span class="number">2</span>));
+        radialOffset = <span class="number">2</span> * <span class="class-name">Mathf</span>.<span class="property-name">PI</span> / maxUnitsOnLayer;
+    }
+}
+                </div>
+
+                <div class="code-block">
+<span class="comment">// 4. PlayerInput에서 CommandContext 사용</span>
+<span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i < abstractUnits.<span class="property-name">Count</span>; i++)
+{
+    <span class="class-name">CommandContext</span> context = <span class="keyword">new</span>(abstractUnits[i], hit, i);
+
+    <span class="keyword">foreach</span>(<span class="class-name">ICommand</span> command <span class="keyword">in</span> abstractUnits[i].<span class="property-name">AvailableCommands</span>)
+    {
+        <span class="keyword">if</span> (command.<span class="method-name">CanHandle</span>(context))
+        {
+            command.<span class="method-name">Handle</span>(context);
+            <span class="keyword">break</span>; <span class="comment">// 하나의 명령만 실행</span>
+        }
+    }
+}
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🔧 핵심 기술 개념</h3>
+                
+                <div class="info-box">
+                    <h4>📦 CommandContext 구조체</h4>
+                    <ul>
+                        <li><strong>struct 사용 이유</strong>: 성능 최적화 - 클래스보다 가벼움, 가비지 컬렉션 부담 없음</li>
+                        <li><strong>UnitIndex</strong>: 유닛의 순서를 알려주는 인덱스 (0부터 시작)</li>
+                        <li><strong>RaycastHit</strong>: 클릭한 지점의 정보 (위치, 노멀 등)</li>
+                        <li><strong>AbstractCommandable</strong>: 명령을 받을 수 있는 객체 (유닛 또는 건물)</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h4>🎯 Radial Placement 알고리즘</h4>
+                    <ul>
+                        <li><strong>원형 배치</strong>: 유닛들을 원 모양으로 배치하여 자연스러운 이동</li>
+                        <li><strong>레이어 시스템</strong>: 첫 번째 원이 가득 차면 다음 원으로 확장</li>
+                        <li><strong>수학적 계산</strong>: 삼각함수(Cos, Sin)를 사용한 정확한 위치 계산</li>
+                        <li><strong>Agent Radius</strong>: 각 유닛의 크기를 고려한 간격 조정</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h4>⚙️ Radius Multiplier</h4>
+                    <ul>
+                        <li><strong>Inspector 조정</strong>: 런타임에서 원의 크기를 실시간으로 조정 가능</li>
+                        <li><strong>기본값 3.5</strong>: 테스트를 통해 찾은 최적의 배치 간격</li>
+                        <li><strong>ScriptableObject 장점</strong>: 설정값이 에디터에서 영구 저장됨</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🎮 게임플레이 개선</h3>
+                
+                <div class="code-block">
+<span class="comment">// 이전: 모든 유닛이 같은 위치로 이동 (춤추는 현상)</span>
+unit.<span class="method-name">MoveTo</span>(hit.<span class="property-name">point</span>);
+
+<span class="comment">// 개선: 유닛별로 다른 위치에 원형 배치</span>
+<span class="class-name">Vector3</span> targetPosition = <span class="keyword">new</span>(
+    hit.<span class="property-name">point</span>.<span class="property-name">x</span> + circleRadius * <span class="class-name">Mathf</span>.<span class="property-name">Cos</span>(radialOffset * unitsOnLayer),
+    hit.<span class="property-name">point</span>.<span class="property-name">y</span>,
+    hit.<span class="property-name">point</span>.<span class="property-name">z</span> + circleRadius * <span class="class-name">Mathf</span>.<span class="property-name">Sin</span>(radialOffset * unitsOnLayer)
+);
+unit.<span class="method-name">MoveTo</span>(targetPosition);
+                </div>
+            </div>
+
+            <div class="subsection">
+                <h3>🚀 Nova 1492 적용 포인트</h3>
+                <ul>
+                    <li><strong>자연스러운 유닛 배치</strong>: 원형 배치로 군집 이동의 현실감 향상</li>
+                    <li><strong>확장 가능한 명령 시스템</strong>: CommandContext를 통한 복잡한 명령 구현</li>
+                    <li><strong>런타임 설정 조정</strong>: Inspector에서 실시간으로 게임 밸런스 조정</li>
+                    <li><strong>성능 최적화</strong>: struct 사용으로 메모리 효율성 개선</li>
+                </ul>
+            </div>
+        </div>
+
     </div>
 </body>
 </html>

@@ -223,6 +223,11 @@
             
             <div class="architecture-diagram">
 Assets/Scripts/
+├── Commands/                    <span class="comment">// Command Pattern 시스템</span>
+│   ├── CommandContext.cs        <span class="comment">// 명령 컨텍스트 구조체</span>
+│   ├── ICommand.cs              <span class="comment">// 명령 인터페이스</span>
+│   ├── ActionBase.cs            <span class="comment">// 명령 추상 기본 클래스</span>
+│   └── MoveCommand.cs           <span class="comment">// 이동 명령 구현 (radial placement)</span>
 ├── EventBus/                    <span class="comment">// 이벤트 시스템</span>
 │   ├── Bus.cs                   <span class="comment">// 제네릭 이벤트 버스</span>
 │   └── IEvent.cs                <span class="comment">// 이벤트 마커 인터페이스</span>
@@ -233,13 +238,180 @@ Assets/Scripts/
 ├── Player/                      <span class="comment">// 플레이어 관련</span>
 │   └── PlayerInput.cs           <span class="comment">// 입력 처리 및 카메라 제어</span>
 └── Units/                       <span class="comment">// 유닛 관련</span>
+    ├── AbstractCommandable.cs   <span class="comment">// 명령 가능한 객체 기본 클래스</span>
     ├── AbstractUnit.cs          <span class="comment">// 모든 유닛의 추상 기본 클래스</span>
+    ├── BaseBuilding.cs          <span class="comment">// 모든 건물의 기본 클래스</span>
     ├── Worker.cs                <span class="comment">// 기본 작업자 유닛</span>
     ├── WorkerThreeRobot.cs      <span class="comment">// 3부품 로봇 유닛</span>
+    ├── AirTransportThreeRobot.cs <span class="comment">// 3부품 공중 수송 유닛</span>
     ├── RobotPart.cs             <span class="comment">// 로봇 부품 회전 시스템</span>
     ├── ISelectable.cs           <span class="comment">// 선택 가능 인터페이스</span>
     ├── IMoveable.cs             <span class="comment">// 이동 가능 인터페이스</span>
+    ├── UnitSO.cs                <span class="comment">// 유닛 설정 ScriptableObject</span>
     └── HoldGunIK.cs             <span class="comment">// 총기 애니메이션</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 전체 아키텍처 다이어그램</h2>
+            
+            <div class="code-block">
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam class {
+    BackgroundColor #F8F9FA
+    BorderColor #667eea
+    ArrowColor #764ba2
+}
+
+package "GameDevTV.RTS.Commands" {
+    struct CommandContext {
+        +Commandable: AbstractCommandable
+        +Hit: RaycastHit
+        +UnitIndex: int
+        +CommandContext(commandable, hit, unitIndex): void
+    }
+    
+    interface ICommand {
+        +CanHandle(context: CommandContext): bool
+        +Handle(context: CommandContext): void
+    }
+    
+    abstract class ActionBase {
+        +CanHandle(context: CommandContext): bool
+        +Handle(context: CommandContext): void
+    }
+    
+    class MoveCommand {
+        -radiusMultiplier: float
+        -unitsOnLayer: int
+        -maxUnitsOnLayer: int
+        -circleRadius: float
+        -radialOffset: float
+        +CanHandle(context: CommandContext): bool
+        +Handle(context: CommandContext): void
+    }
+}
+
+package "GameDevTV.RTS.Units" {
+    abstract class AbstractCommandable {
+        +CurrentHealth: int
+        +MaxHealth: int
+        +AvailableCommands: ActionBase[]
+        +Select(): void
+        +Deselect(): void
+    }
+    
+    abstract class AbstractUnit {
+        +AgentRadius: float
+        +MoveTo(position: Vector3): void
+    }
+    
+    class Worker {
+        +RotateParts(direction: Vector3): void
+    }
+    
+    class WorkerThreeRobot {
+        +headPart: RobotPart
+        +bodyPart: RobotPart
+        +legsPart: RobotPart
+        +headRotationSpeed: float
+        +bodyRotationSpeed: float
+        +legsRotationSpeed: float
+        +RotateParts(direction: Vector3): void
+    }
+    
+    class AirTransportThreeRobot {
+        +headPart: RobotPart
+        +bodyPart: RobotPart
+        +legsPart: RobotPart
+        +headRotationSpeed: float
+        +bodyRotationSpeed: float
+        +legsRotationSpeed: float
+        +RotateParts(direction: Vector3): void
+    }
+    
+    class BaseBuilding {
+        +Select(): void
+        +Deselect(): void
+    }
+    
+    class RobotPart {
+        +partType: string
+        +rotationSpeed: float
+        +RotateTowards(direction: Vector3, baseSpeed: float): void
+    }
+}
+
+package "GameDevTV.RTS.Player" {
+    class PlayerInput {
+        -selectedUnits: List&lt;ISelectable&gt;
+        -aliveUnits: HashSet&lt;AbstractUnit&gt;
+        -addedUnits: HashSet&lt;AbstractUnit&gt;
+        +HandleRightClick(): void
+        +HandleDragSelect(): void
+        +HandleLeftClick(): void
+    }
+}
+
+package "GameDevTV.RTS.EventBus" {
+    class Bus&lt;T&gt; {
+        +OnEvent: event
+        +Raise(event: T): void
+    }
+}
+
+package "GameDevTV.RTS.Events" {
+    interface IEvent
+    class UnitSelectedEvent
+    class UnitDeselectedEvent
+    class UnitSpawnEvent
+}
+
+' 상속 관계
+AbstractCommandable <|-- AbstractUnit
+AbstractCommandable <|-- BaseBuilding
+AbstractUnit <|-- Worker
+AbstractUnit <|-- WorkerThreeRobot
+AbstractUnit <|-- AirTransportThreeRobot
+
+' 인터페이스 구현
+ICommand <|.. ActionBase
+ActionBase <|-- MoveCommand
+ISelectable <|.. AbstractCommandable
+IMoveable <|.. AbstractUnit
+
+' 컴포지션 관계
+WorkerThreeRobot *-- RobotPart : headPart
+WorkerThreeRobot *-- RobotPart : bodyPart
+WorkerThreeRobot *-- RobotPart : legsPart
+AirTransportThreeRobot *-- RobotPart : headPart
+AirTransportThreeRobot *-- RobotPart : bodyPart
+AirTransportThreeRobot *-- RobotPart : legsPart
+
+' 이벤트 관계
+AbstractCommandable ..> Bus&lt;UnitSelectedEvent&gt; : raises
+AbstractCommandable ..> Bus&lt;UnitDeselectedEvent&gt; : raises
+AbstractUnit ..> Bus&lt;UnitSpawnEvent&gt; : raises
+PlayerInput ..> Bus&lt;UnitSelectedEvent&gt; : subscribes
+PlayerInput ..> Bus&lt;UnitDeselectedEvent&gt; : subscribes
+PlayerInput ..> Bus&lt;UnitSpawnEvent&gt; : subscribes
+
+' Command Pattern 관계
+PlayerInput ..> AbstractCommandable : uses AvailableCommands
+PlayerInput ..> CommandContext : creates
+AbstractCommandable *-- ActionBase : AvailableCommands
+ActionBase ..> CommandContext : CanHandle & Handle
+CommandContext *-- AbstractCommandable : contains
+CommandContext *-- RaycastHit : contains
+
+' 이벤트 인터페이스
+IEvent <|.. UnitSelectedEvent
+IEvent <|.. UnitDeselectedEvent
+IEvent <|.. UnitSpawnEvent
+
+@enduml
             </div>
         </div>
 
@@ -1536,19 +1708,21 @@ public class SupplyHut : MonoBehaviour, ISelectable
                 <h3>🏗️ Command Pattern 아키텍처</h3>
                 
                 <div class="code-block">
-<span class="comment">// Command Pattern 구조</span>
+<span class="comment">// Command Pattern 구조 (강의 26 업데이트)</span>
+<span class="class-name">CommandContext</span> (구조체)
+    ↓
 <span class="class-name">ICommand</span> (인터페이스)
     ↓
 <span class="class-name">ActionBase</span> (추상 클래스, ScriptableObject)
     ↓
 <span class="comment">// 구체적인 명령들:</span>
-<span class="comment">// - MoveCommand : 이동 명령</span>
+<span class="comment">// - MoveCommand : 이동 명령 (radial placement 포함)</span>
 <span class="comment">// - AttackCommand : 공격 명령 (향후)</span>
 <span class="comment">// - BuildCommand : 건설 명령 (향후)</span>
 <span class="comment">// - StopCommand : 정지 명령 (향후)</span>
 
 <span class="comment">// 사용 흐름:</span>
-<span class="comment">// PlayerInput → AbstractCommandable.AvailableCommands → ICommand.CanHandle() → ICommand.Handle()</span>
+<span class="comment">// PlayerInput → CommandContext 생성 → AbstractCommandable.AvailableCommands → ICommand.CanHandle(context) → ICommand.Handle(context)</span>
                 </div>
 
                 <div class="info-box">
