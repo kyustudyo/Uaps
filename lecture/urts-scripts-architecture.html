@@ -308,17 +308,46 @@ package "GameDevTV.RTS.Commands" {
 }
 
 package "GameDevTV.RTS.UI" {
-    class ActionsUI {
-        -ActionButtons: UIActionButton[]
-        -selectedUnits: HashSet&lt;AbstractCommandable&gt;
-        +HandleUnitSelected(event: UnitSelectedEvent): void
-        +HandleUnitDeselected(event: UnitDeselectedEvent): void
-        +RefreshButtons(): void
+    interface IUIElement&lt;T&gt; {
+        +EnableFor(item: T): void
+        +Disable(): void
     }
     
+    interface IUIElement&lt;T1, T2&gt; {
+        +EnableFor(item: T1, callback: T2): void
+        +Disable(): void
+    }
+    
+    class RuntimeUI {
+        -actionsUI: ActionsUI
+        -selectedUnits: HashSet&lt;AbstractCommandable&gt;
+        +Awake(): void
+        +OnDestroy(): void
+        +HandleUnitSelected(evt: UnitSelectedEvent): void
+        +HandleUnitDeselected(evt: UnitDeselectedEvent): void
+    }
+}
+
+package "GameDevTV.RTS.UI.Containers" {
+    class ActionsUI {
+        -actionButtons: UIActionButton[]
+        +EnableFor(selectedUnits: HashSet&lt;AbstractCommandable&gt;): void
+        +Disable(): void
+        -RefreshButtons(selectedUnits: HashSet&lt;AbstractCommandable&gt;): void
+    }
+    
+    class BuildingBuildingUI {
+        +EnableFor(context: BuildingContext): void
+        +Disable(): void
+    }
+}
+
+package "GameDevTV.RTS.UI.Components" {
     class UIActionButton {
-        -Icon: Image
-        +SetIcon(icon: Sprite): void
+        -button: Button
+        -iconImage: Image
+        +EnableFor(action: ActionBase, onClick: UnityAction): void
+        +Disable(): void
     }
 }
 
@@ -440,12 +469,17 @@ CommandContext *-- AbstractCommandable : contains
 CommandContext *-- RaycastHit : contains
 
 ' UI 시스템 관계
-ActionsUI ..> Bus&lt;UnitSelectedEvent&gt; : subscribes
-ActionsUI ..> Bus&lt;UnitDeselectedEvent&gt; : subscribes
-ActionsUI ..> Bus&lt;ActionSelectedEvent&gt; : raises
-ActionsUI *-- UIActionButton : ActionButtons
+RuntimeUI ..> Bus&lt;UnitSelectedEvent&gt; : subscribes
+RuntimeUI ..> Bus&lt;UnitDeselectedEvent&gt; : subscribes
+RuntimeUI *-- ActionsUI : actionsUI
+RuntimeUI ..> HashSet&lt;AbstractCommandable&gt; : selectedUnits
+ActionsUI ..|> IUIElement&lt;HashSet&lt;AbstractCommandable&gt;&gt; : implements
+ActionsUI *-- UIActionButton : actionButtons
 ActionsUI ..> ActionBase : reads Icon & Slot
-UIActionButton ..> Image : Icon
+UIActionButton ..|> IUIElement&lt;ActionBase, UnityAction&gt; : implements
+UIActionButton ..> Image : iconImage
+UIActionButton ..> Button : button
+BuildingBuildingUI ..|> IUIElement&lt;BuildingContext&gt; : implements
 PlayerInput ..> Bus&lt;ActionSelectedEvent&gt; : subscribes
 
 ' 이벤트 인터페이스
@@ -1756,6 +1790,12 @@ public class SupplyHut : MonoBehaviour, ISelectable
                         <li><strong>Building Queue 시스템</strong>: 최대 5개까지 유닛 생산 대기열</li>
                         <li><strong>FIFO 큐 처리</strong>: 먼저 주문한 유닛부터 순서대로 생산</li>
                         <li><strong>UI 클릭 선택 해제 방지</strong>: 빌드 버튼 클릭 시 유닛 선택 유지</li>
+                        <li><strong>UI System Refactoring</strong>: 확장 가능한 UI 아키텍처</li>
+                        <li><strong>IUIElement 인터페이스</strong>: 일관된 UI 관리 패턴</li>
+                        <li><strong>RuntimeUI</strong>: 중앙집중식 UI 관리</li>
+                        <li><strong>단방향 데이터 흐름</strong>: 상태 관리의 단순화</li>
+                        <li><strong>폴더 구조 정리</strong>: Containers와 Components 분리</li>
+                        <li><strong>네임스페이스 정리</strong>: 코드 조직화 개선</li>
                     </ul>
                 </div>
 
