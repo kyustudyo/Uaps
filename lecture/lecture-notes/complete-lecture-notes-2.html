@@ -285,6 +285,11 @@
                     <li><a href="#lecture-29">🏭 강의 29: Build Unit Command</a></li>
                     <li><a href="#lecture-30">🏗️ 강의 30: Building Queue</a></li>
                     <li><a href="#lecture-31">🎨 강의 31: UI System Refactoring</a></li>
+                    <li><a href="#lecture-32">📊 강의 32: Progress Bar Component</a></li>
+                    <li><a href="#lecture-33">🏗️ 강의 33: Building Progress Display</a></li>
+                    <li><a href="#lecture-34">❌ 강의 34: Cancel Queue Items</a></li>
+                    <li><a href="#lecture-35">🏗️ 강의 35: More Buildings & Units</a></li>
+                    <li><a href="#lecture-36">🌳 강의 36: Unity Behavior Tree</a></li>
                 </ul>
             </div>
         </div>
@@ -2723,6 +2728,1367 @@ List&lt;AbstractCommandable&gt; abstractCommandables = selectedUnits
                     <li><strong>단방향 데이터 흐름</strong>: 상태 관리의 단순화</li>
                     <li><strong>HashSet</strong>: 중복 제거와 빠른 검색</li>
                     <li><strong>이벤트 구독/해제</strong>: 메모리 누수 방지</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 강의 32: Progress Bar Component (프로그레스 바 컴포넌트) -->
+        <div class="lecture-section" id="lecture-32">
+            <h2 class="lecture-title">📊 강의 32: Progress Bar Component (프로그레스 바 컴포넌트)</h2>
+            
+            <div class="tech-stack" style="margin-top: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">
+                <h4 style="color: #2c3e50; margin-top: 0;">🎯 이번 강의를 왜 해야 하는가?</h4>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">시각적 피드백 제공</strong>: <span style="color: #2c3e50;">건물에서 유닛 생산 진행 상황을 시각적으로 표시</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">사용자 경험 향상</strong>: <span style="color: #2c3e50;">플레이어가 빌드 진행도를 명확히 파악할 수 있도록</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">재사용 가능한 컴포넌트</strong>: <span style="color: #2c3e50;">다양한 진행 상황 표시에 활용 가능한 범용 컴포넌트</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">UI 시스템 확장</strong>: <span style="color: #2c3e50;">BuildingBuildingUI에서 사용할 핵심 컴포넌트</span></p>
+            </div>
+            
+            <div class="tech-stack" style="margin-top: 15px; background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px;">
+                <h4 style="color: #155724; margin-top: 0;">🧒 초딩도 이해하기 쉬운 설명</h4>
+                <p style="margin: 8px 0; color: #155724;"><strong>📊 프로그레스 바가 뭐야?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">게임에서 뭔가가 얼마나 진행되었는지 보여주는 막대기예요. 마치 다운로드할 때 나타나는 진행 막대처럼요!</p>
+                
+                <p style="margin: 8px 0; color: #155724;"><strong>🎯 왜 필요한가요?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>진행 상황 표시</strong>: 건물에서 유닛이 얼마나 만들어졌는지 보여줘요</p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>기다림의 즐거움</strong>: 언제 완성될지 알 수 있어서 기다리는 재미가 있어요</p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>게임 정보 제공</strong>: 플레이어가 게임 상황을 쉽게 파악할 수 있어요</p>
+                
+                <p style="margin: 8px 0; color: #155724;"><strong>🏠 집으로 비유하면?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">집을 지을 때 공사 진행도를 보여주는 표시판과 같아요. 언제 완성될지 알 수 있어서 기다리는 마음이 달라져요!</p>
+            </div>
+
+            <div class="lecture-goal">
+                <h3>🎯 학습 목표</h3>
+                <ul class="content-list">
+                    <li>Unity UI Mask를 활용한 프로그레스 바 구현</li>
+                    <li>RectTransform의 offset min/max 조작</li>
+                    <li>패딩을 고려한 정확한 위치 계산</li>
+                    <li>재사용 가능한 프로그레스 바 컴포넌트 설계</li>
+                    <li>디버깅을 위한 Inspector 연동</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>🎨 Progress Bar 구조</h3>
+                
+                <div class="code-block">
+<span class="comment">// Progress Bar UI 구조</span>
+<span class="comment">// Progress Bar GameObject</span>
+<span class="comment">// ├── Background Image (배경 이미지)</span>
+<span class="comment">// └── Mask (마스크)</span>
+<span class="comment">//     └── Progress Image (진행 이미지 - 타일링)</span>
+
+<span class="comment">// 핵심 원리:</span>
+<span class="comment">// 1. Mask의 width를 조절하여 진행도를 표시</span>
+<span class="comment">// 2. 타일링된 이미지로 자연스러운 애니메이션</span>
+<span class="comment">// 3. 패딩을 고려한 정확한 위치 계산</span>
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>🔧 ProgressBar 컴포넌트</h3>
+                
+                <div class="code-block">
+<span class="comment">// ProgressBar.cs - 프로그레스 바 컴포넌트</span>
+<span class="comment">// ProgressBar: 진행 상황을 시각적으로 표시하는 UI 컴포넌트</span>
+<span class="comment">// MonoBehaviour: Unity에서 GameObject에 컴포넌트로 추가할 수 있는 기본 클래스</span>
+<span class="keyword">using</span> UnityEngine;
+
+<span class="keyword">namespace</span> GameDevTV.RTS.UI.Components
+{
+    <span class="comment">// 진행 상황을 시각적으로 표시하는 컴포넌트</span>
+    <span class="comment">// ProgressBar: "진행 막대"라는 의미</span>
+    <span class="comment">// MonoBehaviour: Unity 컴포넌트 기본 클래스</span>
+    <span class="keyword">public class</span> <span class="class-name">ProgressBar</span> : <span class="class-name">MonoBehaviour</span>
+    {
+        <span class="comment">// 마스크 RectTransform 참조</span>
+        <span class="comment">// [SerializeField]: Inspector에서 할당 가능하도록 함</span>
+        <span class="comment">// RectTransform: UI 요소의 위치, 크기, 회전을 관리하는 컴포넌트</span>
+        [<span class="class-name">SerializeField</span>] <span class="keyword">private</span> <span class="class-name">RectTransform</span> mask;
+        
+        <span class="comment">// 마스크의 부모 RectTransform</span>
+        <span class="comment">// maskParentRectTransform: 마스크의 부모 컨테이너</span>
+        <span class="keyword">private</span> <span class="class-name">RectTransform</span> maskParentRectTransform;
+        
+        <span class="comment">// 프로그레스 바의 패딩</span>
+        <span class="comment">// [SerializeField]: Inspector에서 설정 가능</span>
+        <span class="comment">// Vector2: X, Y 좌표를 가진 2D 벡터</span>
+        <span class="comment">// new Vector2(9, 8): 기본 패딩 값 (X: 9, Y: 8)</span>
+        [<span class="class-name">SerializeField</span>] <span class="keyword">private</span> <span class="class-name">Vector2</span> padding = <span class="keyword">new</span> <span class="class-name">Vector2</span>(<span class="number">9</span>, <span class="number">8</span>);
+
+        <span class="comment">// 컴포넌트 초기화 - Start보다 먼저 실행됨</span>
+        <span class="comment">// Awake: GameObject가 생성될 때 한 번만 실행</span>
+        <span class="keyword">private void</span> <span class="method-name">Awake</span>()
+        {
+            <span class="comment">// 마스크가 할당되지 않은 경우 에러 처리</span>
+            <span class="comment">// Guardian Pattern: 잘못된 상태를 미리 방지</span>
+            <span class="keyword">if</span> (mask == <span class="keyword">null</span>)
+            {
+                <span class="comment">// 에러 로그 출력</span>
+                <span class="comment">// Debug.LogError: 콘솔에 빨간색 에러 메시지 출력</span>
+                <span class="comment">// 이 컴포넌트가 제대로 작동하지 않을 것임을 알림</span>
+                <span class="class-name">Debug</span>.<span class="method-name">LogError</span>(<span class="string">"This progress bar is missing a mask"</span>);
+                <span class="comment">// 메서드 조기 종료</span>
+                <span class="keyword">return</span>;
+            }
+
+            <span class="comment">// 마스크의 부모 RectTransform 가져오기</span>
+            <span class="comment">// mask.parent: 마스크의 부모 GameObject</span>
+            <span class="comment">// GetComponent: 특정 컴포넌트를 찾는 Unity 메서드</span>
+            <span class="comment">// RectTransform: UI 요소의 변환 정보</span>
+            maskParentRectTransform = mask.<span class="property-name">parent</span>.<span class="method-name">GetComponent</span>&lt;<span class="class-name">RectTransform</span>&gt;();
+        }
+
+        <span class="comment">// 프로그레스 바의 진행도를 설정하는 메서드</span>
+        <span class="comment">// SetProgress: "진행도 설정"이라는 의미</span>
+        <span class="comment">// float progress: 0.0 ~ 1.0 사이의 진행도 값</span>
+        <span class="comment">// 0.0: 0% 진행 (비어있음)</span>
+        <span class="comment">// 1.0: 100% 진행 (가득참)</span>
+        <span class="keyword">public void</span> <span class="method-name">SetProgress</span>(<span class="keyword">float</span> progress)
+        {
+            <span class="comment">// 부모 컨테이너의 크기 가져오기</span>
+            <span class="comment">// sizeDelta: RectTransform의 크기 정보</span>
+            <span class="comment">// 부모 컨테이너의 전체 크기를 기준으로 계산</span>
+            <span class="class-name">Vector2</span> parentSize = maskParentRectTransform.<span class="property-name">sizeDelta</span>;
+            
+            <span class="comment">// 패딩을 고려한 실제 사용 가능한 크기 계산</span>
+            <span class="comment">// padding * 2: 좌우, 상하 패딩을 모두 고려</span>
+            <span class="comment">// parentSize - (padding * 2): 패딩을 제외한 실제 크기</span>
+            <span class="class-name">Vector2</span> availableSize = parentSize - (padding * <span class="number">2</span>);
+            
+            <span class="comment">// 진행도에 따른 목표 크기 계산</span>
+            <span class="comment">// Mathf.Clamp01: 값을 0.0 ~ 1.0 사이로 제한</span>
+            <span class="comment">// availableSize.x * clampedProgress: 진행도에 비례한 너비</span>
+            <span class="keyword">float</span> clampedProgress = <span class="class-name">Mathf</span>.<span class="method-name">Clamp01</span>(progress);
+            <span class="class-name">Vector2</span> targetSize = <span class="keyword">new</span> <span class="class-name">Vector2</span>(availableSize.x * clampedProgress, availableSize.y);
+            
+            <span class="comment">// 마스크의 offset min 설정 (좌상단 기준점)</span>
+            <span class="comment">// offsetMin: RectTransform의 좌상단 오프셋</span>
+            <span class="comment">// padding: 좌상단 패딩만큼 오프셋</span>
+            mask.<span class="property-name">offsetMin</span> = padding;
+            
+            <span class="comment">// 마스크의 offset max 설정 (우하단 기준점)</span>
+            <span class="comment">// offsetMax: RectTransform의 우하단 오프셋</span>
+            <span class="comment">// Vector2(padding.x + targetSize.x - parentSize.x, -padding.y):</span>
+            <span class="comment">// X: 패딩 + 목표크기 - 부모크기 (우측 정렬)</span>
+            <span class="comment">// Y: -패딩 (하단 정렬)</span>
+            mask.<span class="property-name">offsetMax</span> = <span class="keyword">new</span> <span class="class-name">Vector2</span>(
+                padding.x + targetSize.x - parentSize.x, 
+                -padding.y
+            );
+        }
+    }
+}
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎯 핵심 알고리즘</h3>
+                
+                <div class="code-block">
+<span class="comment">// 프로그레스 바 계산 알고리즘</span>
+
+<span class="comment">// 1. 기본 크기 계산</span>
+<span class="comment">// parentSize: 부모 컨테이너의 전체 크기</span>
+<span class="comment">// availableSize = parentSize - (padding * 2): 패딩을 제외한 사용 가능한 크기</span>
+
+<span class="comment">// 2. 진행도 적용</span>
+<span class="comment">// targetSize.x = availableSize.x * progress: 진행도에 비례한 너비</span>
+<span class="comment">// targetSize.y = availableSize.y: 높이는 항상 동일</span>
+
+<span class="comment">// 3. 오프셋 계산</span>
+<span class="comment">// offsetMin = padding: 좌상단은 패딩만큼 오프셋</span>
+<span class="comment">// offsetMax.x = padding.x + targetSize.x - parentSize.x: 우측 정렬</span>
+<span class="comment">// offsetMax.y = -padding.y: 하단 정렬</span>
+
+<span class="comment">// 결과: 패딩을 고려한 정확한 위치에 진행도에 맞는 크기로 표시</span>
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>❓ 왜 필요한가?</h3>
+                
+                <div class="tech-stack">
+                    <h4>📊 시각적 피드백의 중요성</h4>
+                    <p><strong>사용자 경험 향상</strong>: 플레이어가 진행 상황을 명확히 파악</p>
+                    <p><strong>기다림의 즐거움</strong>: 언제 완성될지 알 수 있어서 기다리는 재미</p>
+                    <p><strong>게임 정보 제공</strong>: 현재 상태를 시각적으로 표현</p>
+                    <p><strong>전략적 계획</strong>: 빌드 완료 시점을 예측하여 전략 수립</p>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>🔧 기술적 장점</h4>
+                    <p><strong>재사용성</strong>: 다양한 진행 상황 표시에 활용 가능</p>
+                    <p><strong>성능 효율성</strong>: Mask를 사용한 효율적인 렌더링</p>
+                    <p><strong>유연성</strong>: 패딩과 크기를 Inspector에서 조정 가능</p>
+                    <p><strong>확장성</strong>: 다양한 스타일과 애니메이션 추가 가능</p>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>⚠️ 주의사항</h4>
+                    <p><strong>Mask 설정</strong>: RectTransform의 anchor와 stretch 설정 중요</p>
+                    <p><strong>패딩 계산</strong>: 정확한 오프셋 계산으로 자연스러운 표시</p>
+                    <p><strong>이미지 타일링</strong>: 타일링된 이미지로 자연스러운 애니메이션</p>
+                    <p><strong>성능 고려</strong>: 너무 자주 업데이트하지 않도록 주의</p>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎮 노바1492 적용 포인트</h3>
+                <ul class="content-list">
+                    <li><strong>건물 빌드 진행도</strong>: Command Post에서 유닛 생산 진행 상황 표시</li>
+                    <li><strong>자원 수집 진행도</strong>: Worker의 자원 수집 진행 상황 표시</li>
+                    <li><strong>연구 진행도</strong>: 기술 연구의 진행 상황 표시</li>
+                    <li><strong>건물 건설 진행도</strong>: 건물 건설의 진행 상황 표시</li>
+                    <li><strong>체력 바</strong>: 유닛과 건물의 체력 표시</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>🔑 핵심 기술 개념</h3>
+                <ul class="content-list">
+                    <li><strong>RectTransform</strong>: UI 요소의 위치, 크기, 회전 관리</li>
+                    <li><strong>Mask</strong>: 특정 영역만 보이도록 하는 UI 마스킹</li>
+                    <li><strong>offsetMin/offsetMax</strong>: RectTransform의 오프셋 값</li>
+                    <li><strong>Vector2</strong>: 2D 좌표와 크기 표현</li>
+                    <li><strong>Mathf.Clamp01</strong>: 값을 0.0~1.0 범위로 제한</li>
+                    <li><strong>패딩 계산</strong>: 정확한 위치 계산을 위한 수학</li>
+                    <li><strong>Guardian Pattern</strong>: 잘못된 상태 방지</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 강의 33: Building Progress Display (건물 빌드 진행도 표시) -->
+        <div class="lecture-section" id="lecture-33">
+            <h2 class="lecture-title">🏗️ 강의 33: Building Progress Display (건물 빌드 진행도 표시)</h2>
+            
+            <div class="tech-stack" style="margin-top: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">
+                <h4 style="color: #2c3e50; margin-top: 0;">🎯 이번 강의를 왜 해야 하는가?</h4>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">실시간 진행도 표시</strong>: <span style="color: #2c3e50;">건물에서 유닛 생산 진행 상황을 실시간으로 시각화</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">사용자 경험 향상</strong>: <span style="color: #2c3e50;">플레이어가 빌드 진행도를 명확히 파악할 수 있도록</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">이벤트 기반 아키텍처</strong>: <span style="color: #2c3e50;">효율적인 UI 업데이트를 위한 이벤트 시스템 활용</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">BuildingBuildingUI 완성</strong>: <span style="color: #2c3e50;">이전 강의에서 만든 UI 컨테이너의 실제 활용</span></p>
+            </div>
+            
+            <div class="tech-stack" style="margin-top: 15px; background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px;">
+                <h4 style="color: #155724; margin-top: 0;">🧒 초딩도 이해하기 쉬운 설명</h4>
+                <p style="margin: 8px 0; color: #155724;"><strong>🏗️ 건물 빌드 진행도가 뭐야?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">건물에서 유닛을 만들 때 얼마나 진행되었는지 보여주는 표시예요. 마치 요리할 때 타이머처럼요!</p>
+                
+                <p style="margin: 8px 0; color: #155724;"><strong>🎯 왜 필요한가요?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>진행 상황 확인</strong>: 언제 유닛이 완성될지 알 수 있어요</p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>기다림의 즐거움</strong>: 진행도를 보면서 기다리는 재미가 있어요</p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>게임 정보 제공</strong>: 현재 상태를 명확히 알 수 있어요</p>
+                
+                <p style="margin: 8px 0; color: #155724;"><strong>🏠 집으로 비유하면?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">집을 지을 때 공사 진행도를 보여주는 표시판과 같아요. 언제 완성될지 알 수 있어서 기다리는 마음이 달라져요!</p>
+            </div>
+
+            <div class="lecture-goal">
+                <h3>🎯 학습 목표</h3>
+                <ul class="content-list">
+                    <li>BuildingBuildingUI에서 Progress Bar 연동</li>
+                    <li>BaseBuilding에 진행도 추적 필드 추가</li>
+                    <li>이벤트 기반 큐 업데이트 시스템 구현</li>
+                    <li>RuntimeUI에서 BuildingBuildingUI 관리</li>
+                    <li>실시간 진행도 계산 및 표시</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>🔧 BaseBuilding 확장</h3>
+                
+                <div class="code-block">
+<span class="comment">// BaseBuilding.cs - 건물 빌드 진행도 추적</span>
+<span class="comment">// BaseBuilding: 모든 건물의 기본 클래스</span>
+<span class="comment">// AbstractCommandable: 명령을 받을 수 있는 객체의 기본 클래스</span>
+<span class="keyword">using</span> System.Collections;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> UnityEngine;
+
+<span class="keyword">namespace</span> GameDevTV.RTS.Units
+{
+    <span class="comment">// 모든 건물의 기본 클래스</span>
+    <span class="comment">// BaseBuilding: "기본 건물"이라는 의미</span>
+    <span class="comment">// AbstractCommandable: 명령을 받을 수 있는 객체</span>
+    <span class="keyword">public class</span> <span class="class-name">BaseBuilding</span> : <span class="class-name">AbstractCommandable</span>
+    {
+        <span class="comment">// 건물 큐: 생산할 유닛들을 순서대로 저장하는 큐</span>
+        <span class="comment">// Queue&lt;UnitSO&gt;: FIFO(First In, First Out) 방식으로 유닛을 처리</span>
+        <span class="comment">// System.Collections.Generic.Queue: C#의 표준 큐 컬렉션</span>
+        <span class="keyword">private</span> <span class="class-name">Queue</span>&lt;<span class="class-name">UnitSO</span>&gt; buildingQueue = <span class="keyword">new</span> <span class="class-name">Queue</span>&lt;<span class="class-name">UnitSO</span>&gt;(<span class="number">5</span>);
+        
+        <span class="comment">// 최대 큐 크기: 무한정 큐가 커지는 것을 방지</span>
+        <span class="comment">// const: 컴파일 타임에 값이 결정되는 상수</span>
+        <span class="comment">// private: 이 클래스 내부에서만 접근 가능</span>
+        <span class="keyword">private const int</span> maxQueueSize = <span class="number">5</span>;
+
+        <span class="comment">// 큐 크기 프로퍼티: 외부에서 큐의 현재 크기를 확인할 수 있음</span>
+        <span class="comment">// Expression-bodied property: 간단한 getter만 있는 프로퍼티</span>
+        <span class="comment">// buildingQueue.Count: 현재 큐에 있는 유닛의 개수</span>
+        <span class="keyword">public int</span> <span class="property-name">QueueSize</span> => buildingQueue.<span class="property-name">Count</span>;
+        
+        <span class="comment">// 현재 큐 시작 시간: 현재 빌드 중인 유닛의 시작 시간</span>
+        <span class="comment">// [field: SerializeField]: Inspector에서 확인 가능하도록 함</span>
+        <span class="comment">// get; private set;: 읽기는 공개, 쓰기는 내부에서만</span>
+        <span class="comment">// Time.time: 게임 시작부터 경과된 시간(초)</span>
+        [<span class="class-name">field</span>: <span class="class-name">SerializeField</span>] <span class="keyword">public float</span> <span class="property-name">CurrentQueueStartTime</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+        
+        <span class="comment">// 현재 빌드 중인 유닛: 현재 큐에서 처리 중인 유닛 정보</span>
+        <span class="comment">// [field: SerializeField]: Inspector에서 확인 가능하도록 함</span>
+        <span class="comment">// get; private set;: 읽기는 공개, 쓰기는 내부에서만</span>
+        [<span class="class-name">field</span>: <span class="class-name">SerializeField</span>] <span class="keyword">public</span> <span class="class-name">UnitSO</span> <span class="property-name">BuildingUnit</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+
+        <span class="comment">// 큐 업데이트 이벤트 델리게이트: 큐가 변경될 때 호출되는 이벤트</span>
+        <span class="comment">// delegate: 함수 포인터와 같은 역할을 하는 C# 타입</span>
+        <span class="comment">// UnitSO[]: 큐에 있는 모든 유닛의 배열</span>
+        <span class="keyword">public delegate void</span> <span class="class-name">QueueUpdatedEvent</span>(<span class="class-name">UnitSO</span>[] unitsInQueue);
+        
+        <span class="comment">// 큐 업데이트 이벤트: 큐가 변경될 때 발생하는 이벤트</span>
+        <span class="comment">// event: 외부에서는 구독/해제만 가능하고 직접 호출은 불가능</span>
+        <span class="comment">// OnQueueUpdated: 이벤트 이름 (관례적으로 On으로 시작)</span>
+        <span class="keyword">public event</span> <span class="class-name">QueueUpdatedEvent</span> <span class="property-name">OnQueueUpdated</span>;
+
+        <span class="comment">// 유닛 빌드 메서드: 큐에 새로운 유닛을 추가</span>
+        <span class="comment">// BuildUnit: "유닛 빌드"라는 의미</span>
+        <span class="comment">// UnitSO unit: 빌드할 유닛의 정보</span>
+        <span class="keyword">public void</span> <span class="method-name">BuildUnit</span>(<span class="class-name">UnitSO</span> unit)
+        {
+            <span class="comment">// Guardian Pattern: 큐가 가득 찬 경우 요청을 거부</span>
+            <span class="comment">// buildingQueue.Count: 현재 큐에 있는 유닛의 개수</span>
+            <span class="comment">// maxQueueSize: 허용되는 최대 큐 크기</span>
+            <span class="keyword">if</span> (buildingQueue.<span class="property-name">Count</span> >= maxQueueSize)
+            {
+                <span class="comment">// 큐가 가득 찬 경우 에러 로그 출력</span>
+                <span class="comment">// Debug.LogError: 콘솔에 빨간색 에러 메시지 출력</span>
+                <span class="comment">// 이는 코드의 버그를 나타내는 신호일 수 있음</span>
+                <span class="class-name">Debug</span>.<span class="method-name">LogError</span>(<span class="string">$"BuildUnit was called when the queue was already full. This is not supported."</span>);
+                <span class="comment">// 메서드 조기 종료</span>
+                <span class="keyword">return</span>;
+            }
+
+            <span class="comment">// 큐에 새로운 유닛 추가</span>
+            <span class="comment">// Enqueue: 큐의 끝에 항목을 추가하는 메서드</span>
+            buildingQueue.<span class="method-name">Enqueue</span>(unit);
+
+            <span class="comment">// 첫 번째 유닛을 추가한 경우에만 코루틴 시작</span>
+            <span class="comment">// 이미 코루틴이 실행 중인 경우 새로 시작하지 않음</span>
+            <span class="comment">// buildingQueue.Count == 1: 방금 첫 번째 유닛을 추가했음을 의미</span>
+            <span class="keyword">if</span> (buildingQueue.<span class="property-name">Count</span> == <span class="number">1</span>)
+            {
+                <span class="comment">// DoBuildUnits 코루틴 시작 (매개변수 없음)</span>
+                <span class="comment">// 이 코루틴이 전체 큐를 처리함</span>
+                <span class="method-name">StartCoroutine</span>(<span class="method-name">DoBuildUnits</span>());
+            }
+            <span class="keyword">else</span>
+            {
+                <span class="comment">// 큐에 이미 유닛이 있는 경우 이벤트 발생</span>
+                <span class="comment">// OnQueueUpdated?.Invoke: null 체크 후 이벤트 호출</span>
+                <span class="comment">// buildingQueue.ToArray(): 큐를 배열로 변환하여 전달</span>
+                OnQueueUpdated?.<span class="method-name">Invoke</span>(buildingQueue.<span class="method-name">ToArray</span>());
+            }
+        }
+
+        <span class="comment">// 빌드 코루틴: 큐에 있는 모든 유닛을 순서대로 빌드</span>
+        <span class="comment">// DoBuildUnits: "유닛들을 빌드한다"는 의미</span>
+        <span class="comment">// IEnumerator: 코루틴의 반환 타입</span>
+        <span class="keyword">private</span> <span class="class-name">IEnumerator</span> <span class="method-name">DoBuildUnits</span>()
+        {
+            <span class="comment">// 큐에 유닛이 있는 동안 반복</span>
+            <span class="comment">// while loop: 큐가 비어있을 때까지 계속 처리</span>
+            <span class="keyword">while</span> (buildingQueue.<span class="property-name">Count</span> > <span class="number">0</span>)
+            {
+                <span class="comment">// 현재 빌드할 유닛 설정: 큐의 첫 번째 유닛을 가져옴</span>
+                <span class="comment">// Peek: 큐의 첫 번째 항목을 확인하되 제거하지 않음</span>
+                <span class="comment">// BuildingUnit: 현재 빌드 중인 유닛 정보를 저장</span>
+                BuildingUnit = buildingQueue.<span class="method-name">Peek</span>();
+                
+                <span class="comment">// 현재 큐 시작 시간 설정: 빌드 시작 시점 기록</span>
+                <span class="comment">// Time.time: 게임 시작부터 경과된 시간(초)</span>
+                <span class="comment">// CurrentQueueStartTime: 프로그레스 바 계산에 사용</span>
+                CurrentQueueStartTime = <span class="class-name">Time</span>.<span class="property-name">time</span>;
+                
+                <span class="comment">// 큐 업데이트 이벤트 발생: UI에 큐 변경 알림</span>
+                <span class="comment">// OnQueueUpdated?.Invoke: null 체크 후 이벤트 호출</span>
+                <span class="comment">// buildingQueue.ToArray(): 큐를 배열로 변환하여 전달</span>
+                OnQueueUpdated?.<span class="method-name">Invoke</span>(buildingQueue.<span class="method-name">ToArray</span>());
+
+                <span class="comment">// 해당 유닛의 빌드 시간만큼 대기</span>
+                <span class="comment">// yield return: 코루틴을 일시 정지하고 다음 프레임에 재개</span>
+                <span class="comment">// WaitForSeconds: 지정된 시간(초) 동안 대기</span>
+                <span class="comment">// BuildingUnit.BuildTime: 현재 빌드 중인 유닛의 빌드 시간</span>
+                <span class="keyword">yield return new</span> <span class="class-name">WaitForSeconds</span>(BuildingUnit.<span class="property-name">BuildTime</span>);
+
+                <span class="comment">// 유닛 생성</span>
+                <span class="comment">// Instantiate: GameObject를 복제하여 씬에 생성</span>
+                <span class="comment">// BuildingUnit.Prefab: 현재 빌드 중인 유닛의 프리팹</span>
+                <span class="comment">// transform.position: 건물의 위치에서 유닛 생성</span>
+                <span class="comment">// Quaternion.identity: 회전 없음 (기본 회전)</span>
+                <span class="method-name">Instantiate</span>(BuildingUnit.<span class="property-name">Prefab</span>, <span class="property-name">transform</span>.<span class="property-name">position</span>, <span class="class-name">Quaternion</span>.<span class="property-name">identity</span>);
+
+                <span class="comment">// Dequeue: 큐의 첫 번째 항목을 제거하고 반환</span>
+                <span class="comment">// 빌드가 완료된 유닛을 큐에서 제거</span>
+                <span class="comment">// 반환값은 사용하지 않으므로 변수에 저장하지 않음</span>
+                buildingQueue.<span class="method-name">Dequeue</span>();
+            }
+
+            <span class="comment">// 모든 빌드 완료 후 빈 큐로 이벤트 발생</span>
+            <span class="comment">// OnQueueUpdated?.Invoke: null 체크 후 이벤트 호출</span>
+            <span class="comment">// buildingQueue.ToArray(): 빈 배열을 전달하여 빌드 완료 알림</span>
+            OnQueueUpdated?.<span class="method-name">Invoke</span>(buildingQueue.<span class="method-name">ToArray</span>());
+        }
+    }
+}
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎨 BuildingBuildingUI 구현</h3>
+                
+                <div class="code-block">
+<span class="comment">// BuildingBuildingUI.cs - 건물 빌드 진행도 UI</span>
+<span class="comment">// BuildingBuildingUI: 건물에서 유닛을 빌드할 때의 진행도를 표시하는 UI</span>
+<span class="comment">// MonoBehaviour: Unity 컴포넌트 기본 클래스</span>
+<span class="keyword">using</span> System.Collections;
+<span class="keyword">using</span> UnityEngine;
+<span class="keyword">using</span> GameDevTV.RTS.UI.Components;
+
+<span class="keyword">namespace</span> GameDevTV.RTS.UI.Containers
+{
+    <span class="comment">// 건물 빌드 진행도를 표시하는 UI 컨테이너</span>
+    <span class="comment">// BuildingBuildingUI: "건물이 빌드하는 UI"라는 의미</span>
+    <span class="comment">// MonoBehaviour: Unity 컴포넌트 기본 클래스</span>
+    <span class="keyword">public class</span> <span class="class-name">BuildingBuildingUI</span> : <span class="class-name">MonoBehaviour</span>
+    {
+        <span class="comment">// 프로그레스 바 참조</span>
+        <span class="comment">// [SerializeField]: Inspector에서 할당 가능하도록 함</span>
+        <span class="comment">// ProgressBar: 이전 강의에서 만든 프로그레스 바 컴포넌트</span>
+        [<span class="class-name">SerializeField</span>] <span class="keyword">private</span> <span class="class-name">ProgressBar</span> progressBar;
+        
+        <span class="comment">// 현재 활성화된 건물</span>
+        <span class="comment">// BaseBuilding: 현재 빌드 진행도를 추적할 건물</span>
+        <span class="keyword">private</span> <span class="class-name">BaseBuilding</span> building;
+        
+        <span class="comment">// 빌드 코루틴 참조</span>
+        <span class="comment">// Coroutine: 진행도 업데이트를 위한 코루틴</span>
+        <span class="keyword">private</span> <span class="class-name">Coroutine</span> buildCoroutine;
+
+        <span class="comment">// UI 활성화 메서드: 특정 건물에 대해 UI를 활성화</span>
+        <span class="comment">// EnableFor: "~에 대해 활성화한다"는 의미</span>
+        <span class="comment">// BaseBuilding item: 활성화할 건물</span>
+        <span class="keyword">public void</span> <span class="method-name">EnableFor</span>(<span class="class-name">BaseBuilding</span> item)
+        {
+            <span class="comment">// 건물 참조 저장</span>
+            <span class="comment">// building: 현재 활성화된 건물을 저장</span>
+            building = item;
+            
+            <span class="comment">// GameObject 활성화</span>
+            <span class="comment">// SetActive(true): 이 GameObject를 활성화</span>
+            <span class="property-name">gameObject</span>.<span class="method-name">SetActive</span>(<span class="keyword">true</span>);
+            
+            <span class="comment">// 큐 업데이트 이벤트 구독</span>
+            <span class="comment">// OnQueueUpdated: 큐가 변경될 때 발생하는 이벤트</span>
+            <span class="comment">// HandleQueueUpdated: 이벤트 처리 메서드</span>
+            building.<span class="property-name">OnQueueUpdated</span> += <span class="method-name">HandleQueueUpdated</span>;
+        }
+
+        <span class="comment">// UI 비활성화 메서드</span>
+        <span class="comment">// Disable: "비활성화한다"는 의미</span>
+        <span class="keyword">public void</span> <span class="method-name">Disable</span>()
+        {
+            <span class="comment">// 이벤트 구독 해제</span>
+            <span class="comment">// building이 null이 아닌 경우에만 구독 해제</span>
+            <span class="comment">// 메모리 누수 방지를 위해 반드시 필요</span>
+            <span class="keyword">if</span> (building != <span class="keyword">null</span>)
+            {
+                building.<span class="property-name">OnQueueUpdated</span> -= <span class="method-name">HandleQueueUpdated</span>;
+            }
+            
+            <span class="comment">// 건물 참조 초기화</span>
+            <span class="comment">// building = null: 참조를 해제하여 가비지 컬렉션 대상으로 만듦</span>
+            building = <span class="keyword">null</span>;
+            
+            <span class="comment">// 빌드 코루틴 초기화</span>
+            <span class="comment">// buildCoroutine = null: 코루틴 참조를 해제</span>
+            buildCoroutine = <span class="keyword">null</span>;
+            
+            <span class="comment">// GameObject 비활성화</span>
+            <span class="comment">// SetActive(false): 이 GameObject를 비활성화</span>
+            <span class="property-name">gameObject</span>.<span class="method-name">SetActive</span>(<span class="keyword">false</span>);
+        }
+
+        <span class="comment">// 큐 업데이트 이벤트 처리 메서드</span>
+        <span class="comment">// HandleQueueUpdated: "큐 업데이트를 처리한다"는 의미</span>
+        <span class="comment">// UnitSO[] unitsInQueue: 큐에 있는 유닛들의 배열</span>
+        <span class="keyword">private void</span> <span class="method-name">HandleQueueUpdated</span>(<span class="class-name">UnitSO</span>[] unitsInQueue)
+        {
+            <span class="comment">// 큐에 유닛이 있고 아직 코루틴이 시작되지 않은 경우</span>
+            <span class="comment">// unitsInQueue.Length == 1: 큐에 정확히 1개의 유닛이 있음</span>
+            <span class="comment">// buildCoroutine == null: 아직 진행도 업데이트 코루틴이 시작되지 않음</span>
+            <span class="keyword">if</span> (unitsInQueue.<span class="property-name">Length</span> == <span class="number">1</span> && buildCoroutine == <span class="keyword">null</span>)
+            {
+                <span class="comment">// 진행도 업데이트 코루틴 시작</span>
+                <span class="comment">// StartCoroutine: 코루틴을 시작하는 Unity 메서드</span>
+                <span class="comment">// UpdateUnitProgress: 진행도를 업데이트하는 코루틴</span>
+                buildCoroutine = <span class="method-name">StartCoroutine</span>(<span class="method-name">UpdateUnitProgress</span>());
+            }
+        }
+
+        <span class="comment">// 유닛 진행도 업데이트 코루틴</span>
+        <span class="comment">// UpdateUnitProgress: "유닛 진행도를 업데이트한다"는 의미</span>
+        <span class="comment">// IEnumerator: 코루틴의 반환 타입</span>
+        <span class="keyword">private</span> <span class="class-name">IEnumerator</span> <span class="method-name">UpdateUnitProgress</span>()
+        {
+            <span class="comment">// 건물이 있고 큐에 유닛이 있는 동안 반복</span>
+            <span class="comment">// building != null: 건물이 여전히 활성화되어 있음</span>
+            <span class="comment">// building.QueueSize > 0: 큐에 빌드할 유닛이 있음</span>
+            <span class="keyword">while</span> (building != <span class="keyword">null</span> && building.<span class="property-name">QueueSize</span> > <span class="number">0</span>)
+            {
+                <span class="comment">// 시작 시간과 종료 시간 계산</span>
+                <span class="comment">// float startTime: 빌드 시작 시간</span>
+                <span class="comment">// building.CurrentQueueStartTime: 현재 빌드 시작 시간</span>
+                <span class="keyword">float</span> startTime = building.<span class="property-name">CurrentQueueStartTime</span>;
+                
+                <span class="comment">// float endTime: 빌드 완료 예상 시간</span>
+                <span class="comment">// startTime + building.BuildingUnit.BuildTime: 시작 시간 + 빌드 시간</span>
+                <span class="keyword">float</span> endTime = startTime + building.<span class="property-name">BuildingUnit</span>.<span class="property-name">BuildTime</span>;
+                
+                <span class="comment">// 현재 진행도 계산</span>
+                <span class="comment">// Mathf.Clamp01: 값을 0.0 ~ 1.0 사이로 제한</span>
+                <span class="comment">// (Time.time - startTime) / (endTime - startTime): 진행도 비율</span>
+                <span class="keyword">float</span> progress = <span class="class-name">Mathf</span>.<span class="method-name">Clamp01</span>((<span class="class-name">Time</span>.<span class="property-name">time</span> - startTime) / (endTime - startTime));
+                
+                <span class="comment">// 프로그레스 바에 진행도 설정</span>
+                <span class="comment">// progressBar.SetProgress: 프로그레스 바의 진행도를 설정</span>
+                <span class="comment">// progress: 0.0 ~ 1.0 사이의 진행도 값</span>
+                progressBar.<span class="method-name">SetProgress</span>(progress);
+                
+                <span class="comment">// 다음 프레임까지 대기</span>
+                <span class="comment">// yield return null: 다음 프레임까지 대기</span>
+                <span class="comment">// 매 프레임마다 진행도를 업데이트</span>
+                <span class="keyword">yield return null</span>;
+            }
+            
+            <span class="comment">// 코루틴 완료 후 참조 초기화</span>
+            <span class="comment">// buildCoroutine = null: 코루틴 참조를 해제</span>
+            buildCoroutine = <span class="keyword">null</span>;
+        }
+    }
+}
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎯 핵심 알고리즘</h3>
+                
+                <div class="code-block">
+<span class="comment">// 진행도 계산 알고리즘</span>
+
+<span class="comment">// 1. 시간 기반 진행도 계산</span>
+<span class="comment">// startTime: 빌드 시작 시간 (CurrentQueueStartTime)</span>
+<span class="comment">// endTime: 빌드 완료 예상 시간 (startTime + BuildTime)</span>
+<span class="comment">// currentTime: 현재 시간 (Time.time)</span>
+
+<span class="comment">// 2. 진행도 비율 계산</span>
+<span class="comment">// progress = (currentTime - startTime) / (endTime - startTime)</span>
+<span class="comment">// 결과: 0.0 (시작) ~ 1.0 (완료) 사이의 값</span>
+
+<span class="comment">// 3. 값 범위 제한</span>
+<span class="comment">// Mathf.Clamp01(progress): 0.0 ~ 1.0 사이로 제한</span>
+<span class="comment">// 음수나 1.0 초과 값 방지</span>
+
+<span class="comment">// 4. 실시간 업데이트</span>
+<span class="comment">// 코루틴을 사용하여 매 프레임마다 진행도 계산</span>
+<span class="comment">// yield return null: 다음 프레임까지 대기</span>
+
+<span class="comment">// 결과: 부드럽고 정확한 진행도 표시</span>
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>❓ 왜 필요한가?</h3>
+                
+                <div class="tech-stack">
+                    <h4>📊 실시간 피드백의 중요성</h4>
+                    <p><strong>사용자 경험 향상</strong>: 플레이어가 빌드 진행도를 실시간으로 확인</p>
+                    <p><strong>기다림의 즐거움</strong>: 언제 완성될지 알 수 있어서 기다리는 재미</p>
+                    <p><strong>게임 정보 제공</strong>: 현재 상태를 명확히 시각화</p>
+                    <p><strong>전략적 계획</strong>: 빌드 완료 시점을 예측하여 전략 수립</p>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>🔧 기술적 장점</h4>
+                    <p><strong>이벤트 기반 아키텍처</strong>: 효율적인 UI 업데이트</p>
+                    <p><strong>메모리 효율성</strong>: 필요한 때만 코루틴 실행</p>
+                    <p><strong>확장성</strong>: 다양한 진행도 표시에 활용 가능</p>
+                    <p><strong>유지보수성</strong>: 깔끔한 코드 구조</p>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>⚠️ 주의사항</h4>
+                    <p><strong>이벤트 구독 해제</strong>: 메모리 누수 방지를 위해 반드시 필요</p>
+                    <p><strong>코루틴 관리</strong>: 중복 실행 방지</p>
+                    <p><strong>시간 계산</strong>: 정확한 진행도 계산을 위한 수학</p>
+                    <p><strong>성능 고려</strong>: 매 프레임 업데이트의 성능 영향</p>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎮 노바1492 적용 포인트</h3>
+                <ul class="content-list">
+                    <li><strong>건물 빌드 진행도</strong>: Command Post에서 유닛 생산 진행 상황 표시</li>
+                    <li><strong>연구 진행도</strong>: 기술 연구의 진행 상황 표시</li>
+                    <li><strong>건물 건설 진행도</strong>: 건물 건설의 진행 상황 표시</li>
+                    <li><strong>자원 수집 진행도</strong>: Worker의 자원 수집 진행 상황 표시</li>
+                    <li><strong>업그레이드 진행도</strong>: 건물 업그레이드의 진행 상황 표시</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>🔑 핵심 기술 개념</h3>
+                <ul class="content-list">
+                    <li><strong>이벤트 기반 아키텍처</strong>: 효율적인 UI 업데이트</li>
+                    <li><strong>델리게이트와 이벤트</strong>: 함수 포인터와 이벤트 시스템</li>
+                    <li><strong>코루틴</strong>: 시간 기반 비동기 처리</li>
+                    <li><strong>시간 계산</strong>: Time.time을 활용한 진행도 계산</li>
+                    <li><strong>Mathf.Clamp01</strong>: 값을 0.0~1.0 범위로 제한</li>
+                    <li><strong>메모리 관리</strong>: 이벤트 구독/해제와 참조 관리</li>
+                    <li><strong>Guardian Pattern</strong>: 잘못된 상태 방지</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 강의 34: Cancel Queue Items (큐 항목 취소) -->
+        <div class="lecture-section" id="lecture-34">
+            <h2 class="lecture-title">❌ 강의 34: Cancel Queue Items (큐 항목 취소)</h2>
+            
+            <div class="tech-stack" style="margin-top: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">
+                <h4 style="color: #2c3e50; margin-top: 0;">🎯 이번 강의를 왜 해야 하는가?</h4>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">사용자 제어권 강화</strong>: <span style="color: #2c3e50;">플레이어가 빌드 큐에서 특정 유닛을 취소할 수 있도록</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">전략적 유연성</strong>: <span style="color: #2c3e50;">게임 상황에 따라 빌드 계획을 변경할 수 있도록</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">데이터 구조 최적화</strong>: <span style="color: #2c3e50;">Queue에서 List로 변경하여 인덱스 접근 가능</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">UI 상호작용 완성</strong>: <span style="color: #2c3e50;">빌드 큐 버튼을 통한 직관적인 취소 기능</span></p>
+            </div>
+            
+            <div class="tech-stack" style="margin-top: 15px; background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px;">
+                <h4 style="color: #155724; margin-top: 0;">🧒 초딩도 이해하기 쉬운 설명</h4>
+                <p style="margin: 8px 0; color: #155724;"><strong>❌ 큐 항목 취소가 뭐야?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">건물에서 유닛을 만들기로 했는데, 마음이 바뀌어서 그 유닛을 만들지 않기로 하는 거예요. 마치 주문을 취소하는 것처럼요!</p>
+                
+                <p style="margin: 8px 0; color: #155724;"><strong>🎯 왜 필요한가요?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>전략 변경</strong>: 게임 상황이 바뀌어서 다른 유닛이 필요해요</p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>자원 절약</strong>: 불필요한 유닛 생산을 중단할 수 있어요</p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>사용자 제어</strong>: 플레이어가 게임을 더 잘 조절할 수 있어요</p>
+                
+                <p style="margin: 8px 0; color: #155724;"><strong>🏠 집으로 비유하면?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">집을 지을 때 공사 계획을 바꾸는 것과 같아요. 이미 시작한 공사는 중단하고, 아직 시작하지 않은 공사는 취소할 수 있어요!</p>
+            </div>
+
+            <div class="lecture-goal">
+                <h3>🎯 학습 목표</h3>
+                <ul class="content-list">
+                    <li>Queue에서 List로 데이터 구조 변경</li>
+                    <li>특정 인덱스 항목 제거 기능 구현</li>
+                    <li>UIBuildQueueButton 컴포넌트 생성</li>
+                    <li>BuildingBuildingUI에서 취소 버튼 관리</li>
+                    <li>코루틴 중지 및 재시작 로직</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>🔧 데이터 구조 변경: Queue → List</h3>
+                
+                <div class="code-block">
+<span class="comment">// BaseBuilding.cs - 데이터 구조 변경</span>
+<span class="comment">// Queue에서 List로 변경하는 이유:</span>
+<span class="comment">// 1. 특정 인덱스의 항목을 제거할 수 있음</span>
+<span class="comment">// 2. 인덱스 접근이 가능함</span>
+<span class="comment">// 3. Queue는 FIFO만 지원하지만 List는 유연한 조작 가능</span>
+
+<span class="comment">// 기존 Queue 구조</span>
+<span class="comment">// private Queue&lt;UnitSO&gt; buildingQueue = new Queue&lt;UnitSO&gt;(5);</span>
+<span class="comment">// 문제점: 특정 인덱스의 항목을 제거할 수 없음</span>
+
+<span class="comment">// 새로운 List 구조</span>
+<span class="comment">// 건물 큐: 생산할 유닛들을 순서대로 저장하는 리스트</span>
+<span class="comment">// List&lt;UnitSO&gt;: 인덱스 접근이 가능한 동적 배열</span>
+<span class="comment">// Queue에서 List로 변경: 특정 인덱스의 항목을 제거할 수 있도록 함</span>
+<span class="comment">// System.Collections.Generic.List: C#의 표준 리스트 컬렉션</span>
+<span class="keyword">private</span> <span class="class-name">List</span>&lt;<span class="class-name">UnitSO</span>&gt; buildingQueue = <span class="keyword">new</span> <span class="class-name">List</span>&lt;<span class="class-name">UnitSO</span>&gt;(<span class="number">5</span>);
+
+<span class="comment">// 큐 배열 프로퍼티: 외부에서 큐의 복사본을 배열로 제공</span>
+<span class="comment">// Expression-bodied property: 큐의 읽기 전용 복사본 제공</span>
+<span class="comment">// buildingQueue.ToArray(): 리스트를 배열로 변환하여 반환</span>
+<span class="comment">// 캡슐화 유지: 외부에서 큐를 직접 수정할 수 없도록 함</span>
+<span class="keyword">public</span> <span class="class-name">UnitSO</span>[] <span class="property-name">Queue</span> => buildingQueue.<span class="method-name">ToArray</span>();
+
+<span class="comment">// 메서드 변경사항:</span>
+<span class="comment">// Enqueue() → Add()</span>
+<span class="comment">// Peek() → buildingQueue[0]</span>
+<span class="comment">// Dequeue() → RemoveAt(0)</span>
+<span class="comment">// RemoveAt(index): 특정 인덱스의 항목 제거 (새로운 기능)</span>
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>❌ CancelBuildingUnit 메서드</h3>
+                
+                <div class="code-block">
+<span class="comment">// BaseBuilding.cs - 유닛 빌드 취소 메서드</span>
+<span class="comment">// CancelBuildingUnit: "유닛 빌드를 취소한다"는 의미</span>
+<span class="comment">// int index: 취소할 유닛의 큐 내 인덱스</span>
+<span class="keyword">public void</span> <span class="method-name">CancelBuildingUnit</span>(<span class="keyword">int</span> index)
+{
+    <span class="comment">// Guardian Pattern: 인덱스가 유효한 범위 내에 있는지 확인</span>
+    <span class="comment">// index &lt; 0: 음수 인덱스 방지</span>
+    <span class="comment">// index &gt;= buildingQueue.Count: 큐 크기를 초과하는 인덱스 방지</span>
+    <span class="keyword">if</span> (index &lt; <span class="number">0</span> || index &gt;= buildingQueue.<span class="property-name">Count</span>)
+    {
+        <span class="comment">// 잘못된 인덱스로 인한 에러 로그 출력</span>
+        <span class="comment">// Debug.LogError: 콘솔에 빨간색 에러 메시지 출력</span>
+        <span class="comment">// 이는 코드의 버그를 나타내는 신호일 수 있음</span>
+        <span class="class-name">Debug</span>.<span class="method-name">LogError</span>(<span class="string">"Attempting to cancel building a unit outside the bounds of the queue!"</span>);
+        <span class="keyword">return</span>; <span class="comment">// 메서드 조기 종료</span>
+    }
+
+    <span class="comment">// 큐에서 해당 인덱스의 유닛 제거</span>
+    <span class="comment">// RemoveAt: 리스트에서 특정 인덱스의 항목을 제거</span>
+    <span class="comment">// Queue에서는 불가능했던 기능이 List에서는 가능</span>
+    buildingQueue.<span class="method-name">RemoveAt</span>(index);
+
+    <span class="comment">// 첫 번째 유닛(인덱스 0)을 취소한 경우 특별 처리</span>
+    <span class="comment">// 현재 빌드 중인 유닛을 취소하는 경우</span>
+    <span class="keyword">if</span> (index == <span class="number">0</span>)
+    {
+        <span class="comment">// 현재 실행 중인 모든 코루틴 중지</span>
+        <span class="comment">// StopAllCoroutines: 이 MonoBehaviour에서 실행 중인 모든 코루틴 중지</span>
+        <span class="comment">// 빌드 진행을 즉시 중단</span>
+        <span class="method-name">StopAllCoroutines</span>();
+
+        <span class="comment">// 큐에 아직 유닛이 남아있는 경우</span>
+        <span class="keyword">if</span> (buildingQueue.<span class="property-name">Count</span> &gt; <span class="number">0</span>)
+        {
+            <span class="comment">// 새로운 코루틴 시작하여 남은 유닛들 빌드</span>
+            <span class="comment">// StartCoroutine: 새로운 빌드 코루틴 시작</span>
+            <span class="comment">// DoBuildUnits: 남은 유닛들을 순서대로 빌드</span>
+            <span class="method-name">StartCoroutine</span>(<span class="method-name">DoBuildUnits</span>());
+        }
+        <span class="keyword">else</span>
+        {
+            <span class="comment">// 큐가 비어있는 경우 빈 큐로 이벤트 발생</span>
+            <span class="comment">// OnQueueUpdated?.Invoke: null 체크 후 이벤트 호출</span>
+            <span class="comment">// buildingQueue.ToArray(): 빈 배열을 전달하여 빌드 완료 알림</span>
+            OnQueueUpdated?.<span class="method-name">Invoke</span>(buildingQueue.<span class="method-name">ToArray</span>());
+        }
+    }
+    <span class="keyword">else</span>
+    {
+        <span class="comment">// 첫 번째가 아닌 유닛을 취소한 경우</span>
+        <span class="comment">// 현재 빌드 진행에는 영향을 주지 않음</span>
+        <span class="comment">// 단순히 큐 업데이트 이벤트만 발생</span>
+        OnQueueUpdated?.<span class="method-name">Invoke</span>(buildingQueue.<span class="method-name">ToArray</span>());
+    }
+}
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎨 UIBuildQueueButton 컴포넌트</h3>
+                
+                <div class="code-block">
+<span class="comment">// UIBuildQueueButton.cs - 빌드 큐 버튼 컴포넌트</span>
+<span class="comment">// UIBuildQueueButton: 빌드 큐에서 특정 유닛을 취소하는 버튼</span>
+<span class="comment">// MonoBehaviour: Unity 컴포넌트 기본 클래스</span>
+<span class="keyword">using</span> UnityEngine;
+<span class="keyword">using</span> UnityEngine.UI;
+<span class="keyword">using</span> GameDevTV.RTS.Units;
+
+<span class="keyword">namespace</span> GameDevTV.RTS.UI.Components
+{
+    <span class="comment">// 빌드 큐에서 유닛을 취소하는 버튼 컴포넌트</span>
+    <span class="comment">// UIBuildQueueButton: "UI 빌드 큐 버튼"이라는 의미</span>
+    <span class="comment">// MonoBehaviour: Unity 컴포넌트 기본 클래스</span>
+    <span class="keyword">public class</span> <span class="class-name">UIBuildQueueButton</span> : <span class="class-name">MonoBehaviour</span>
+    {
+        <span class="comment">// 버튼 참조</span>
+        <span class="comment">// Button: Unity UI 버튼 컴포넌트</span>
+        <span class="keyword">private</span> <span class="class-name">Button</span> button;
+        
+        <span class="comment">// 아이콘 이미지 참조</span>
+        <span class="comment">// [SerializeField]: Inspector에서 할당 가능하도록 함</span>
+        <span class="comment">// Image: Unity UI 이미지 컴포넌트</span>
+        [<span class="class-name">SerializeField</span>] <span class="keyword">private</span> <span class="class-name">Image</span> icon;
+
+        <span class="comment">// 컴포넌트 초기화</span>
+        <span class="comment">// Awake: GameObject가 생성될 때 한 번만 실행</span>
+        <span class="keyword">private void</span> <span class="method-name">Awake</span>()
+        {
+            <span class="comment">// 버튼 컴포넌트 가져오기</span>
+            <span class="comment">// GetComponent: 특정 컴포넌트를 찾는 Unity 메서드</span>
+            <span class="comment">// Button: Unity UI 버튼 컴포넌트</span>
+            button = <span class="method-name">GetComponent</span>&lt;<span class="class-name">Button</span>&gt;();
+            
+            <span class="comment">// 기본적으로 비활성화</span>
+            <span class="comment">// interactable = false: 버튼을 클릭할 수 없도록 함</span>
+            button.<span class="property-name">interactable</span> = <span class="keyword">false</span>;
+        }
+
+        <span class="comment">// 버튼 활성화 메서드: 특정 유닛에 대해 버튼을 활성화</span>
+        <span class="comment">// EnableFor: "~에 대해 활성화한다"는 의미</span>
+        <span class="comment">// UnitSO item: 표시할 유닛 정보</span>
+        <span class="comment">// UnityAction callback: 버튼 클릭 시 실행할 콜백</span>
+        <span class="keyword">public void</span> <span class="method-name">EnableFor</span>(<span class="class-name">UnitSO</span> item, <span class="class-name">UnityAction</span> callback)
+        {
+            <span class="comment">// 아이콘 설정</span>
+            <span class="comment">// icon.sprite: 이미지 컴포넌트의 스프라이트</span>
+            <span class="comment">// item.Icon: 유닛의 아이콘 스프라이트</span>
+            icon.<span class="property-name">sprite</span> = item.<span class="property-name">Icon</span>;
+            
+            <span class="comment">// 아이콘 활성화</span>
+            <span class="comment">// SetActive(true): 아이콘 GameObject를 활성화</span>
+            icon.<span class="property-name">gameObject</span>.<span class="method-name">SetActive</span>(<span class="keyword">true</span>);
+            
+            <span class="comment">// 버튼 활성화</span>
+            <span class="comment">// interactable = true: 버튼을 클릭할 수 있도록 함</span>
+            button.<span class="property-name">interactable</span> = <span class="keyword">true</span>;
+            
+            <span class="comment">// 클릭 이벤트 추가</span>
+            <span class="comment">// AddListener: 버튼 클릭 시 실행할 함수 추가</span>
+            <span class="comment">// callback: 취소 기능을 수행하는 함수</span>
+            button.<span class="property-name">onClick</span>.<span class="method-name">AddListener</span>(callback);
+        }
+
+        <span class="comment">// 버튼 비활성화 메서드</span>
+        <span class="comment">// Disable: "비활성화한다"는 의미</span>
+        <span class="keyword">public void</span> <span class="method-name">Disable</span>()
+        {
+            <span class="comment">// 버튼 비활성화</span>
+            <span class="comment">// interactable = false: 버튼을 클릭할 수 없도록 함</span>
+            button.<span class="property-name">interactable</span> = <span class="keyword">false</span>;
+            
+            <span class="comment">// 모든 클릭 이벤트 제거</span>
+            <span class="comment">// RemoveAllListeners: 모든 이벤트 리스너 제거</span>
+            <span class="comment">// 메모리 누수 방지를 위해 반드시 필요</span>
+            button.<span class="property-name">onClick</span>.<span class="method-name">RemoveAllListeners</span>();
+            
+            <span class="comment">// 아이콘 비활성화</span>
+            <span class="comment">// SetActive(false): 아이콘 GameObject를 비활성화</span>
+            icon.<span class="property-name">gameObject</span>.<span class="method-name">SetActive</span>(<span class="keyword">false</span>);
+        }
+    }
+}
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎯 핵심 알고리즘</h3>
+                
+                <div class="code-block">
+<span class="comment">// 취소 로직 알고리즘</span>
+
+<span class="comment">// 1. 인덱스 유효성 검사</span>
+<span class="comment">// if (index &lt; 0 || index &gt;= buildingQueue.Count)</span>
+<span class="comment">// 결과: 잘못된 인덱스로 인한 오류 방지</span>
+
+<span class="comment">// 2. 항목 제거</span>
+<span class="comment">// buildingQueue.RemoveAt(index)</span>
+<span class="comment">// 결과: 해당 인덱스의 유닛을 큐에서 제거</span>
+
+<span class="comment">// 3. 첫 번째 항목 취소 시 특별 처리</span>
+<span class="comment">// if (index == 0)</span>
+<span class="comment">// - StopAllCoroutines(): 현재 빌드 중단</span>
+<span class="comment">// - if (buildingQueue.Count &gt; 0): 남은 유닛이 있으면 새 코루틴 시작</span>
+<span class="comment">// - else: 빈 큐로 이벤트 발생</span>
+
+<span class="comment">// 4. 다른 항목 취소 시</span>
+<span class="comment">// - 현재 빌드 진행에는 영향 없음</span>
+<span class="comment">// - 단순히 큐 업데이트 이벤트만 발생</span>
+
+<span class="comment">// 결과: 유연하고 안전한 큐 관리</span>
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>❓ 왜 필요한가?</h3>
+                
+                <div class="tech-stack">
+                    <h4>🎮 게임플레이 향상</h4>
+                    <p><strong>전략적 유연성</strong>: 게임 상황에 따라 빌드 계획 변경</p>
+                    <p><strong>사용자 제어권</strong>: 플레이어가 게임을 더 잘 조절</p>
+                    <p><strong>자원 효율성</strong>: 불필요한 유닛 생산 중단</p>
+                    <p><strong>실수 방지</strong>: 잘못 주문한 유닛 취소 가능</p>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>🔧 기술적 장점</h4>
+                    <p><strong>데이터 구조 최적화</strong>: Queue에서 List로 변경</p>
+                    <p><strong>인덱스 접근</strong>: 특정 위치의 항목 조작 가능</p>
+                    <p><strong>코루틴 관리</strong>: 안전한 코루틴 중지 및 재시작</p>
+                    <p><strong>이벤트 시스템</strong>: 효율적인 UI 업데이트</p>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>⚠️ 주의사항</h4>
+                    <p><strong>인덱스 검증</strong>: 잘못된 인덱스로 인한 오류 방지</p>
+                    <p><strong>코루틴 관리</strong>: 중지된 코루틴의 안전한 재시작</p>
+                    <p><strong>메모리 관리</strong>: 이벤트 리스너 정리</p>
+                    <p><strong>UI 동기화</strong>: 큐 변경 시 UI 즉시 업데이트</p>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎮 노바1492 적용 포인트</h3>
+                <ul class="content-list">
+                    <li><strong>빌드 큐 관리</strong>: Command Post에서 유닛 생산 계획 변경</li>
+                    <li><strong>전략적 조정</strong>: 게임 상황에 따른 유닛 생산 우선순위 변경</li>
+                    <li><strong>자원 관리</strong>: 불필요한 유닛 생산으로 인한 자원 낭비 방지</li>
+                    <li><strong>실시간 대응</strong>: 적의 공격에 따른 긴급 유닛 생산</li>
+                    <li><strong>사용자 경험</strong>: 직관적인 UI를 통한 쉬운 큐 관리</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>🔑 핵심 기술 개념</h3>
+                <ul class="content-list">
+                    <li><strong>데이터 구조 선택</strong>: Queue vs List의 장단점</li>
+                    <li><strong>인덱스 접근</strong>: 특정 위치 항목의 조작</li>
+                    <li><strong>코루틴 관리</strong>: StopAllCoroutines와 재시작</li>
+                    <li><strong>Guardian Pattern</strong>: 잘못된 입력 방지</li>
+                    <li><strong>이벤트 시스템</strong>: 효율적인 UI 업데이트</li>
+                    <li><strong>메모리 관리</strong>: 이벤트 리스너 정리</li>
+                    <li><strong>캡슐화</strong>: 내부 데이터 보호</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 강의 35: More Buildings & Units (더 많은 건물과 유닛) -->
+        <div class="lecture-section" id="lecture-35">
+            <h2 class="lecture-title">🏗️ 강의 35: More Buildings & Units (더 많은 건물과 유닛)</h2>
+            
+            <div class="tech-stack" style="margin-top: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">
+                <h4 style="color: #2c3e50; margin-top: 0;">🎯 이번 강의를 왜 해야 하는가?</h4>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">게임 콘텐츠 확장</strong>: <span style="color: #2c3e50;">다양한 건물과 유닛을 추가하여 게임의 깊이 증가</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">ScriptableObject 활용</strong>: <span style="color: #2c3e50;">코드 없이 새로운 유닛과 건물 추가 가능</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">시스템 완성도</strong>: <span style="color: #2c3e50;">기존 시스템이 얼마나 유연하고 확장 가능한지 증명</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">실제 게임 제작</strong>: <span style="color: #2c3e50;">실제 게임에서 사용할 수 있는 완전한 시스템 구축</span></p>
+            </div>
+            
+            <div class="tech-stack" style="margin-top: 15px; background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px;">
+                <h4 style="color: #155724; margin-top: 0;">🧒 초딩도 이해하기 쉬운 설명</h4>
+                <p style="margin: 8px 0; color: #155724;"><strong>🏗️ 더 많은 건물과 유닛이 뭐야?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">게임에 더 많은 종류의 건물과 유닛을 추가하는 거예요. 마치 레고 블록을 더 많이 모으는 것처럼요!</p>
+                
+                <p style="margin: 8px 0; color: #155724;"><strong>🎯 왜 필요한가요?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>게임 재미</strong>: 더 많은 선택지가 있어서 게임이 더 재미있어요</p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>전략 깊이</strong>: 다양한 유닛으로 더 복잡한 전략을 세울 수 있어요</p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>시스템 검증</strong>: 만든 시스템이 잘 작동하는지 확인해요</p>
+                
+                <p style="margin: 8px 0; color: #155724;"><strong>🏠 집으로 비유하면?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">집을 지을 때 필요한 모든 건물들(주택, 학교, 병원, 공장 등)을 준비하는 것과 같아요. 각각 다른 용도가 있어서 도시가 완성돼요!</p>
+            </div>
+
+            <div class="lecture-goal">
+                <h3>🎯 학습 목표</h3>
+                <ul class="content-list">
+                    <li>모든 유닛과 건물의 UnitSO 생성</li>
+                    <li>Prefab과 Icon 연결</li>
+                    <li>Build Unit Command 생성</li>
+                    <li>건물별 유닛 생산 설정</li>
+                    <li>ScriptableObject 시스템의 확장성 확인</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>🏗️ 추가된 건물과 유닛</h3>
+                
+                <div class="tech-stack">
+                    <h4>🏢 건물 (Buildings)</h4>
+                    <ul class="content-list">
+                        <li><strong>Airport</strong>: 항공 유닛 생산 (Air Transport)</li>
+                        <li><strong>Barracks</strong>: 군사 유닛 생산 (Rifleman, Grenadier)</li>
+                        <li><strong>Infantry School</strong>: 보병 훈련 시설</li>
+                        <li><strong>Supply Hut</strong>: 자원 저장 시설</li>
+                        <li><strong>Command Post</strong>: 기본 건물 (Worker 생산)</li>
+                    </ul>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>⚔️ 유닛 (Units)</h4>
+                    <ul class="content-list">
+                        <li><strong>Worker</strong>: 자원 수집 유닛</li>
+                        <li><strong>Rifleman</strong>: 기본 보병 유닛</li>
+                        <li><strong>Grenadier</strong>: 수류탄 투척 유닛</li>
+                        <li><strong>Air Transport</strong>: 공중 수송 유닛</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>🔧 UnitSO 설정 과정</h3>
+                
+                <div class="code-block">
+<span class="comment">// UnitSO 설정 과정</span>
+
+<span class="comment">// 1. UnitSO 생성</span>
+<span class="comment">// Right Click → Create → Units → Unit</span>
+<span class="comment">// 이름: Rifleman, Grenadier, Airport, Barracks, Infantry School</span>
+
+<span class="comment">// 2. 필수 필드 설정</span>
+<span class="comment">// - Prefab: 해당 유닛/건물의 프리팹 연결</span>
+<span class="comment">// - Icon: 해당 유닛/건물의 아이콘 연결</span>
+<span class="comment">// - BuildTime: 빌드 시간 (테스트용으로 짧게 설정)</span>
+<span class="comment">// - MaxHealth: 최대 체력</span>
+
+<span class="comment">// 3. 폴더 구조</span>
+<span class="comment">// Assets/Units/</span>
+<span class="comment">// ├── Buildings/</span>
+<span class="comment">// │   ├── Airport/</span>
+<span class="comment">// │   │   ├── Airport.asset (UnitSO)</span>
+<span class="comment">// │   │   ├── Airport.prefab</span>
+<span class="comment">// │   │   └── Airport Icon.png</span>
+<span class="comment">// │   ├── Barracks/</span>
+<span class="comment">// │   │   ├── Barracks.asset (UnitSO)</span>
+<span class="comment">// │   │   ├── Barracks.prefab</span>
+<span class="comment">// │   │   └── Barracks Icon.png</span>
+<span class="comment">// │   └── ...</span>
+<span class="comment">// └── Rifleman/</span>
+<span class="comment">//     ├── Rifleman.asset (UnitSO)</span>
+<span class="comment">//     ├── Rifleman.prefab</span>
+<span class="comment">//     └── Rifleman Icon.png</span>
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>⚔️ Build Unit Command 생성</h3>
+                
+                <div class="code-block">
+<span class="comment">// Build Unit Command 생성 과정</span>
+
+<span class="comment">// 1. 기존 Build Worker 복사</span>
+<span class="comment">// Right Click → Duplicate</span>
+<span class="comment">// 이름 변경: Build Rifleman, Build Grenadier, Build Air Transport</span>
+
+<span class="comment">// 2. 각 Command 설정</span>
+<span class="comment">// Build Rifleman:</span>
+<span class="comment">// - Icon: Rifleman Icon</span>
+<span class="comment">// - Unit: Rifleman UnitSO</span>
+<span class="comment">// - Slot: 0 (첫 번째 슬롯)</span>
+
+<span class="comment">// Build Grenadier:</span>
+<span class="comment">// - Icon: Grenadier Icon</span>
+<span class="comment">// - Unit: Grenadier UnitSO</span>
+<span class="comment">// - Slot: 1 (두 번째 슬롯)</span>
+
+<span class="comment">// Build Air Transport:</span>
+<span class="comment">// - Icon: Air Transport Icon</span>
+<span class="comment">// - Unit: Air Transport UnitSO</span>
+<span class="comment">// - Slot: 0 (Airport의 첫 번째 슬롯)</span>
+
+<span class="comment">// 3. 건물별 Command 할당</span>
+<span class="comment">// Barracks:</span>
+<span class="comment">// - Build Rifleman (Slot 0)</span>
+<span class="comment">// - Build Grenadier (Slot 1)</span>
+
+<span class="comment">// Airport:</span>
+<span class="comment">// - Build Air Transport (Slot 0)</span>
+
+<span class="comment">// Command Post:</span>
+<span class="comment">// - Build Worker (Slot 0)</span>
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎯 핵심 개념</h3>
+                
+                <div class="code-block">
+<span class="comment">// ScriptableObject 시스템의 장점</span>
+
+<span class="comment">// 1. 코드 없이 콘텐츠 추가</span>
+<span class="comment">// - 새로운 유닛 추가 시 코드 수정 불필요</span>
+<span class="comment">// - Unity Editor에서만 설정으로 완료</span>
+
+<span class="comment">// 2. 데이터와 로직 분리</span>
+<span class="comment">// - UnitSO: 데이터 (Prefab, Icon, BuildTime 등)</span>
+<span class="comment">// - BuildUnitCommand: 로직 (빌드 동작)</span>
+<span class="comment">// - BaseBuilding: 시스템 (실제 빌드 처리)</span>
+
+<span class="comment">// 3. 확장성과 유연성</span>
+<span class="comment">// - 새로운 건물 타입 추가 용이</span>
+<span class="comment">// - 새로운 유닛 타입 추가 용이</span>
+<span class="comment">// - 밸런스 조정이 데이터만 수정하면 됨</span>
+
+<span class="comment">// 4. 재사용성</span>
+<span class="comment">// - BuildUnitCommand는 모든 유닛에 재사용 가능</span>
+<span class="comment">// - BaseBuilding은 모든 건물에 재사용 가능</span>
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>❓ 왜 필요한가?</h3>
+                
+                <div class="tech-stack">
+                    <h4>🎮 게임 개발 관점</h4>
+                    <p><strong>콘텐츠 확장</strong>: 게임의 깊이와 재미 증가</p>
+                    <p><strong>시스템 검증</strong>: 만든 시스템이 실제로 잘 작동하는지 확인</p>
+                    <p><strong>확장성 증명</strong>: ScriptableObject 시스템의 유연성 입증</p>
+                    <p><strong>실제 게임 제작</strong>: 실제 게임에서 사용할 수 있는 완전한 시스템</p>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>🔧 기술적 장점</h4>
+                    <p><strong>코드 없이 콘텐츠 추가</strong>: 프로그래머 없이도 새로운 유닛 추가</p>
+                    <p><strong>데이터 중심 설계</strong>: 로직과 데이터의 명확한 분리</p>
+                    <p><strong>재사용성</strong>: 기존 시스템을 그대로 활용</p>
+                    <p><strong>유지보수성</strong>: 밸런스 조정이 데이터만 수정하면 됨</p>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>⚠️ 주의사항</h4>
+                    <p><strong>일관성 유지</strong>: 모든 UnitSO에 동일한 필드 설정</p>
+                    <p><strong>폴더 구조</strong>: 체계적인 파일 관리</p>
+                    <p><strong>네이밍 규칙</strong>: 일관된 이름 규칙 사용</p>
+                    <p><strong>테스트</strong>: 각 유닛과 건물이 정상 작동하는지 확인</p>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎮 노바1492 적용 포인트</h3>
+                <ul class="content-list">
+                    <li><strong>다양한 건물</strong>: 각각 다른 용도의 건물들 (군사, 경제, 기술)</li>
+                    <li><strong>다양한 유닛</strong>: 각각 다른 역할의 유닛들 (공격, 방어, 수송)</li>
+                    <li><strong>전략적 깊이</strong>: 다양한 유닛 조합으로 복잡한 전략 수립</li>
+                    <li><strong>확장 가능성</strong>: 새로운 유닛과 건물을 쉽게 추가할 수 있는 시스템</li>
+                    <li><strong>밸런스 조정</strong>: 데이터만 수정하여 게임 밸런스 조정</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>🔑 핵심 기술 개념</h3>
+                <ul class="content-list">
+                    <li><strong>ScriptableObject 활용</strong>: 데이터 중심 설계</li>
+                    <li><strong>폴더 구조</strong>: 체계적인 파일 관리</li>
+                    <li><strong>재사용성</strong>: 기존 시스템의 재활용</li>
+                    <li><strong>확장성</strong>: 새로운 콘텐츠 추가의 용이성</li>
+                    <li><strong>데이터와 로직 분리</strong>: 유지보수성 향상</li>
+                    <li><strong>Unity Editor 활용</strong>: 코드 없이 콘텐츠 제작</li>
+                    <li><strong>시스템 검증</strong>: 실제 사용 가능한 시스템 구축</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 강의 36: Unity Behavior Tree (유니티 비헤이비어 트리) -->
+        <div class="lecture-section" id="lecture-36">
+            <h2 class="lecture-title">🌳 강의 36: Unity Behavior Tree (유니티 비헤이비어 트리)</h2>
+            
+            <div class="tech-stack" style="margin-top: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">
+                <h4 style="color: #2c3e50; margin-top: 0;">🎯 이번 강의를 왜 해야 하는가?</h4>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">AI 시스템 도입</strong>: <span style="color: #2c3e50;">Unity Behavior Tree를 사용하여 더 복잡하고 유연한 AI 구현</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">코드와 로직 분리</strong>: <span style="color: #2c3e50;">비헤이비어 로직을 코드에서 시각적 그래프로 분리</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">확장성 향상</strong>: <span style="color: #2c3e50;">복잡한 AI 행동을 쉽게 설계하고 수정할 수 있도록</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">시각적 디버깅</strong>: <span style="color: #2c3e50;">AI 로직을 시각적으로 확인하고 디버깅 가능</span></p>
+            </div>
+            
+            <div class="tech-stack" style="margin-top: 15px; background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px;">
+                <h4 style="color: #155724; margin-top: 0;">🧒 초딩도 이해하기 쉬운 설명</h4>
+                <p style="margin: 8px 0; color: #155724;"><strong>🌳 비헤이비어 트리가 뭐야?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">유닛이 어떻게 행동할지 정하는 "행동 계획서"예요. 마치 로봇에게 "이렇게 해라, 저렇게 해라"라고 미리 정해놓은 규칙표와 같아요!</p>
+                
+                <p style="margin: 8px 0; color: #155724;"><strong>🎯 왜 필요한가요?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>복잡한 행동</strong>: 유닛이 더 똑똑하게 행동할 수 있어요</p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>쉬운 수정</strong>: 코드를 몰라도 행동을 바꿀 수 있어요</p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>시각적 확인</strong>: 유닛이 뭘 하고 있는지 눈으로 볼 수 있어요</p>
+                
+                <p style="margin: 8px 0; color: #155724;"><strong>🏠 집으로 비유하면?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">집안일 로봇에게 "먼저 청소하고, 그 다음에 설거지하고, 마지막에 빨래하기"라고 미리 정해놓은 일정표와 같아요!</p>
+            </div>
+
+            <div class="lecture-goal">
+                <h3>🎯 학습 목표</h3>
+                <ul class="content-list">
+                    <li>Unity Behavior Tree 패키지 설치 및 이해</li>
+                    <li>Behavior Graph 생성 및 설정</li>
+                    <li>Blackboard 개념 이해</li>
+                    <li>AbstractUnit에 BehaviorGraphAgent 통합</li>
+                    <li>코드 기반 이동을 비헤이비어 트리로 마이그레이션</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>🌳 Unity Behavior Tree 개요</h3>
+                
+                <div class="tech-stack">
+                    <h4>🎮 Behavior Tree란?</h4>
+                    <p><strong>정의</strong>: AI 행동을 시각적으로 설계하는 그래프 기반 시스템</p>
+                    <p><strong>구성요소</strong>: 노드(Node)와 연결선(Edge)으로 구성</p>
+                    <p><strong>실행방향</strong>: 위에서 아래로, 왼쪽에서 오른쪽으로 실행</p>
+                    <p><strong>Unity 6</strong>: Unity의 첫 번째 공식 비헤이비어 트리 솔루션</p>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>🔧 노드 타입</h4>
+                    <ul class="content-list">
+                        <li><strong>Control Flow Nodes</strong>: 로직 흐름을 제어하는 노드 (Random, Abort 등)</li>
+                        <li><strong>Action Nodes</strong>: 실제 행동을 수행하는 노드 (Move, Attack 등)</li>
+                        <li><strong>Condition Nodes</strong>: 조건을 확인하는 노드 (Variable Value Changed 등)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>📋 Blackboard 개념</h3>
+                
+                <div class="code-block">
+<span class="comment">// Blackboard 개념</span>
+
+<span class="comment">// 1. 정의</span>
+<span class="comment">// Blackboard: 비헤이비어 트리와 코드 간의 데이터 공유 공간</span>
+<span class="comment">// Animator의 Parameters와 유사한 개념</span>
+
+<span class="comment">// 2. 장점</span>
+<span class="comment">// - 코드와 비헤이비어 트리의 분리</span>
+<span class="comment">// - 데이터 중심의 통신</span>
+<span class="comment">// - 유연한 시스템 설계</span>
+
+<span class="comment">// 3. 사용 예시</span>
+<span class="comment">// 코드에서: graphAgent.SetVariableValue("TargetLocation", position)</span>
+<span class="comment">// 비헤이비어 트리에서: TargetLocation 변수 사용</span>
+
+<span class="comment">// 4. 변수 명명 규칙</span>
+<span class="comment">// - PascalCase 사용 (TargetLocation)</span>
+<span class="comment">// - 공백 없이 작성</span>
+<span class="comment">// - 코드의 public 필드와 동일한 규칙</span>
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>🔧 AbstractUnit 통합</h3>
+                
+                <div class="code-block">
+<span class="comment">// AbstractUnit.cs - BehaviorGraphAgent 통합</span>
+<span class="comment">// AbstractUnit: 모든 유닛의 기본 클래스</span>
+<span class="comment">// BehaviorGraphAgent: 비헤이비어 트리와 상호작용하는 컴포넌트</span>
+
+<span class="comment">// RequireComponent: 필요한 컴포넌트 자동 추가</span>
+<span class="comment">// NavMeshAgent: 네비게이션 시스템과 상호작용</span>
+<span class="comment">// BehaviorGraphAgent: 비헤이비어 트리 시스템과 상호작용</span>
+[<span class="class-name">RequireComponent</span>(<span class="keyword">typeof</span>(<span class="class-name">NavMeshAgent</span>), <span class="keyword">typeof</span>(<span class="class-name">BehaviorGraphAgent</span>))]
+<span class="keyword">public abstract class</span> <span class="class-name">AbstractUnit</span> : <span class="class-name">MonoBehaviour</span>, <span class="class-name">ISelectable</span>, <span class="class-name">IMoveable</span>
+{
+    <span class="comment">// NavMeshAgent 참조</span>
+    <span class="comment">// NavMeshAgent: Unity의 네비게이션 시스템 컴포넌트</span>
+    <span class="keyword">private</span> <span class="class-name">NavMeshAgent</span> agent;
+    
+    <span class="comment">// BehaviorGraphAgent 참조</span>
+    <span class="comment">// BehaviorGraphAgent: Unity Behavior Tree 시스템 컴포넌트</span>
+    <span class="keyword">private</span> <span class="class-name">BehaviorGraphAgent</span> graphAgent;
+
+    <span class="comment">// 컴포넌트 초기화</span>
+    <span class="comment">// Awake: GameObject 생성 시 한 번만 실행</span>
+    <span class="keyword">private void</span> <span class="method-name">Awake</span>()
+    {
+        <span class="comment">// NavMeshAgent 컴포넌트 가져오기</span>
+        <span class="comment">// GetComponent: 특정 컴포넌트를 찾는 Unity 메서드</span>
+        agent = <span class="method-name">GetComponent</span>&lt;<span class="class-name">NavMeshAgent</span>&gt;();
+        
+        <span class="comment">// BehaviorGraphAgent 컴포넌트 가져오기</span>
+        <span class="comment">// BehaviorGraphAgent: 비헤이비어 트리 실행을 담당</span>
+        graphAgent = <span class="method-name">GetComponent</span>&lt;<span class="class-name">BehaviorGraphAgent</span>&gt;();
+    }
+
+    <span class="comment">// 유닛 이동 메서드: 비헤이비어 트리를 통한 이동</span>
+    <span class="comment">// MoveTo: "~로 이동한다"는 의미</span>
+    <span class="comment">// Vector3 position: 이동할 목표 위치</span>
+    <span class="keyword">public void</span> <span class="method-name">MoveTo</span>(<span class="class-name">Vector3</span> position)
+    {
+        <span class="comment">// 기존 방식: 직접 NavMeshAgent 목표 설정</span>
+        <span class="comment">// agent.SetDestination(position);</span>
+        
+        <span class="comment">// 새로운 방식: Blackboard에 목표 위치 설정</span>
+        <span class="comment">// SetVariableValue: Blackboard 변수 값 설정</span>
+        <span class="comment">// "TargetLocation": Blackboard 변수명 (정확히 일치해야 함)</span>
+        <span class="comment">// position: 설정할 값 (Vector3 타입)</span>
+        graphAgent.<span class="method-name">SetVariableValue</span>(<span class="string">"TargetLocation"</span>, position);
+    }
+}
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎯 비헤이비어 트리 구조</h3>
+                
+                <div class="code-block">
+<span class="comment">// Worker BT (Behavior Tree) 구조</span>
+
+<span class="comment">// 1. 시작 노드 (Start)</span>
+<span class="comment">// - 비헤이비어 트리의 진입점</span>
+
+<span class="comment">// 2. Abort 노드 (조건부 중단)</span>
+<span class="comment">// - Variable Value Changed 조건</span>
+<span class="comment">// - TargetLocation이 변경되면 현재 행동 중단</span>
+
+<span class="comment">// 3. Move To Location 노드 (이동 액션)</span>
+<span class="comment">// - Agent: Self (자기 자신)</span>
+<span class="comment">// - Target: TargetLocation (Blackboard 변수)</span>
+<span class="comment">// - Speed: 3.5 (이동 속도)</span>
+
+<span class="comment">// 실행 흐름:</span>
+<span class="comment">// Start → Abort → Move To Location</span>
+<span class="comment">// ↓</span>
+<span class="comment">// TargetLocation 변경 시</span>
+<span class="comment">// Abort가 트리거되어 새로운 Move To Location 실행</span>
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>❓ 왜 필요한가?</h3>
+                
+                <div class="tech-stack">
+                    <h4>🎮 게임 개발 관점</h4>
+                    <p><strong>복잡한 AI</strong>: 더 정교하고 지능적인 유닛 행동</p>
+                    <p><strong>시각적 설계</strong>: 코드 없이 AI 로직 설계 가능</p>
+                    <p><strong>디버깅 용이</strong>: 실행 중인 AI 상태를 시각적으로 확인</p>
+                    <p><strong>확장성</strong>: 새로운 행동 패턴을 쉽게 추가</p>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>🔧 기술적 장점</h4>
+                    <p><strong>코드와 로직 분리</strong>: 비헤이비어 로직을 시각적 그래프로 분리</p>
+                    <p><strong>Blackboard 시스템</strong>: 데이터 중심의 유연한 통신</p>
+                    <p><strong>재사용성</strong>: 동일한 비헤이비어 트리를 여러 유닛에 적용</p>
+                    <p><strong>유지보수성</strong>: 비헤이비어 수정이 코드 변경 없이 가능</p>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>⚠️ 주의사항</h4>
+                    <p><strong>변수명 정확성</strong>: Blackboard 변수명이 정확히 일치해야 함</p>
+                    <p><strong>실행 순서</strong>: 비헤이비어 트리는 순차적으로 실행됨</p>
+                    <p><strong>Abort 조건</strong>: 새로운 명령 시 이전 행동 중단 필요</p>
+                    <p><strong>성능 고려</strong>: 복잡한 트리는 성능에 영향을 줄 수 있음</p>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎮 노바1492 적용 포인트</h3>
+                <ul class="content-list">
+                    <li><strong>복잡한 전술</strong>: 다양한 상황에 따른 유닛 행동 패턴</li>
+                    <li><strong>자동 전투</strong>: 적을 발견했을 때 자동 공격 행동</li>
+                    <li><strong>자원 수집</strong>: Worker의 지능적인 자원 수집 로직</li>
+                    <li><strong>편대 비행</strong>: Air Transport의 편대 유지 행동</li>
+                    <li><strong>방어 행동</strong>: 건물 공격 시 자동 방어 행동</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>🔑 핵심 기술 개념</h3>
+                <ul class="content-list">
+                    <li><strong>Unity Behavior Tree</strong>: Unity 6의 공식 비헤이비어 트리 시스템</li>
+                    <li><strong>BehaviorGraphAgent</strong>: 비헤이비어 트리 실행 컴포넌트</li>
+                    <li><strong>Blackboard</strong>: 데이터 공유 공간</li>
+                    <li><strong>Control Flow Nodes</strong>: 로직 흐름 제어</li>
+                    <li><strong>Action Nodes</strong>: 실제 행동 수행</li>
+                    <li><strong>Abort 조건</strong>: 행동 중단 및 재시작</li>
+                    <li><strong>SetVariableValue</strong>: Blackboard 변수 설정</li>
                 </ul>
             </div>
         </div>
