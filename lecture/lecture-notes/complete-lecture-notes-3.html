@@ -234,6 +234,7 @@
                     <li><a href="#lecture-39">🎯 강의 39: Unit Commands in Behavior Tree</a></li>
                     <li><a href="#lecture-40">⛏️ 강의 40: Gathering Supplies with Behavior Tree</a></li>
                     <li><a href="#lecture-41">🏠 강의 41: Return Supplies to Command Post</a></li>
+                    <li><a href="#lecture-42">🚶 강의 42: Smooth Gathering Movement</a></li>
                 </ul>
             </div>
 
@@ -1294,6 +1295,243 @@
                         <li><strong>Sequence 노드</strong>: 순차적 실행을 위한 노드</li>
                         <li><strong>GameObject 이동</strong>: Vector3가 아닌 GameObject로 이동</li>
                         <li><strong>탐색 반경</strong>: 효율적인 건물 탐색</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 강의 42: Smooth Gathering Movement (부드러운 자원 수집 이동) -->
+            <div class="lecture-section" id="lecture-42">
+                <h2 class="lecture-title">🚶 강의 42: Smooth Gathering Movement (부드러운 자원 수집 이동)</h2>
+                
+                <div class="tech-stack" style="margin-top: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">
+                    <h4 style="color: #2c3e50; margin-top: 0;">🎯 이번 강의를 왜 해야 하는가?</h4>
+                    <p style="margin: 8px 0;"><strong style="color: #2c3e50;">부드러운 이동</strong>: <span style="color: #2c3e50;">Worker들이 자원을 수집할 때 더 부드럽게 움직이도록 개선</span></p>
+                    <p style="margin: 8px 0;"><strong style="color: #2c3e50;">Obstacle Avoidance 조정</strong>: <span style="color: #2c3e50;">자원 수집 시 다른 유닛들을 무시하고 통과할 수 있도록 설정</span></p>
+                    <p style="margin: 8px 0;"><strong style="color: #2c3e50;">게임플레이 개선</strong>: <span style="color: #2c3e50;">StarCraft와 같은 RTS 게임의 수집 행동 패턴 구현</span></p>
+                    <p style="margin: 8px 0;"><strong style="color: #2c3e50;">동적 설정</strong>: <span style="color: #2c3e50;">Behavior Tree에서 상황에 따라 NavMesh Agent 설정 변경</span></p>
+                </div>
+                
+                <div class="tech-stack" style="margin-top: 15px; background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px;">
+                    <h4 style="color: #155724; margin-top: 0;">🧒 초딩도 이해하기 쉬운 설명</h4>
+                    <p style="margin: 8px 0; color: #155724;"><strong>🚶 부드러운 이동이 뭐야?</strong></p>
+                    <p style="margin: 8px 0; color: #155724;">Worker들이 자원을 캐러 갈 때 다른 Worker들을 피해서 돌아다니지 않고, 그냥 통과해서 가는 시스템이에요!</p>
+                    
+                    <p style="margin: 8px 0; color: #155724;"><strong>🎮 어떻게 작동하나요?</strong></p>
+                    <p style="margin: 8px 0; color: #155724;">• <strong>자원 수집 시</strong>: 다른 Worker들을 무시하고 통과해요</p>
+                    <p style="margin: 8px 0; color: #155724;">• <strong>일반 이동 시</strong>: 다른 유닛들을 피해서 이동해요</p>
+                    <p style="margin: 8px 0; color: #155724;">• <strong>자동 전환</strong>: 상황에 따라 자동으로 바뀌어요</p>
+                    
+                    <p style="margin: 8px 0; color: #155724;"><strong>🏠 집으로 비유하면?</strong></p>
+                    <p style="margin: 8px 0; color: #155724;">장보기 갈 때는 다른 사람들을 피해서 돌아다니지만, 급할 때는 그냥 지나가는 것처럼, 게임에서도 상황에 따라 다르게 움직여요!</p>
+                </div>
+
+                <div class="lecture-goal">
+                    <h3>🎯 학습 목표</h3>
+                    <ul class="content-list">
+                        <li>NavMesh Agent의 Obstacle Avoidance 개념 이해</li>
+                        <li>SetAgentAvoidanceAction 커스텀 노드 구현</li>
+                        <li>Behavior Tree에서 동적으로 avoidance 설정 변경</li>
+                        <li>자원 수집 시와 일반 이동 시 다른 설정 적용</li>
+                        <li>게임플레이 개선을 위한 이동 최적화</li>
+                    </ul>
+                </div>
+
+                <div class="content-section">
+                    <h3>🚶 Obstacle Avoidance 시스템</h3>
+                    
+                    <div class="tech-stack">
+                        <h4>🎮 Obstacle Avoidance 타입</h4>
+                        <ul class="content-list">
+                            <li><strong>No Obstacle Avoidance (0)</strong>: 다른 유닛을 무시하고 통과</li>
+                            <li><strong>Low Quality (1)</strong>: 낮은 품질의 회피</li>
+                            <li><strong>Medium Quality (2)</strong>: 중간 품질의 회피</li>
+                            <li><strong>Good Quality (3)</strong>: 좋은 품질의 회피</li>
+                            <li><strong>High Quality (4)</strong>: 높은 품질의 회피 (기본값)</li>
+                        </ul>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>🔄 상황별 설정</h4>
+                        <ul class="content-list">
+                            <li><strong>자원 수집 시</strong>: No Obstacle Avoidance (0) - 다른 Worker 무시</li>
+                            <li><strong>일반 이동 시</strong>: High Quality (4) - 다른 유닛 회피</li>
+                            <li><strong>전투 시</strong>: High Quality (4) - 전술적 이동</li>
+                            <li><strong>건설 시</strong>: Medium Quality (2) - 적당한 회피</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h3>📝 SetAgentAvoidanceAction 구현</h3>
+                    
+                    <div class="code-block">
+<span class="comment">// SetAgentAvoidanceAction.cs - NavMesh Agent의 Obstacle Avoidance 설정</span>
+<span class="comment">// Behavior Tree에서 동적으로 avoidance 품질을 변경</span>
+
+<span class="keyword">using</span> <span class="class-name">System</span>;
+<span class="keyword">using</span> <span class="class-name">Unity.Behavior</span>;
+<span class="keyword">using</span> <span class="class-name">UnityEngine</span>;
+<span class="keyword">using</span> <span class="class-name">Action</span> = <span class="class-name">Unity.Behavior.Action</span>;
+<span class="keyword">using</span> <span class="class-name">Unity.Properties</span>;
+<span class="keyword">using</span> <span class="class-name">UnityEngine.AI</span>;
+
+<span class="keyword">namespace</span> <span class="class-name">GameDevTV.RTS.Behavior</span>
+{
+    <span class="comment">// Serializable: Unity에서 직렬화 가능하도록 하는 속성</span>
+    <span class="comment">// GeneratePropertyBag: Unity Behavior Tree에서 사용하는 속성 백 생성</span>
+    [<span class="class-name">Serializable</span>, <span class="class-name">GeneratePropertyBag</span>]
+    
+    <span class="comment">// NodeDescription: Behavior Tree 에디터에서 노드의 설명을 정의</span>
+    <span class="comment">// name: 노드의 이름</span>
+    <span class="comment">// story: 노드의 동작을 설명하는 텍스트</span>
+    <span class="comment">// category: 노드가 속할 카테고리 (Action/Navigation)</span>
+    <span class="comment">// id: 노드의 고유 식별자</span>
+    [<span class="class-name">NodeDescription</span>(<span class="parameter">name</span>: <span class="string">"Set Agent Avoidance"</span>, <span class="parameter">story</span>: <span class="string">"Set [Agent] avoidance quality to [AvoidanceQuality] ."</span>, <span class="parameter">category</span>: <span class="string">"Action/Navigation"</span>, <span class="parameter">id</span>: <span class="string">"3a4f7ab7967bf186b0c645339d0ace1e"</span>)]
+    
+    <span class="comment">// SetAgentAvoidanceAction: NavMesh Agent의 Obstacle Avoidance를 설정하는 액션 노드</span>
+    <span class="comment">// partial: 클래스가 여러 파일에 나뉘어 정의될 수 있음 (Unity Behavior Tree가 자동 생성)</span>
+    <span class="keyword">public partial class</span> <span class="class-name">SetAgentAvoidanceAction</span> : <span class="class-name">Action</span>
+    {
+        <span class="comment">// Agent: 설정할 NavMesh Agent가 있는 GameObject</span>
+        <span class="comment">// SerializeReference: Unity에서 직렬화 가능한 참조</span>
+        <span class="comment">// BlackboardVariable: Behavior Tree의 Blackboard에서 가져오는 변수</span>
+        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="property-name">Agent</span>;
+        
+        <span class="comment">// AvoidanceQuality: 설정할 avoidance 품질 (0-4)</span>
+        <span class="comment">// int: 정수형 (0=No, 1=Low, 2=Medium, 3=Good, 4=High)</span>
+        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="keyword">int</span>&gt; <span class="property-name">AvoidanceQuality</span>;
+
+        <span class="comment">// OnStart: 액션이 시작될 때 호출되는 메서드</span>
+        <span class="comment">// Status: 액션의 실행 상태 (Success, Failure, Running)</span>
+        <span class="keyword">protected override</span> <span class="class-name">Status</span> <span class="method-name">OnStart</span>()
+        {
+            <span class="comment">// TryGetComponent: Agent GameObject에서 NavMeshAgent 컴포넌트를 가져옴</span>
+            <span class="comment">// out agent: 가져온 NavMeshAgent를 저장할 변수</span>
+            <span class="comment">// !: 논리 부정 연산자 (실패 시 true)</span>
+            <span class="comment">// AvoidanceQuality > 4: 유효하지 않은 높은 값</span>
+            <span class="comment">// AvoidanceQuality < 0: 유효하지 않은 낮은 값</span>
+            <span class="keyword">if</span> (!<span class="property-name">Agent</span>.<span class="property-name">Value</span>.<span class="method-name">TryGetComponent</span>(<span class="keyword">out</span> <span class="class-name">NavMeshAgent</span> <span class="field-name">agent</span>) || <span class="property-name">AvoidanceQuality</span>.<span class="property-name">Value</span> > <span class="number">4</span> || <span class="property-name">AvoidanceQuality</span>.<span class="property-name">Value</span> &lt; <span class="number">0</span>)
+            {
+                <span class="comment">// Failure: NavMeshAgent가 없거나 유효하지 않은 avoidance 품질</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Failure</span>;
+            }
+
+            <span class="comment">// obstacleAvoidanceType: NavMesh Agent의 obstacle avoidance 타입</span>
+            <span class="comment">// (ObstacleAvoidanceType): int를 ObstacleAvoidanceType enum으로 캐스팅</span>
+            <span class="comment">// AvoidanceQuality.Value: Blackboard에서 가져온 avoidance 품질 값</span>
+            <span class="field-name">agent</span>.<span class="property-name">obstacleAvoidanceType</span> = (<span class="class-name">ObstacleAvoidanceType</span>)<span class="property-name">AvoidanceQuality</span>.<span class="property-name">Value</span>;
+
+            <span class="comment">// Success: avoidance 품질을 성공적으로 설정함</span>
+            <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Success</span>;
+        }
+    }
+}
+</div>
+                </div>
+
+                <div class="content-section">
+                    <h3>🎮 Behavior Tree 구조 업데이트</h3>
+                    
+                    <div class="tech-stack">
+                        <h4>📊 새로운 트리 구조</h4>
+                        <ol class="content-list">
+                            <li><strong>OnStart</strong>: 트리 시작점</li>
+                            <li><strong>Abort 노드</strong>: 명령 변경 시 즉시 중단</li>
+                            <li><strong>Switch 노드</strong>: 명령에 따른 분기</li>
+                            <li><strong>Gather 브랜치</strong>: 자원 수집 로직</li>
+                            <li><strong>SetAgentAvoidance (0)</strong>: 자원 수집 시 No Obstacle Avoidance</li>
+                            <li><strong>Sequence</strong>: 순차적으로 실행되는 노드들</li>
+                            <li><strong>MoveToTargetLocation</strong>: 자원 위치로 이동</li>
+                            <li><strong>GatherSupplies</strong>: 자원 수집 실행</li>
+                            <li><strong>FindClosestCommandPost</strong>: 가장 가까운 Command Post 찾기</li>
+                            <li><strong>MoveToTargetGameObject</strong>: Command Post로 이동</li>
+                            <li><strong>SetAgentAvoidance (4)</strong>: 일반 이동 시 High Quality</li>
+                        </ol>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>⚡ 이동 최적화 프로세스</h4>
+                        <ul class="content-list">
+                            <li><strong>자원 수집 시작</strong>: Obstacle Avoidance를 0으로 설정</li>
+                            <li><strong>자원으로 이동</strong>: 다른 Worker들을 무시하고 통과</li>
+                            <li><strong>자원 수집</strong>: 부드럽게 자원 수집</li>
+                            <li><strong>Command Post로 이동</strong>: 다른 Worker들을 무시하고 통과</li>
+                            <li><strong>일반 이동 복원</strong>: Obstacle Avoidance를 4로 설정</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h3>🔧 Blackboard 변수 설정</h3>
+                    
+                    <div class="tech-stack">
+                        <h4>📋 필요한 Blackboard 변수들</h4>
+                        <ul class="content-list">
+                            <li><strong>AvoidanceQuality</strong>: 설정할 avoidance 품질 (int)</li>
+                            <li><strong>Agent</strong>: NavMesh Agent가 있는 GameObject</li>
+                        </ul>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>🎯 변수 연결</h4>
+                        <ul class="content-list">
+                            <li><strong>자원 수집 시</strong>: AvoidanceQuality = 0 (No Obstacle Avoidance)</li>
+                            <li><strong>일반 이동 시</strong>: AvoidanceQuality = 4 (High Quality)</li>
+                            <li><strong>Agent</strong>: Self (현재 유닛)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h3>❓ 왜 필요한가?</h3>
+                    
+                    <div class="tech-stack">
+                        <h4>🎮 게임 개발 관점</h4>
+                        <p><strong>자연스러운 수집</strong>: StarCraft와 같은 RTS 게임의 수집 행동 패턴</p>
+                        <p><strong>성능 최적화</strong>: 불필요한 회피 계산 제거</p>
+                        <p><strong>사용자 경험</strong>: 더 부드럽고 직관적인 이동</p>
+                        <p><strong>게임플레이 개선</strong>: 자원 수집이 더 효율적으로</p>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>🔧 기술적 장점</h4>
+                        <p><strong>동적 설정</strong>: Behavior Tree에서 상황에 따라 설정 변경</p>
+                        <p><strong>간단한 구현</strong>: 단순하지만 효과적인 솔루션</p>
+                        <p><strong>유연성</strong>: 다양한 상황에 적용 가능</p>
+                        <p><strong>성능</strong>: 불필요한 계산 제거</p>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>⚠️ 주의사항</h4>
+                        <p><strong>유효성 검사</strong>: 0-4 범위 내의 값만 허용</p>
+                        <p><strong>NavMeshAgent 확인</strong>: 컴포넌트 존재 여부 확인</p>
+                        <p><strong>타입 캐스팅</strong>: int를 ObstacleAvoidanceType으로 안전하게 변환</p>
+                        <p><strong>상황별 적용</strong>: 적절한 시점에 설정 변경</p>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h3>🎮 노바1492 적용 포인트</h3>
+                    <ul class="content-list">
+                        <li><strong>다양한 이동 모드</strong>: 수집, 전투, 건설, 탐색 모드</li>
+                        <li><strong>상황별 최적화</strong>: 각 상황에 맞는 이동 설정</li>
+                        <li><strong>성능 최적화</strong>: 불필요한 회피 계산 제거</li>
+                        <li><strong>사용자 경험</strong>: 더 부드럽고 직관적인 이동</li>
+                        <li><strong>전술적 이동</strong>: 전투 시와 평시 이동 구분</li>
+                    </ul>
+                </div>
+
+                <div class="content-section">
+                    <h3>🔑 핵심 기술 개념</h3>
+                    <ul class="content-list">
+                        <li><strong>ObstacleAvoidanceType</strong>: NavMesh Agent의 회피 타입</li>
+                        <li><strong>SetAgentAvoidanceAction</strong>: avoidance 설정 커스텀 노드</li>
+                        <li><strong>동적 설정</strong>: Behavior Tree에서 런타임 설정 변경</li>
+                        <li><strong>타입 캐스팅</strong>: int를 enum으로 안전하게 변환</li>
+                        <li><strong>유효성 검사</strong>: 입력값 범위 확인</li>
+                        <li><strong>TryGetComponent</strong>: 안전한 컴포넌트 가져오기</li>
+                        <li><strong>상황별 최적화</strong>: 각 상황에 맞는 이동 설정</li>
+                        <li><strong>게임플레이 개선</strong>: 더 자연스러운 이동 패턴</li>
                     </ul>
                 </div>
             </div>
