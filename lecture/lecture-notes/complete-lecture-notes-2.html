@@ -290,6 +290,7 @@
                     <li><a href="#lecture-34">❌ 강의 34: Cancel Queue Items</a></li>
                     <li><a href="#lecture-35">🏗️ 강의 35: More Buildings & Units</a></li>
                     <li><a href="#lecture-36">🌳 강의 36: Unity Behavior Tree</a></li>
+                    <li><a href="#lecture-37">🔧 강의 37: Custom Behavior Nodes</a></li>
                 </ul>
             </div>
         </div>
@@ -4089,6 +4090,279 @@ List&lt;AbstractCommandable&gt; abstractCommandables = selectedUnits
                     <li><strong>Action Nodes</strong>: 실제 행동 수행</li>
                     <li><strong>Abort 조건</strong>: 행동 중단 및 재시작</li>
                     <li><strong>SetVariableValue</strong>: Blackboard 변수 설정</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 강의 37: Custom Behavior Nodes (커스텀 비헤이비어 노드) -->
+        <div class="lecture-section" id="lecture-37">
+            <h2 class="lecture-title">🔧 강의 37: Custom Behavior Nodes (커스텀 비헤이비어 노드)</h2>
+            
+            <div class="tech-stack" style="margin-top: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">
+                <h4 style="color: #2c3e50; margin-top: 0;">🎯 이번 강의를 왜 해야 하는가?</h4>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">커스텀 노드 생성</strong>: <span style="color: #2c3e50;">Unity Behavior Tree에서 기본 노드 대신 커스텀 노드 사용</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">NavMeshAgent 보호</strong>: <span style="color: #2c3e50;">런타임에 NavMeshAgent 설정이 덮어씌워지는 문제 해결</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">세밀한 제어</strong>: <span style="color: #2c3e50;">이동 로직을 더 정교하게 제어할 수 있도록</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">확장성 향상</strong>: <span style="color: #2c3e50;">나만의 비헤이비어 노드를 만들어 복잡한 AI 구현</span></p>
+            </div>
+            
+            <div class="tech-stack" style="margin-top: 15px; background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px;">
+                <h4 style="color: #155724; margin-top: 0;">🧒 초딩도 이해하기 쉬운 설명</h4>
+                <p style="margin: 8px 0; color: #155724;"><strong>🔧 커스텀 노드가 뭐야?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">Unity에서 제공하는 기본 노드 대신, 우리가 직접 만든 "맞춤형 행동 노드"예요. 마치 레고 블록을 직접 만드는 것과 같아요!</p>
+                
+                <p style="margin: 8px 0; color: #155724;"><strong>🎯 왜 필요한가요?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>문제 해결</strong>: 기본 노드가 우리 설정을 망가뜨리는 문제를 해결해요</p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>정확한 제어</strong>: 유닛이 정확히 우리가 원하는 대로 움직여요</p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>맞춤형 기능</strong>: 우리 게임에 딱 맞는 특별한 행동을 만들 수 있어요</p>
+                
+                <p style="margin: 8px 0; color: #155724;"><strong>🏠 집으로 비유하면?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">기성품 청소기 대신 우리 집에 딱 맞는 맞춤형 청소기를 만드는 것과 같아요!</p>
+            </div>
+
+            <div class="lecture-goal">
+                <h3>🎯 학습 목표</h3>
+                <ul class="content-list">
+                    <li>Unity Behavior Tree에서 커스텀 노드 생성 방법</li>
+                    <li>NodeDescription 어트리뷰트 이해</li>
+                    <li>Action 클래스 상속 및 구현</li>
+                    <li>Status 시스템 이해 (Running, Success, Failure)</li>
+                    <li>NavMeshAgent 설정 보호 방법</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>🔧 커스텀 노드 생성 과정</h3>
+                
+                <div class="tech-stack">
+                    <h4>🎮 Unity Editor에서 노드 생성</h4>
+                    <ol class="content-list">
+                        <li><strong>Space 키</strong>: 비헤이비어 그래프에서 노드 추가 메뉴 열기</li>
+                        <li><strong>Actions → Create New Action</strong>: 새로운 액션 노드 생성</li>
+                        <li><strong>이름 설정</strong>: "Move to Target Location"</li>
+                        <li><strong>카테고리</strong>: "Action/Navigation"</li>
+                        <li><strong>설명 작성</strong>: "[Agent] moves to [TargetLocation]"</li>
+                    </ol>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>🤖 AI 기반 코드 생성</h4>
+                    <p><strong>자동 분류</strong>: Unity가 자연어 설명을 분석하여 변수 타입 자동 결정</p>
+                    <p><strong>Blackboard 연동</strong>: 대괄호로 감싼 변수명이 자동으로 Blackboard와 연결</p>
+                    <p><strong>보일러플레이트 코드</strong>: 기본적인 클래스 구조와 어트리뷰트 자동 생성</p>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>📝 생성된 커스텀 노드 코드</h3>
+                
+                <div class="code-block">
+<span class="comment">// MoveToTargetLocationAction.cs - 커스텀 이동 노드</span>
+<span class="comment">// Unity Behavior Tree의 Action 클래스를 상속받아 커스텀 노드 구현</span>
+
+<span class="comment">// 네임스페이스: GameDevTV.RTS.Behavior</span>
+<span class="comment">// Behavior 폴더에 위치하여 비헤이비어 관련 클래스들을 그룹화</span>
+<span class="keyword">using</span> <span class="class-name">System</span>;
+<span class="keyword">using</span> <span class="class-name">Unity.Behavior</span>;
+<span class="keyword">using</span> <span class="class-name">UnityEngine</span>;
+<span class="keyword">using</span> <span class="class-name">Action</span> = <span class="class-name">Unity.Behavior.Action</span>;
+<span class="keyword">using</span> <span class="class-name">Unity.Properties</span>;
+<span class="keyword">using</span> <span class="class-name">UnityEngine.AI</span>;
+
+<span class="keyword">namespace</span> <span class="class-name">GameDevTV.RTS.Behavior</span>
+{
+    <span class="comment">// Serializable: Unity에서 직렬화 가능하도록 설정</span>
+    <span class="comment">// GeneratePropertyBag: Unity Behavior 내부 시스템을 위한 어트리뷰트</span>
+    [<span class="class-name">Serializable</span>, <span class="class-name">GeneratePropertyBag</span>]
+    
+    <span class="comment">// NodeDescription: 비헤이비어 트리 에디터에서 노드 정보 표시</span>
+    <span class="comment">// name: 노드 이름 (에디터에서 표시)</span>
+    <span class="comment">// story: 노드 설명 (자연어로 작성)</span>
+    <span class="comment">// category: 노드 카테고리 (메뉴 구조)</span>
+    <span class="comment">// id: 고유 식별자 (Unity Behavior 내부 사용)</span>
+    [<span class="class-name">NodeDescription</span>(<span class="parameter">name</span>: <span class="string">"Move to Target Location"</span>, 
+                     <span class="parameter">story</span>: <span class="string">"[Agent] moves to [TargetLocation] ."</span>, 
+                     <span class="parameter">category</span>: <span class="string">"Action/Navigation"</span>, 
+                     <span class="parameter">id</span>: <span class="string">"c96373f56a4b683d189e362795d042fa"</span>)]
+    
+    <span class="comment">// partial class: 클래스가 여러 파일에 나뉘어 정의될 수 있음</span>
+    <span class="comment">// Unity Behavior가 자동으로 추가 코드를 생성할 수 있도록 함</span>
+    <span class="keyword">public partial class</span> <span class="class-name">MoveToTargetLocationAction</span> : <span class="class-name">Action</span>
+    {
+        <span class="comment">// SerializeReference: Blackboard 변수를 인스펙터에서 설정 가능하도록</span>
+        <span class="comment">// BlackboardVariable&lt;T&gt;: Blackboard의 특정 타입 변수 참조</span>
+        <span class="comment">// Agent: 이동할 유닛 (GameObject 타입)</span>
+        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="field-name">Agent</span>;
+        
+        <span class="comment">// TargetLocation: 이동할 목표 위치 (Vector3 타입)</span>
+        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">Vector3</span>&gt; <span class="field-name">TargetLocation</span>;
+
+        <span class="comment">// NavMeshAgent 참조</span>
+        <span class="comment">// 실제 이동을 담당하는 Unity 컴포넌트</span>
+        <span class="keyword">private</span> <span class="class-name">NavMeshAgent</span> <span class="field-name">agent</span>;
+
+        <span class="comment">// OnStart: 노드가 시작될 때 호출되는 메서드</span>
+        <span class="comment">// Status 반환: Running, Success, Failure 중 하나</span>
+        <span class="keyword">protected override</span> <span class="class-name">Status</span> <span class="method-name">OnStart</span>()
+        {
+            <span class="comment">// Agent GameObject에서 NavMeshAgent 컴포넌트 가져오기</span>
+            <span class="comment">// TryGetComponent: 컴포넌트가 있으면 true, 없으면 false 반환</span>
+            <span class="comment">// out agent: 컴포넌트를 agent 변수에 저장</span>
+            <span class="keyword">if</span> (!<span class="field-name">Agent</span>.<span class="property-name">Value</span>.<span class="method-name">TryGetComponent</span>(<span class="keyword">out</span> <span class="field-name">agent</span>))
+            {
+                <span class="comment">// NavMeshAgent가 없으면 실패 반환</span>
+                <span class="comment">// 이 노드는 더 이상 실행되지 않음</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Failure</span>;
+            }
+
+            <span class="comment">// 이미 목표 위치에 있는지 확인</span>
+            <span class="comment">// Vector3.Distance: 두 점 사이의 거리 계산</span>
+            <span class="comment">// agent.stoppingDistance: NavMeshAgent의 정지 거리</span>
+            <span class="keyword">if</span> (<span class="class-name">Vector3</span>.<span class="method-name">Distance</span>(<span class="field-name">agent</span>.<span class="property-name">transform</span>.<span class="property-name">position</span>, <span class="field-name">TargetLocation</span>.<span class="property-name">Value</span>) &lt;= <span class="field-name">agent</span>.<span class="property-name">stoppingDistance</span>)
+            {
+                <span class="comment">// 이미 목표 위치에 있으면 성공 반환</span>
+                <span class="comment">// OnUpdate는 호출되지 않음</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Success</span>;
+            }
+
+            <span class="comment">// 목표 위치로 이동 시작</span>
+            <span class="comment">// SetDestination: NavMeshAgent에게 목표 위치 설정</span>
+            <span class="field-name">agent</span>.<span class="method-name">SetDestination</span>(<span class="field-name">TargetLocation</span>.<span class="property-name">Value</span>);
+
+            <span class="comment">// 실행 중 상태 반환</span>
+            <span class="comment">// OnUpdate가 계속 호출됨</span>
+            <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Running</span>;
+        }
+
+        <span class="comment">// OnUpdate: 노드가 실행 중일 때 매 프레임 호출</span>
+        <span class="comment">// 이동 상태를 확인하고 적절한 Status 반환</span>
+        <span class="keyword">protected override</span> <span class="class-name">Status</span> <span class="method-name">OnUpdate</span>()
+        {
+            <span class="comment">// 목표 위치에 도달했는지 확인</span>
+            <span class="comment">// remainingDistance: 목표까지 남은 거리</span>
+            <span class="comment">// stoppingDistance: 정지 거리</span>
+            <span class="keyword">if</span> (<span class="field-name">agent</span>.<span class="property-name">remainingDistance</span> &lt;= <span class="field-name">agent</span>.<span class="property-name">stoppingDistance</span>)
+            {
+                <span class="comment">// 목표에 도달했으면 성공 반환</span>
+                <span class="comment">// 이 노드의 실행이 완료됨</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Success</span>;
+            }
+
+            <span class="comment">// 아직 이동 중이면 계속 실행</span>
+            <span class="comment">// 다음 프레임에 다시 OnUpdate 호출</span>
+            <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Running</span>;
+        }
+    }
+}
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>🔄 Status 시스템 이해</h3>
+                
+                <div class="tech-stack">
+                    <h4>📊 Status 종류</h4>
+                    <ul class="content-list">
+                        <li><strong>Running</strong>: 노드가 실행 중 (OnUpdate 계속 호출)</li>
+                        <li><strong>Success</strong>: 노드가 성공적으로 완료됨</li>
+                        <li><strong>Failure</strong>: 노드가 실패함 (다음 노드로 진행 안됨)</li>
+                        <li><strong>Waiting</strong>: 대기 상태 (이 강의에서는 사용 안함)</li>
+                    </ul>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>🎯 실행 흐름</h4>
+                    <ol class="content-list">
+                        <li><strong>OnStart</strong>: 노드 시작 시 한 번만 호출</li>
+                        <li><strong>Status.Running</strong> 반환 시 → <strong>OnUpdate</strong> 계속 호출</li>
+                        <li><strong>Status.Success</strong> 반환 시 → 다음 노드로 진행</li>
+                        <li><strong>Status.Failure</strong> 반환 시 → 노드 실행 중단</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>🔧 AbstractUnit 개선</h3>
+                
+                <div class="code-block">
+<span class="comment">// AbstractUnit.cs - 초기 위치 설정 추가</span>
+<span class="comment">// 유닛이 생성될 때 원점(0,0,0)으로 이동하는 문제 해결</span>
+
+<span class="keyword">protected virtual void</span> <span class="method-name">Awake</span>()
+{
+    <span class="comment">// 컴포넌트 초기화</span>
+    <span class="field-name">agent</span> = <span class="method-name">GetComponent</span>&lt;<span class="class-name">NavMeshAgent</span>&gt;();
+    <span class="field-name">graphAgent</span> = <span class="method-name">GetComponent</span>&lt;<span class="class-name">BehaviorGraphAgent</span>&gt;();
+    
+    <span class="comment">// 현재 위치로 이동 설정</span>
+    <span class="comment">// 유닛이 생성되자마자 원점으로 이동하는 문제 방지</span>
+    <span class="method-name">MoveTo</span>(<span class="property-name">transform</span>.<span class="property-name">position</span>);
+}
+
+<span class="keyword">protected override void</span> <span class="method-name">Start</span>()
+{
+    <span class="comment">// 부모 클래스의 Start 메서드 호출</span>
+    <span class="keyword">base</span>.<span class="method-name">Start</span>();
+    
+    <span class="comment">// 유닛 스폰 이벤트 발생</span>
+    <span class="class-name">Bus</span>&lt;<span class="class-name">UnitSpawnEvent</span>&gt;.<span class="method-name">Raise</span>(<span class="keyword">new</span> <span class="class-name">UnitSpawnEvent</span>(<span class="keyword">this</span>));
+    
+    <span class="comment">// 런타임에 스폰된 유닛도 현재 위치로 이동 설정</span>
+    <span class="comment">// 건물에서 생성된 유닛이 올바른 위치에 머물도록</span>
+    <span class="method-name">MoveTo</span>(<span class="property-name">transform</span>.<span class="property-name">position</span>);
+}
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>❓ 왜 필요한가?</h3>
+                
+                <div class="tech-stack">
+                    <h4>🎮 게임 개발 관점</h4>
+                    <p><strong>NavMeshAgent 보호</strong>: 기본 노드가 런타임에 설정을 덮어씌우는 문제 해결</p>
+                    <p><strong>정확한 제어</strong>: 유닛의 이동 속도, 정지 거리 등을 정확히 제어</p>
+                    <p><strong>성능 최적화</strong>: 불필요한 설정 변경 방지</p>
+                    <p><strong>디버깅 용이</strong>: 커스텀 로직으로 문제 원인 파악 쉬움</p>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>🔧 기술적 장점</h4>
+                    <p><strong>세밀한 제어</strong>: 이동 로직의 모든 부분을 직접 제어 가능</p>
+                    <p><strong>확장성</strong>: 복잡한 이동 패턴을 쉽게 추가</p>
+                    <p><strong>재사용성</strong>: 다른 유닛 타입에도 동일한 노드 사용 가능</p>
+                    <p><strong>유지보수성</strong>: 이동 관련 버그 수정이 용이</p>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>⚠️ 주의사항</h4>
+                    <p><strong>Status 관리</strong>: 올바른 Status 반환이 중요</p>
+                    <p><strong>성능 고려</strong>: OnUpdate에서 무거운 연산 피하기</p>
+                    <p><strong>에러 처리</strong>: NavMeshAgent가 없는 경우 처리</p>
+                    <p><strong>경로 계산</strong>: SetDestination 후 즉시 remainingDistance 확인 주의</p>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎮 노바1492 적용 포인트</h3>
+                <ul class="content-list">
+                    <li><strong>복잡한 이동 패턴</strong>: 지형을 고려한 스마트한 이동</li>
+                    <li><strong>편대 비행</strong>: Air Transport의 편대 유지 이동</li>
+                    <li><strong>자원 수집</strong>: Worker의 효율적인 자원 수집 경로</li>
+                    <li><strong>전투 이동</strong>: 적을 피하면서 이동하는 전술적 이동</li>
+                    <li><strong>건물 회피</strong>: 건물을 피해서 이동하는 지능적 경로</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>🔑 핵심 기술 개념</h3>
+                <ul class="content-list">
+                    <li><strong>Custom Action Node</strong>: Unity Behavior Tree의 커스텀 액션 노드</li>
+                    <li><strong>NodeDescription</strong>: 노드 메타데이터 정의</li>
+                    <li><strong>BlackboardVariable</strong>: Blackboard 변수 참조</li>
+                    <li><strong>Status System</strong>: Running, Success, Failure 상태 관리</li>
+                    <li><strong>OnStart/OnUpdate</strong>: 노드 생명주기 메서드</li>
+                    <li><strong>TryGetComponent</strong>: 안전한 컴포넌트 가져오기</li>
+                    <li><strong>NavMeshAgent 보호</strong>: 런타임 설정 덮어쓰기 방지</li>
                 </ul>
             </div>
         </div>
