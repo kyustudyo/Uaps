@@ -232,6 +232,7 @@
                 <h3>📚 목차</h3>
                 <ul>
                     <li><a href="#lecture-39">🎯 강의 39: Unit Commands in Behavior Tree</a></li>
+                    <li><a href="#lecture-40">⛏️ 강의 40: Gathering Supplies with Behavior Tree</a></li>
                 </ul>
             </div>
 
@@ -515,6 +516,369 @@
                         <li><strong>StopCommand</strong>: 정지 명령 액션 베이스</li>
                         <li><strong>ResetPath</strong>: NavMeshAgent 경로 초기화</li>
                         <li><strong>TryGetComponent</strong>: 안전한 컴포넌트 가져오기</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 강의 40: Gathering Supplies with Behavior Tree (Behavior Tree로 자원 수집) -->
+            <div class="lecture-section" id="lecture-40">
+                <h2 class="lecture-title">⛏️ 강의 40: Gathering Supplies with Behavior Tree (Behavior Tree로 자원 수집)</h2>
+                
+                <div class="tech-stack" style="margin-top: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">
+                    <h4 style="color: #2c3e50; margin-top: 0;">🎯 이번 강의를 왜 해야 하는가?</h4>
+                    <p style="margin: 8px 0;"><strong style="color: #2c3e50;">자원 수집 구현</strong>: <span style="color: #2c3e50;">Worker가 Behavior Tree를 사용해서 자원을 수집하는 시스템 구현</span></p>
+                    <p style="margin: 8px 0;"><strong style="color: #2c3e50;">명령 확장</strong>: <span style="color: #2c3e50;">기존 명령 체계에 Gather 명령 추가</span></p>
+                    <p style="margin: 8px 0;"><strong style="color: #2c3e50;">커스텀 노드</strong>: <span style="color: #2c3e50;">자원 수집을 위한 전용 Behavior Tree 노드 생성</span></p>
+                    <p style="margin: 8px 0;"><strong style="color: #2c3e50;">레이어 시스템</strong>: <span style="color: #2c3e50;">자원과 상호작용할 수 있는 레이어 설정</span></p>
+                </div>
+                
+                <div class="tech-stack" style="margin-top: 15px; background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px;">
+                    <h4 style="color: #155724; margin-top: 0;">🧒 초딩도 이해하기 쉬운 설명</h4>
+                    <p style="margin: 8px 0; color: #155724;"><strong>⛏️ 자원 수집이 뭐야?</strong></p>
+                    <p style="margin: 8px 0; color: #155724;">Worker가 미네랄이나 가스에 가서 캐는 시스템이에요. 마치 광부가 광산에서 광물을 캐는 것과 같아요!</p>
+                    
+                    <p style="margin: 8px 0; color: #155724;"><strong>🎮 어떻게 작동하나요?</strong></p>
+                    <p style="margin: 8px 0; color: #155724;">• <strong>명령 내리기</strong>: Worker에게 "자원 캐!" 명령을 내려요</p>
+                    <p style="margin: 8px 0; color: #155724;">• <strong>이동하기</strong>: Worker가 자원 위치로 이동해요</p>
+                    <p style="margin: 8px 0; color: #155724;">• <strong>수집하기</strong>: 자원을 캐서 가져와요</p>
+                    <p style="margin: 8px 0; color: #155724;">• <strong>반복하기</strong>: 자원이 남아있으면 계속 캐요</p>
+                    
+                    <p style="margin: 8px 0; color: #155724;"><strong>🏠 집으로 비유하면?</strong></p>
+                    <p style="margin: 8px 0; color: #155724;">집에서 "장보기 가!"라고 하면 가게에 가서 필요한 것들을 사는 것처럼, 게임에서도 Worker가 자원을 캐러 가요!</p>
+                </div>
+
+                <div class="lecture-goal">
+                    <h3>🎯 학습 목표</h3>
+                    <ul class="content-list">
+                        <li>UnitCommands에 Gather 명령 추가</li>
+                        <li>GatherCommand 액션 베이스 구현</li>
+                        <li>GatherSuppliesAction 커스텀 노드 생성</li>
+                        <li>Worker 클래스에 Gather 메서드 추가</li>
+                        <li>Supplies 레이어 설정 및 상호작용 시스템</li>
+                    </ul>
+                </div>
+
+                <div class="content-section">
+                    <h3>⛏️ 자원 수집 시스템 설계</h3>
+                    
+                    <div class="tech-stack">
+                        <h4>🎮 시스템 구성 요소</h4>
+                        <ul class="content-list">
+                            <li><strong>Gather 명령</strong>: UnitCommands 열거형에 추가</li>
+                            <li><strong>GatherCommand</strong>: 자원 수집 명령 액션 베이스</li>
+                            <li><strong>GatherSuppliesAction</strong>: 자원 수집 Behavior Tree 노드</li>
+                            <li><strong>Worker.Gather()</strong>: Worker의 자원 수집 메서드</li>
+                            <li><strong>Supplies 레이어</strong>: 자원과 상호작용할 수 있는 레이어</li>
+                        </ul>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>🔄 자원 수집 플로우</h4>
+                        <ol class="content-list">
+                            <li><strong>명령 내리기</strong>: Gather 버튼 클릭 후 자원 클릭</li>
+                            <li><strong>이동</strong>: Worker가 자원 위치로 이동</li>
+                            <li><strong>수집 시작</strong>: BeginGather() 호출</li>
+                            <li><strong>수집 대기</strong>: BaseGatherTime만큼 대기</li>
+                            <li><strong>수집 완료</strong>: EndGather() 호출하여 자원 획득</li>
+                            <li><strong>반복</strong>: 자원이 남아있으면 다시 수집</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h3>📝 GatherCommand 구현</h3>
+                    
+                    <div class="code-block">
+<span class="comment">// GatherCommand.cs - 자원 수집 명령 액션 베이스</span>
+<span class="comment">// ActionBase: 모든 명령의 기본 클래스</span>
+
+<span class="keyword">using</span> <span class="class-name">GameDevTV.RTS.Environment</span>;
+<span class="keyword">using</span> <span class="class-name">GameDevTV.RTS.Units</span>;
+<span class="keyword">using</span> <span class="class-name">UnityEngine</span>;
+
+<span class="keyword">namespace</span> <span class="class-name">GameDevTV.RTS.Commands</span>
+{
+    <span class="comment">// CreateAssetMenu: Unity Editor에서 이 클래스로부터 ScriptableObject를 생성할 수 있게 함</span>
+    <span class="comment">// fileName: 생성될 파일의 기본 이름</span>
+    <span class="comment">// menuName: Unity Editor 메뉴에서의 경로</span>
+    <span class="comment">// order: 메뉴에서의 순서 (낮을수록 위에 표시)</span>
+    [<span class="class-name">CreateAssetMenu</span>(<span class="parameter">fileName</span> = <span class="string">"Gather Action"</span>, <span class="parameter">menuName</span> = <span class="string">"AI/Commands/Gather"</span>, <span class="parameter">order</span> = <span class="number">105</span>)]
+    
+    <span class="comment">// GatherCommand: 자원을 수집하는 명령</span>
+    <span class="comment">// ActionBase: 모든 명령의 기본 클래스</span>
+    <span class="keyword">public class</span> <span class="class-name">GatherCommand</span> : <span class="class-name">ActionBase</span>
+    {
+        <span class="comment">// CanHandle: 이 명령을 처리할 수 있는지 확인</span>
+        <span class="comment">// CommandContext: 명령의 컨텍스트 정보</span>
+        <span class="comment">// 반환값: 이 명령을 처리할 수 있으면 true, 아니면 false</span>
+        <span class="keyword">public override bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">CommandContext</span> <span class="field-name">context</span>)
+        {
+            <span class="comment">// context.Commandable: 명령을 받을 수 있는 객체</span>
+            <span class="comment">// Worker: 자원을 수집할 수 있는 유닛</span>
+            <span class="comment">// is: 타입 확인 연산자</span>
+            <span class="keyword">return</span> <span class="field-name">context</span>.<span class="property-name">Commandable</span> <span class="keyword">is</span> <span class="class-name">Worker</span> 
+                <span class="comment">// context.Hit.collider: 클릭한 객체의 Collider</span>
+                <span class="comment">// null이 아니어야 함 (뭔가를 클릭했는지 확인)</span>
+                &amp;&amp; <span class="field-name">context</span>.<span class="property-name">Hit</span>.<span class="property-name">collider</span> != <span class="keyword">null</span> 
+                <span class="comment">// TryGetComponent: 해당 객체에서 GatherableSupply 컴포넌트를 가져옴</span>
+                <span class="comment">// out _: discard 패턴, 값을 받지만 사용하지 않음</span>
+                &amp;&amp; <span class="field-name">context</span>.<span class="property-name">Hit</span>.<span class="property-name">collider</span>.<span class="method-name">TryGetComponent</span>(<span class="keyword">out</span> <span class="class-name">GatherableSupply</span> <span class="keyword">_</span>);
+        }
+
+        <span class="comment">// Handle: 실제 명령을 처리하는 메서드</span>
+        <span class="comment">// CommandContext: 명령의 컨텍스트 정보</span>
+        <span class="keyword">public override void</span> <span class="method-name">Handle</span>(<span class="class-name">CommandContext</span> <span class="field-name">context</span>)
+        {
+            <span class="comment">// Worker로 타입 캐스팅</span>
+            <span class="comment">// CanHandle에서 이미 Worker인지 확인했으므로 안전한 캐스팅</span>
+            <span class="class-name">Worker</span> <span class="field-name">worker</span> = <span class="field-name">context</span>.<span class="property-name">Commandable</span> <span class="keyword">as</span> <span class="class-name">Worker</span>;
+            
+            <span class="comment">// worker.Gather(): Worker의 자원 수집 메서드 호출</span>
+            <span class="comment">// context.Hit.collider.GetComponent: 클릭한 객체에서 GatherableSupply 컴포넌트 가져오기</span>
+            <span class="field-name">worker</span>.<span class="method-name">Gather</span>(<span class="field-name">context</span>.<span class="property-name">Hit</span>.<span class="property-name">collider</span>.<span class="method-name">GetComponent</span>&lt;<span class="class-name">GatherableSupply</span>&gt;());
+        }
+    }
+}
+</div>
+                </div>
+
+                <div class="content-section">
+                    <h3>🏗️ GatherSuppliesAction 구현</h3>
+                    
+                    <div class="code-block">
+<span class="comment">// GatherSuppliesAction.cs - 자원 수집 액션 노드</span>
+<span class="comment">// Unity Behavior Tree의 커스텀 액션 노드</span>
+
+<span class="keyword">using</span> <span class="class-name">GameDevTV.RTS.Environment</span>;
+<span class="keyword">using</span> <span class="class-name">System</span>;
+<span class="keyword">using</span> <span class="class-name">Unity.Behavior</span>;
+<span class="keyword">using</span> <span class="class-name">UnityEngine</span>;
+<span class="keyword">using</span> <span class="class-name">Action</span> = <span class="class-name">Unity.Behavior.Action</span>;
+<span class="keyword">using</span> <span class="class-name">Unity.Properties</span>;
+
+<span class="keyword">namespace</span> <span class="class-name">GameDevTV.RTS.Behavior</span>
+{
+    <span class="comment">// Serializable: Unity에서 직렬화 가능하도록 하는 속성</span>
+    <span class="comment">// GeneratePropertyBag: Unity Behavior Tree에서 사용하는 속성 백 생성</span>
+    [<span class="class-name">Serializable</span>, <span class="class-name">GeneratePropertyBag</span>]
+    
+    <span class="comment">// NodeDescription: Behavior Tree 에디터에서 노드의 설명을 정의</span>
+    <span class="comment">// name: 노드의 이름</span>
+    <span class="comment">// story: 노드의 동작을 설명하는 텍스트</span>
+    <span class="comment">// category: 노드가 속할 카테고리 (새로운 커스텀 카테고리)</span>
+    <span class="comment">// id: 노드의 고유 식별자</span>
+    [<span class="class-name">NodeDescription</span>(<span class="parameter">name</span>: <span class="string">"Gather Supplies"</span>, <span class="parameter">story</span>: <span class="string">"[Unit] gathers [Amount] supplies from [GatherableSupplies] ."</span>, <span class="parameter">category</span>: <span class="string">"Action/Units"</span>, <span class="parameter">id</span>: <span class="string">"3b941d7ae99d1e36b7d806875379c977"</span>)]
+    
+    <span class="comment">// GatherSuppliesAction: 자원을 수집하는 액션 노드</span>
+    <span class="comment">// partial: 클래스가 여러 파일에 나뉘어 정의될 수 있음 (Unity Behavior Tree가 자동 생성)</span>
+    <span class="keyword">public partial class</span> <span class="class-name">GatherSuppliesAction</span> : <span class="class-name">Action</span>
+    {
+        <span class="comment">// Unit: 자원을 수집할 유닛의 GameObject</span>
+        <span class="comment">// SerializeReference: Unity에서 직렬화 가능한 참조</span>
+        <span class="comment">// BlackboardVariable: Behavior Tree의 Blackboard에서 가져오는 변수</span>
+        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="property-name">Unit</span>;
+        
+        <span class="comment">// Amount: 수집할 자원의 양</span>
+        <span class="comment">// int: 정수형 (자원은 정수 단위로 관리)</span>
+        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="keyword">int</span>&gt; <span class="property-name">Amount</span>;
+        
+        <span class="comment">// GatherableSupplies: 수집할 자원 객체</span>
+        <span class="comment">// GatherableSupply: 수집 가능한 자원의 타입</span>
+        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GatherableSupply</span>&gt; <span class="property-name">GatherableSupplies</span>;
+
+        <span class="comment">// enterTime: 자원 수집을 시작한 시간</span>
+        <span class="comment">// Time.time과 비교하여 수집 시간을 계산</span>
+        <span class="keyword">private float</span> <span class="field-name">enterTime</span>;
+
+        <span class="comment">// OnStart: 액션이 시작될 때 호출되는 메서드</span>
+        <span class="comment">// Status: 액션의 실행 상태 (Success, Failure, Running)</span>
+        <span class="keyword">protected override</span> <span class="class-name">Status</span> <span class="method-name">OnStart</span>()
+        {
+            <span class="comment">// enterTime을 현재 시간으로 설정</span>
+            <span class="comment">// Time.time: 게임 시작 후 경과된 시간 (초 단위)</span>
+            <span class="field-name">enterTime</span> = <span class="class-name">Time</span>.<span class="property-name">time</span>;
+
+            <span class="comment">// GatherableSupplies.Value: Blackboard에서 가져온 자원 객체</span>
+            <span class="comment">// BeginGather(): 자원 수집을 시작하고 Busy 상태로 변경</span>
+            <span class="property-name">GatherableSupplies</span>.<span class="property-name">Value</span>.<span class="method-name">BeginGather</span>();
+            
+            <span class="comment">// Running: 아직 수집이 완료되지 않았으므로 계속 실행 중</span>
+            <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Running</span>;
+        }
+
+        <span class="comment">// OnUpdate: 액션이 실행 중일 때 주기적으로 호출되는 메서드</span>
+        <span class="comment">// Status: 액션의 실행 상태</span>
+        <span class="keyword">protected override</span> <span class="class-name">Status</span> <span class="method-name">OnUpdate</span>()
+        {
+            <span class="comment">// 수집 시간이 완료되었는지 확인</span>
+            <span class="comment">// GatherableSupplies.Value.Supply.BaseGatherTime: 자원의 기본 수집 시간</span>
+            <span class="comment">// enterTime: 수집을 시작한 시간</span>
+            <span class="comment">// Time.time: 현재 시간</span>
+            <span class="comment">// 수집 시간 + 시작 시간이 현재 시간보다 작거나 같으면 수집 완료</span>
+            <span class="keyword">if</span> (<span class="property-name">GatherableSupplies</span>.<span class="property-name">Value</span>.<span class="property-name">Supply</span>.<span class="property-name">BaseGatherTime</span> + <span class="field-name">enterTime</span> &lt;= <span class="class-name">Time</span>.<span class="property-name">time</span>)
+            {
+                <span class="comment">// 수집 완료</span>
+                <span class="comment">// EndGather(): 수집을 완료하고 실제 수집된 양을 반환</span>
+                <span class="comment">// Busy 상태를 false로 변경하고 자원에서 수집한 양만큼 차감</span>
+                <span class="keyword">int</span> <span class="field-name">amountGathered</span> = <span class="property-name">GatherableSupplies</span>.<span class="property-name">Value</span>.<span class="method-name">EndGather</span>();
+                
+                <span class="comment">// Success: 수집이 성공적으로 완료됨</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Success</span>;
+            }
+
+            <span class="comment">// Running: 아직 수집 시간이 완료되지 않았으므로 계속 실행 중</span>
+            <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Running</span>;
+        }
+    }
+}
+</div>
+                </div>
+
+                <div class="content-section">
+                    <h3>🔧 Worker 클래스 확장</h3>
+                    
+                    <div class="code-block">
+<span class="comment">// Worker.cs - Worker 클래스에 Gather 메서드 추가</span>
+<span class="comment">// AbstractUnit을 상속받아 Worker만의 특별한 기능 추가</span>
+
+<span class="keyword">using</span> <span class="class-name">GameDevTV.RTS.Environment</span>;
+<span class="keyword">using</span> <span class="class-name">GameDevTV.RTS.Units</span>;
+<span class="keyword">using</span> <span class="class-name">UnityEngine</span>;
+
+<span class="keyword">namespace</span> <span class="class-name">GameDevTV.RTS.Units</span>
+{
+    <span class="comment">// Worker: 자원을 수집할 수 있는 유닛</span>
+    <span class="comment">// AbstractUnit: 모든 유닛의 기본 클래스</span>
+    <span class="keyword">public class</span> <span class="class-name">Worker</span> : <span class="class-name">AbstractUnit</span>
+    {
+        <span class="comment">// Gather: 자원을 수집하는 메서드</span>
+        <span class="comment">// GatherableSupply: 수집할 자원 객체</span>
+        <span class="keyword">public void</span> <span class="method-name">Gather</span>(<span class="class-name">GatherableSupply</span> <span class="field-name">supply</span>)
+        {
+            <span class="comment">// Blackboard에 자원 정보 설정</span>
+            <span class="comment">// graphAgent: AbstractUnit에서 상속받은 BehaviorGraphAgent</span>
+            <span class="comment">// SetVariableValue: Blackboard에 변수 값 설정</span>
+            
+            <span class="comment">// Supply: 수집할 자원 객체를 Blackboard에 설정</span>
+            <span class="comment">// "Supply": Blackboard 변수 이름 (대소문자 중요)</span>
+            <span class="property-name">graphAgent</span>.<span class="method-name">SetVariableValue</span>(<span class="string">"Supply"</span>, <span class="field-name">supply</span>);
+            
+            <span class="comment">// TargetLocation: 자원의 위치를 목표 위치로 설정</span>
+            <span class="comment">// supply.transform.position: 자원의 현재 위치</span>
+            <span class="property-name">graphAgent</span>.<span class="method-name">SetVariableValue</span>(<span class="string">"TargetLocation"</span>, <span class="field-name">supply</span>.<span class="property-name">transform</span>.<span class="property-name">position</span>);
+            
+            <span class="comment">// Command: 명령을 Gather로 설정</span>
+            <span class="comment">// UnitCommands.Gather: 수집 명령</span>
+            <span class="comment">// 이 명령 설정이 Behavior Tree를 트리거하여 수집 행동 시작</span>
+            <span class="property-name">graphAgent</span>.<span class="method-name">SetVariableValue</span>(<span class="string">"Command"</span>, <span class="class-name">UnitCommands</span>.<span class="property-name">Gather</span>);
+        }
+    }
+}
+</div>
+                </div>
+
+                <div class="content-section">
+                    <h3>🎮 Behavior Tree 구조</h3>
+                    
+                    <div class="tech-stack">
+                        <h4>📊 수집 트리 구조</h4>
+                        <ol class="content-list">
+                            <li><strong>OnStart</strong>: 트리 시작점</li>
+                            <li><strong>Abort 노드</strong>: 명령 변경 시 즉시 중단</li>
+                            <li><strong>Switch 노드</strong>: 명령에 따른 분기</li>
+                            <li><strong>Gather 브랜치</strong>: 자원 수집 로직</li>
+                            <li><strong>Sequence</strong>: 순차적으로 실행되는 노드들</li>
+                            <li><strong>MoveToTargetLocation</strong>: 자원 위치로 이동</li>
+                            <li><strong>GatherSupplies</strong>: 자원 수집 실행</li>
+                        </ol>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>⚡ 수집 프로세스</h4>
+                        <ul class="content-list">
+                            <li><strong>이동 단계</strong>: Worker가 자원 위치로 이동</li>
+                            <li><strong>수집 시작</strong>: BeginGather() 호출하여 Busy 상태 설정</li>
+                            <li><strong>수집 대기</strong>: BaseGatherTime만큼 대기</li>
+                            <li><strong>수집 완료</strong>: EndGather() 호출하여 자원 획득</li>
+                            <li><strong>상태 정리</strong>: Busy 상태 해제 및 자원 차감</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h3>🎯 레이어 시스템</h3>
+                    
+                    <div class="tech-stack">
+                        <h4>📋 레이어 설정</h4>
+                        <ul class="content-list">
+                            <li><strong>Supplies 레이어</strong>: 자원 전용 레이어 생성</li>
+                            <li><strong>Interactable Layers</strong>: 상호작용 가능한 레이어들</li>
+                            <li><strong>Layer Collision Matrix</strong>: 레이어 간 충돌 설정</li>
+                            <li><strong>PlayerInput 업데이트</strong>: 자원과 상호작용 가능하도록 수정</li>
+                        </ul>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>🔧 PlayerInput 수정</h4>
+                        <ul class="content-list">
+                            <li><strong>Interactable Layers</strong>: Units, Buildings, Supplies</li>
+                            <li><strong>Layer Mask 조합</strong>: Interactable | Floor Layers</li>
+                            <li><strong>CanHandle 체크</strong>: 명령 처리 가능 여부 확인</li>
+                            <li><strong>안전한 명령 실행</strong>: 처리할 수 없는 명령 방지</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h3>❓ 왜 필요한가?</h3>
+                    
+                    <div class="tech-stack">
+                        <h4>🎮 게임 개발 관점</h4>
+                        <p><strong>경제 시스템</strong>: RTS 게임의 핵심인 자원 수집 메커니즘</p>
+                        <p><strong>자동화</strong>: Worker가 지능적으로 자원을 수집</p>
+                        <p><strong>확장성</strong>: 다양한 자원 타입을 쉽게 추가</p>
+                        <p><strong>일관성</strong>: 모든 수집 행동이 동일한 패턴으로 동작</p>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>🔧 기술적 장점</h4>
+                        <p><strong>Behavior Tree 활용</strong>: 시각적이고 직관적인 AI 로직</p>
+                        <p><strong>커스텀 노드</strong>: 특정 기능을 위한 전용 노드</p>
+                        <p><strong>시간 기반 로직</strong>: Time.time을 사용한 정확한 타이밍</p>
+                        <p><strong>레이어 시스템</strong>: 체계적인 상호작용 관리</p>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>⚠️ 주의사항</h4>
+                        <p><strong>Blackboard 변수명</strong>: 대소문자와 정확한 이름 사용</p>
+                        <p><strong>레이어 설정</strong>: 자원을 올바른 레이어에 배치</p>
+                        <p><strong>시간 계산</strong>: enterTime과 현재 시간의 정확한 비교</p>
+                        <p><strong>상태 관리</strong>: BeginGather와 EndGather의 올바른 호출</p>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h3>🎮 노바1492 적용 포인트</h3>
+                    <ul class="content-list">
+                        <li><strong>다양한 자원</strong>: 미네랄, 가스, 에너지, 금속 등</li>
+                        <li><strong>자원 등급</strong>: 일반, 희귀, 전설 등급의 자원</li>
+                        <li><strong>수집 효율</strong>: Worker 레벨에 따른 수집 속도 차이</li>
+                        <li><strong>자원 보호</strong>: 중요한 자원을 보호하는 방어 시설</li>
+                        <li><strong>자동 수집</strong>: Worker가 알아서 가장 가까운 자원 찾기</li>
+                    </ul>
+                </div>
+
+                <div class="content-section">
+                    <h3>🔑 핵심 기술 개념</h3>
+                    <ul class="content-list">
+                        <li><strong>GatherCommand</strong>: 자원 수집 명령 액션 베이스</li>
+                        <li><strong>GatherSuppliesAction</strong>: 자원 수집 커스텀 노드</li>
+                        <li><strong>Worker.Gather()</strong>: Worker의 자원 수집 메서드</li>
+                        <li><strong>Time.time</strong>: 게임 시간 기반 타이밍</li>
+                        <li><strong>BeginGather/EndGather</strong>: 자원 수집 상태 관리</li>
+                        <li><strong>Supplies 레이어</strong>: 자원 전용 레이어</li>
+                        <li><strong>Interactable Layers</strong>: 상호작용 가능한 레이어</li>
+                        <li><strong>Sequence 노드</strong>: 순차적 실행을 위한 노드</li>
                     </ul>
                 </div>
             </div>
