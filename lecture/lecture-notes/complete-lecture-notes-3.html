@@ -233,6 +233,7 @@
                 <ul>
                     <li><a href="#lecture-39">🎯 강의 39: Unit Commands in Behavior Tree</a></li>
                     <li><a href="#lecture-40">⛏️ 강의 40: Gathering Supplies with Behavior Tree</a></li>
+                    <li><a href="#lecture-41">🏠 강의 41: Return Supplies to Command Post</a></li>
                 </ul>
             </div>
 
@@ -879,6 +880,420 @@
                         <li><strong>Supplies 레이어</strong>: 자원 전용 레이어</li>
                         <li><strong>Interactable Layers</strong>: 상호작용 가능한 레이어</li>
                         <li><strong>Sequence 노드</strong>: 순차적 실행을 위한 노드</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 강의 41: Return Supplies to Command Post (자원을 Command Post로 반환) -->
+            <div class="lecture-section" id="lecture-41">
+                <h2 class="lecture-title">🏠 강의 41: Return Supplies to Command Post (자원을 Command Post로 반환)</h2>
+                
+                <div class="tech-stack" style="margin-top: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">
+                    <h4 style="color: #2c3e50; margin-top: 0;">🎯 이번 강의를 왜 해야 하는가?</h4>
+                    <p style="margin: 8px 0;"><strong style="color: #2c3e50;">자원 반환 시스템</strong>: <span style="color: #2c3e50;">Worker가 수집한 자원을 가장 가까운 Command Post로 반환하는 시스템 구현</span></p>
+                    <p style="margin: 8px 0;"><strong style="color: #2c3e50;">완전한 수집 사이클</strong>: <span style="color: #2c3e50;">자원 수집 → 반환의 완전한 사이클 완성</span></p>
+                    <p style="margin: 8px 0;"><strong style="color: #2c3e50;">AI 탐색 시스템</strong>: <span style="color: #2c3e50;">Physics.OverlapSphere를 사용한 가장 가까운 건물 찾기</span></p>
+                    <p style="margin: 8px 0;"><strong style="color: #2c3e50;">커스텀 노드 확장</strong>: <span style="color: #2c3e50;">FindClosestCommandPost와 MoveToTargetGameObject 노드 추가</span></p>
+                </div>
+                
+                <div class="tech-stack" style="margin-top: 15px; background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px;">
+                    <h4 style="color: #155724; margin-top: 0;">🧒 초딩도 이해하기 쉬운 설명</h4>
+                    <p style="margin: 8px 0; color: #155724;"><strong>🏠 자원 반환이 뭐야?</strong></p>
+                    <p style="margin: 8px 0; color: #155724;">Worker가 미네랄을 캐서 집(Command Post)으로 가져가는 시스템이에요. 마치 장보기에서 사온 것들을 집에 가져가는 것과 같아요!</p>
+                    
+                    <p style="margin: 8px 0; color: #155724;"><strong>🎮 어떻게 작동하나요?</strong></p>
+                    <p style="margin: 8px 0; color: #155724;">• <strong>자원 수집</strong>: Worker가 미네랄을 캐요</p>
+                    <p style="margin: 8px 0; color: #155724;">• <strong>가까운 집 찾기</strong>: 가장 가까운 Command Post를 찾아요</p>
+                    <p style="margin: 8px 0; color: #155724;">• <strong>집으로 이동</strong>: Command Post로 이동해요</p>
+                    <p style="margin: 8px 0; color: #155724;">• <strong>자원 반환</strong>: 수집한 자원을 Command Post에 넣어요</p>
+                    <p style="margin: 8px 0; color: #155724;">• <strong>반복</strong>: 다시 자원을 캐러 가요</p>
+                    
+                    <p style="margin: 8px 0; color: #155724;"><strong>🏠 집으로 비유하면?</strong></p>
+                    <p style="margin: 8px 0; color: #155724;">장보기에서 사온 것들을 집에 가져가서 냉장고에 넣는 것처럼, 게임에서도 Worker가 캔 자원을 Command Post에 저장해요!</p>
+                </div>
+
+                <div class="lecture-goal">
+                    <h3>🎯 학습 목표</h3>
+                    <ul class="content-list">
+                        <li>GatherSuppliesAction에서 수집량을 Blackboard에 저장</li>
+                        <li>FindClosestCommandPostAction 커스텀 노드 구현</li>
+                        <li>MoveToTargetGameObjectAction 커스텀 노드 구현</li>
+                        <li>Behavior Tree에 자원 반환 시퀀스 추가</li>
+                        <li>Physics.OverlapSphere를 사용한 건물 탐색</li>
+                    </ul>
+                </div>
+
+                <div class="content-section">
+                    <h3>🏠 자원 반환 시스템 설계</h3>
+                    
+                    <div class="tech-stack">
+                        <h4>🎮 시스템 구성 요소</h4>
+                        <ul class="content-list">
+                            <li><strong>SupplyAmountHeld</strong>: 수집한 자원량을 저장하는 Blackboard 변수</li>
+                            <li><strong>FindClosestCommandPostAction</strong>: 가장 가까운 Command Post 찾기</li>
+                            <li><strong>MoveToTargetGameObjectAction</strong>: GameObject로 이동하는 노드</li>
+                            <li><strong>CommandPost</strong>: 찾은 Command Post를 저장하는 변수</li>
+                            <li><strong>SearchRadius</strong>: 탐색 반경 설정</li>
+                        </ul>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>🔄 자원 반환 플로우</h4>
+                        <ol class="content-list">
+                            <li><strong>자원 수집</strong>: GatherSuppliesAction에서 자원 수집</li>
+                            <li><strong>수집량 저장</strong>: SupplyAmountHeld에 수집량 저장</li>
+                            <li><strong>Command Post 찾기</strong>: FindClosestCommandPostAction 실행</li>
+                            <li><strong>Command Post로 이동</strong>: MoveToTargetGameObjectAction 실행</li>
+                            <li><strong>자원 반환</strong>: Command Post에 자원 전달 (다음 강의)</li>
+                            <li><strong>반복</strong>: 다시 자원 수집으로 돌아감</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h3>📝 GatherSuppliesAction 수정</h3>
+                    
+                    <div class="code-block">
+<span class="comment">// GatherSuppliesAction.cs - 수집량을 Blackboard에 저장하도록 수정</span>
+<span class="comment">// OnUpdate 메서드에서 수집 완료 시 수집량을 Blackboard에 저장</span>
+
+<span class="keyword">protected override</span> <span class="class-name">Status</span> <span class="method-name">OnUpdate</span>()
+{
+    <span class="comment">// 수집 시간이 완료되었는지 확인</span>
+    <span class="keyword">if</span> (<span class="property-name">GatherableSupplies</span>.<span class="property-name">Value</span>.<span class="property-name">Supply</span>.<span class="property-name">BaseGatherTime</span> + <span class="field-name">enterTime</span> &lt;= <span class="class-name">Time</span>.<span class="property-name">time</span>)
+    {
+        <span class="comment">// 수집 완료</span>
+        <span class="comment">// EndGather(): 수집을 완료하고 실제 수집된 양을 반환</span>
+        <span class="comment">// Busy 상태를 false로 변경하고 자원에서 수집한 양만큼 차감</span>
+        <span class="keyword">int</span> <span class="field-name">amountGathered</span> = <span class="property-name">GatherableSupplies</span>.<span class="property-name">Value</span>.<span class="method-name">EndGather</span>();
+        
+        <span class="comment">// 수집량을 Blackboard에 저장</span>
+        <span class="comment">// Amount: Blackboard의 SupplyAmountHeld 변수</span>
+        <span class="comment">// 이 값은 다음 액션에서 사용됨</span>
+        <span class="property-name">Amount</span>.<span class="property-name">Value</span> = <span class="field-name">amountGathered</span>;
+        
+        <span class="comment">// Success: 수집이 성공적으로 완료됨</span>
+        <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Success</span>;
+    }
+
+    <span class="comment">// Running: 아직 수집 시간이 완료되지 않았으므로 계속 실행 중</span>
+    <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Running</span>;
+}
+</div>
+                </div>
+
+                <div class="content-section">
+                    <h3>🔍 FindClosestCommandPostAction 구현</h3>
+                    
+                    <div class="code-block">
+<span class="comment">// FindClosestCommandPostAction.cs - 가장 가까운 Command Post 찾기</span>
+<span class="comment">// Physics.OverlapSphere를 사용하여 주변 건물 탐색</span>
+
+<span class="keyword">using</span> <span class="class-name">System</span>;
+<span class="keyword">using</span> <span class="class-name">Unity.Behavior</span>;
+<span class="keyword">using</span> <span class="class-name">UnityEngine</span>;
+<span class="keyword">using</span> <span class="class-name">Action</span> = <span class="class-name">Unity.Behavior.Action</span>;
+<span class="keyword">using</span> <span class="class-name">Unity.Properties</span>;
+<span class="keyword">using</span> <span class="class-name">System.Collections.Generic</span>;
+<span class="keyword">using</span> <span class="class-name">GameDevTV.RTS.Units</span>;
+
+<span class="keyword">namespace</span> <span class="class-name">GameDevTV.RTS.Behavior</span>
+{
+    <span class="comment">// Serializable: Unity에서 직렬화 가능하도록 하는 속성</span>
+    <span class="comment">// GeneratePropertyBag: Unity Behavior Tree에서 사용하는 속성 백 생성</span>
+    [<span class="class-name">Serializable</span>, <span class="class-name">GeneratePropertyBag</span>]
+    
+    <span class="comment">// NodeDescription: Behavior Tree 에디터에서 노드의 설명을 정의</span>
+    <span class="comment">// name: 노드의 이름</span>
+    <span class="comment">// story: 노드의 동작을 설명하는 텍스트</span>
+    <span class="comment">// category: 노드가 속할 카테고리 (Action/Units)</span>
+    <span class="comment">// id: 노드의 고유 식별자</span>
+    [<span class="class-name">NodeDescription</span>(<span class="parameter">name</span>: <span class="string">"Find Closest Command Post"</span>, <span class="parameter">story</span>: <span class="string">"[Unit] finds nearest [CommandPost] ."</span>, <span class="parameter">category</span>: <span class="string">"Action/Units"</span>, <span class="parameter">id</span>: <span class="string">"df019f9861776b3b31754a035175faf5"</span>)]
+    
+    <span class="comment">// FindClosestCommandPostAction: 가장 가까운 Command Post를 찾는 액션 노드</span>
+    <span class="comment">// partial: 클래스가 여러 파일에 나뉘어 정의될 수 있음 (Unity Behavior Tree가 자동 생성)</span>
+    <span class="keyword">public partial class</span> <span class="class-name">FindClosestCommandPostAction</span> : <span class="class-name">Action</span>
+    {
+        <span class="comment">// Unit: Command Post를 찾을 유닛의 GameObject</span>
+        <span class="comment">// SerializeReference: Unity에서 직렬화 가능한 참조</span>
+        <span class="comment">// BlackboardVariable: Behavior Tree의 Blackboard에서 가져오는 변수</span>
+        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="property-name">Unit</span>;
+        
+        <span class="comment">// CommandPost: 찾은 Command Post를 저장할 변수</span>
+        <span class="comment">// GameObject: Command Post의 GameObject</span>
+        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="property-name">CommandPost</span>;
+        
+        <span class="comment">// SearchRadius: 탐색 반경</span>
+        <span class="comment">// float: 실수형 (탐색 반경은 미터 단위)</span>
+        <span class="comment">// new(10): 기본값 10으로 초기화</span>
+        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="keyword">float</span>&gt; <span class="property-name">SearchRadius</span> = <span class="keyword">new</span>(<span class="number">10</span>);
+        
+        <span class="comment">// CommandPostBuilding: Command Post의 UnitSO</span>
+        <span class="comment">// UnitSO: 건물의 ScriptableObject</span>
+        <span class="comment">// 이 값을 사용하여 Command Post인지 확인</span>
+        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">UnitSO</span>&gt; <span class="property-name">CommandPostBuilding</span>;
+
+        <span class="comment">// OnStart: 액션이 시작될 때 호출되는 메서드</span>
+        <span class="comment">// Status: 액션의 실행 상태 (Success, Failure, Running)</span>
+        <span class="keyword">protected override</span> <span class="class-name">Status</span> <span class="method-name">OnStart</span>()
+        {
+            <span class="comment">// Physics.OverlapSphere: 구체 모양의 영역에서 Collider들을 찾음</span>
+            <span class="comment">// Unit.Value.transform.position: 유닛의 현재 위치</span>
+            <span class="comment">// SearchRadius.Value: 탐색 반경</span>
+            <span class="comment">// LayerMask.GetMask("Buildings"): Buildings 레이어만 검사</span>
+            <span class="comment">// 반환값: 해당 영역에 있는 모든 Collider 배열</span>
+            <span class="class-name">Collider</span>[] <span class="field-name">colliders</span> = <span class="class-name">Physics</span>.<span class="method-name">OverlapSphere</span>(
+                <span class="property-name">Unit</span>.<span class="property-name">Value</span>.<span class="property-name">transform</span>.<span class="property-name">position</span>, 
+                <span class="property-name">SearchRadius</span>.<span class="property-name">Value</span>, 
+                <span class="class-name">LayerMask</span>.<span class="method-name">GetMask</span>(<span class="string">"Buildings"</span>));
+
+            <span class="comment">// nearbyCommandPosts: 주변의 Command Post들을 저장할 리스트</span>
+            <span class="comment">// List&lt;BaseBuilding&gt;: BaseBuilding 타입의 리스트</span>
+            <span class="comment">// new(): 빈 리스트로 초기화</span>
+            <span class="class-name">List</span>&lt;<span class="class-name">BaseBuilding</span>&gt; <span class="field-name">nearbyCommandPosts</span> = <span class="keyword">new</span>();
+
+            <span class="comment">// foreach: 배열의 각 요소를 순회</span>
+            <span class="comment">// collider: 현재 검사 중인 Collider</span>
+            <span class="keyword">foreach</span>(<span class="class-name">Collider</span> <span class="field-name">collider</span> <span class="keyword">in</span> <span class="field-name">colliders</span>)
+            {
+                <span class="comment">// TryGetComponent: 해당 GameObject에서 BaseBuilding 컴포넌트를 가져옴</span>
+                <span class="comment">// out building: 가져온 BaseBuilding을 저장할 변수</span>
+                <span class="comment">// building.UnitSO.Equals: 건물의 UnitSO가 Command Post인지 확인</span>
+                <span class="comment">// CommandPostBuilding.Value: Blackboard에서 가져온 Command Post의 UnitSO</span>
+                <span class="keyword">if</span> (<span class="field-name">collider</span>.<span class="method-name">TryGetComponent</span>(<span class="keyword">out</span> <span class="class-name">BaseBuilding</span> <span class="field-name">building</span>) 
+                        &amp;&amp; <span class="field-name">building</span>.<span class="property-name">UnitSO</span>.<span class="method-name">Equals</span>(<span class="property-name">CommandPostBuilding</span>.<span class="property-name">Value</span>))
+                {
+                    <span class="comment">// Command Post인 경우 리스트에 추가</span>
+                    <span class="field-name">nearbyCommandPosts</span>.<span class="method-name">Add</span>(<span class="field-name">building</span>);
+                }
+            }
+
+            <span class="comment">// 주변에 Command Post가 없는 경우</span>
+            <span class="keyword">if</span> (<span class="field-name">nearbyCommandPosts</span>.<span class="property-name">Count</span> == <span class="number">0</span>)
+            {
+                <span class="comment">// Failure: Command Post를 찾을 수 없음</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Failure</span>;
+            }
+
+            <span class="comment">// Command Post를 찾은 경우</span>
+            <span class="comment">// CommandPost.Value: Blackboard의 CommandPost 변수에 저장</span>
+            <span class="comment">// nearbyCommandPosts[0].gameObject: 첫 번째 Command Post의 GameObject</span>
+            <span class="comment">// 현재는 가장 가까운 것이 아닌 첫 번째 것을 선택 (단순화)</span>
+            <span class="property-name">CommandPost</span>.<span class="property-name">Value</span> = <span class="field-name">nearbyCommandPosts</span>[<span class="number">0</span>].<span class="property-name">gameObject</span>;
+
+            <span class="comment">// Success: Command Post를 성공적으로 찾음</span>
+            <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Success</span>;
+        }
+    }
+}
+</div>
+                </div>
+
+                <div class="content-section">
+                    <h3>🚶 MoveToTargetGameObjectAction 구현</h3>
+                    
+                    <div class="code-block">
+<span class="comment">// MoveToTargetGameObjectAction.cs - GameObject로 이동하는 액션 노드</span>
+<span class="comment">// MoveToTargetLocationAction과 유사하지만 GameObject의 위치로 이동</span>
+
+<span class="keyword">using</span> <span class="class-name">System</span>;
+<span class="keyword">using</span> <span class="class-name">Unity.Behavior</span>;
+<span class="keyword">using</span> <span class="class-name">UnityEngine</span>;
+<span class="keyword">using</span> <span class="class-name">Action</span> = <span class="class-name">Unity.Behavior.Action</span>;
+<span class="keyword">using</span> <span class="class-name">Unity.Properties</span>;
+<span class="keyword">using</span> <span class="class-name">UnityEngine.AI</span>;
+
+<span class="keyword">namespace</span> <span class="class-name">GameDevTV.RTS.Behavior</span>
+{
+    <span class="comment">// Serializable: Unity에서 직렬화 가능하도록 하는 속성</span>
+    <span class="comment">// GeneratePropertyBag: Unity Behavior Tree에서 사용하는 속성 백 생성</span>
+    [<span class="class-name">Serializable</span>, <span class="class-name">GeneratePropertyBag</span>]
+    
+    <span class="comment">// NodeDescription: Behavior Tree 에디터에서 노드의 설명을 정의</span>
+    <span class="comment">// name: 노드의 이름</span>
+    <span class="comment">// story: 노드의 동작을 설명하는 텍스트</span>
+    <span class="comment">// category: 노드가 속할 카테고리 (Action/Navigation)</span>
+    <span class="comment">// id: 노드의 고유 식별자</span>
+    [<span class="class-name">NodeDescription</span>(<span class="parameter">name</span>: <span class="string">"Move to Target GameObject"</span>, <span class="parameter">story</span>: <span class="string">"[Agent] moves to [TargetGameObject] ."</span>, <span class="parameter">category</span>: <span class="string">"Action/Navigation"</span>, <span class="parameter">id</span>: <span class="string">"f07a8fab1fc459315f3380eef35b2aa0"</span>)]
+    
+    <span class="comment">// MoveToTargetGameObjectAction: GameObject로 이동하는 액션 노드</span>
+    <span class="comment">// partial: 클래스가 여러 파일에 나뉘어 정의될 수 있음 (Unity Behavior Tree가 자동 생성)</span>
+    <span class="keyword">public partial class</span> <span class="class-name">MoveToTargetGameObjectAction</span> : <span class="class-name">Action</span>
+    {
+        <span class="comment">// Agent: 이동할 유닛의 GameObject</span>
+        <span class="comment">// SerializeReference: Unity에서 직렬화 가능한 참조</span>
+        <span class="comment">// BlackboardVariable: Behavior Tree의 Blackboard에서 가져오는 변수</span>
+        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="property-name">Agent</span>;
+        
+        <span class="comment">// TargetGameObject: 이동할 목표 GameObject</span>
+        <span class="comment">// GameObject: 목표가 되는 GameObject</span>
+        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="property-name">TargetGameObject</span>;
+
+        <span class="comment">// agent: NavMeshAgent 컴포넌트</span>
+        <span class="comment">// private: 외부에서 접근할 수 없음</span>
+        <span class="keyword">private</span> <span class="class-name">NavMeshAgent</span> <span class="field-name">agent</span>;
+
+        <span class="comment">// OnStart: 액션이 시작될 때 호출되는 메서드</span>
+        <span class="comment">// Status: 액션의 실행 상태 (Success, Failure, Running)</span>
+        <span class="keyword">protected override</span> <span class="class-name">Status</span> <span class="method-name">OnStart</span>()
+        {
+            <span class="comment">// TryGetComponent: Agent GameObject에서 NavMeshAgent 컴포넌트를 가져옴</span>
+            <span class="comment">// out agent: 가져온 NavMeshAgent를 저장할 변수</span>
+            <span class="comment">// !: 논리 부정 연산자 (실패 시 true)</span>
+            <span class="keyword">if</span> (!<span class="property-name">Agent</span>.<span class="property-name">Value</span>.<span class="method-name">TryGetComponent</span>(<span class="keyword">out</span> <span class="field-name">agent</span>))
+            {
+                <span class="comment">// Failure: NavMeshAgent가 없으면 실패</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Failure</span>;
+            }
+
+            <span class="comment">// targetPosition: 목표 GameObject의 위치</span>
+            <span class="comment">// TargetGameObject.Value.transform.position: 목표 GameObject의 현재 위치</span>
+            <span class="class-name">Vector3</span> <span class="field-name">targetPosition</span> = <span class="property-name">TargetGameObject</span>.<span class="property-name">Value</span>.<span class="property-name">transform</span>.<span class="property-name">position</span>;
+            
+            <span class="comment">// Vector3.Distance: 두 점 사이의 거리 계산</span>
+            <span class="comment">// agent.transform.position: 현재 위치</span>
+            <span class="comment">// targetPosition: 목표 위치</span>
+            <span class="comment">// agent.stoppingDistance: 정지 거리</span>
+            <span class="comment">// 이미 목표에 가까이 있으면 성공</span>
+            <span class="keyword">if</span> (<span class="class-name">Vector3</span>.<span class="method-name">Distance</span>(<span class="field-name">agent</span>.<span class="property-name">transform</span>.<span class="property-name">position</span>, <span class="field-name">targetPosition</span>) &lt;= <span class="field-name">agent</span>.<span class="property-name">stoppingDistance</span>)
+            {
+                <span class="comment">// Success: 이미 목표에 도달함</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Success</span>;
+            }
+
+            <span class="comment">// SetDestination: NavMeshAgent에게 목표 위치 설정</span>
+            <span class="comment">// targetPosition: 이동할 목표 위치</span>
+            <span class="field-name">agent</span>.<span class="method-name">SetDestination</span>(<span class="field-name">targetPosition</span>);
+            
+            <span class="comment">// Running: 이동을 시작했으므로 계속 실행 중</span>
+            <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Running</span>;
+        }
+
+        <span class="comment">// OnUpdate: 액션이 실행 중일 때 주기적으로 호출되는 메서드</span>
+        <span class="comment">// Status: 액션의 실행 상태</span>
+        <span class="keyword">protected override</span> <span class="class-name">Status</span> <span class="method-name">OnUpdate</span>()
+        {
+            <span class="comment">// remainingDistance: 목표까지 남은 거리</span>
+            <span class="comment">// stoppingDistance: 정지 거리</span>
+            <span class="comment">// 목표에 도달했는지 확인</span>
+            <span class="keyword">if</span> (<span class="field-name">agent</span>.<span class="property-name">remainingDistance</span> &lt;= <span class="field-name">agent</span>.<span class="property-name">stoppingDistance</span>)
+            {
+                <span class="comment">// Success: 목표에 도달함</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Success</span>;
+            }
+
+            <span class="comment">// Running: 아직 목표에 도달하지 않았으므로 계속 실행 중</span>
+            <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Running</span>;
+        }
+    }
+}
+</div>
+                </div>
+
+                <div class="content-section">
+                    <h3>🎮 Behavior Tree 구조 업데이트</h3>
+                    
+                    <div class="tech-stack">
+                        <h4>📊 새로운 트리 구조</h4>
+                        <ol class="content-list">
+                            <li><strong>OnStart</strong>: 트리 시작점</li>
+                            <li><strong>Abort 노드</strong>: 명령 변경 시 즉시 중단</li>
+                            <li><strong>Switch 노드</strong>: 명령에 따른 분기</li>
+                            <li><strong>Gather 브랜치</strong>: 자원 수집 로직</li>
+                            <li><strong>Sequence</strong>: 순차적으로 실행되는 노드들</li>
+                            <li><strong>MoveToTargetLocation</strong>: 자원 위치로 이동</li>
+                            <li><strong>GatherSupplies</strong>: 자원 수집 실행</li>
+                            <li><strong>FindClosestCommandPost</strong>: 가장 가까운 Command Post 찾기</li>
+                            <li><strong>MoveToTargetGameObject</strong>: Command Post로 이동</li>
+                        </ol>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>⚡ 완전한 수집 사이클</h4>
+                        <ul class="content-list">
+                            <li><strong>이동 단계</strong>: Worker가 자원 위치로 이동</li>
+                            <li><strong>수집 단계</strong>: 자원을 수집하고 수집량 저장</li>
+                            <li><strong>탐색 단계</strong>: 가장 가까운 Command Post 찾기</li>
+                            <li><strong>반환 단계</strong>: Command Post로 이동</li>
+                            <li><strong>반복</strong>: 다시 자원 수집으로 돌아감</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h3>🔧 Blackboard 변수 설정</h3>
+                    
+                    <div class="tech-stack">
+                        <h4>📋 필요한 Blackboard 변수들</h4>
+                        <ul class="content-list">
+                            <li><strong>SupplyAmountHeld</strong>: 수집한 자원량 (int)</li>
+                            <li><strong>CommandPost</strong>: 찾은 Command Post (GameObject)</li>
+                            <li><strong>SearchRadius</strong>: 탐색 반경 (float, 기본값 10)</li>
+                            <li><strong>CommandPostBuilding</strong>: Command Post의 UnitSO</li>
+                        </ul>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>🎯 변수 연결</h4>
+                        <ul class="content-list">
+                            <li><strong>GatherSupplies → SupplyAmountHeld</strong>: 수집량 저장</li>
+                            <li><strong>FindClosestCommandPost → CommandPost</strong>: 찾은 Command Post 저장</li>
+                            <li><strong>MoveToTargetGameObject → CommandPost</strong>: Command Post로 이동</li>
+                            <li><strong>CommandPostBuilding</strong>: Command Post 식별용</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h3>❓ 왜 필요한가?</h3>
+                    
+                    <div class="tech-stack">
+                        <h4>🎮 게임 개발 관점</h4>
+                        <p><strong>완전한 경제 시스템</strong>: 자원 수집 → 반환의 완전한 사이클</p>
+                        <p><strong>자동화</strong>: Worker가 지능적으로 자원을 수집하고 반환</p>
+                        <p><strong>확장성</strong>: 다양한 건물 타입을 쉽게 추가</p>
+                        <p><strong>일관성</strong>: 모든 수집 행동이 동일한 패턴으로 동작</p>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>🔧 기술적 장점</h4>
+                        <p><strong>Physics 시스템 활용</strong>: OverlapSphere로 효율적인 탐색</p>
+                        <p><strong>커스텀 노드</strong>: 특정 기능을 위한 전용 노드</p>
+                        <p><strong>Blackboard 활용</strong>: 노드 간 데이터 공유</p>
+                        <p><strong>레이어 시스템</strong>: Buildings 레이어로 정확한 탐색</p>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>⚠️ 주의사항</h4>
+                        <p><strong>UnitSO 접근</strong>: BaseBuilding의 UnitSO를 public으로 변경</p>
+                        <p><strong>레이어 설정</strong>: 건물을 올바른 레이어에 배치</p>
+                        <p><strong>탐색 반경</strong>: 적절한 SearchRadius 설정</p>
+                        <p><strong>성능 고려</strong>: 너무 많은 건물이 있으면 성능 저하</p>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h3>🎮 노바1492 적용 포인트</h3>
+                    <ul class="content-list">
+                        <li><strong>다양한 건물</strong>: Command Post, Supply Depot, Refinery 등</li>
+                        <li><strong>자원 저장소</strong>: 각 건물마다 다른 자원 저장</li>
+                        <li><strong>우선순위 시스템</strong>: 가장 가까운 건물이 아닌 가장 효율적인 건물</li>
+                        <li><strong>자원 전송</strong>: 건물 간 자원 이동 시스템</li>
+                        <li><strong>자동 배치</strong>: Worker가 알아서 최적의 건물 찾기</li>
+                    </ul>
+                </div>
+
+                <div class="content-section">
+                    <h3>🔑 핵심 기술 개념</h3>
+                    <ul class="content-list">
+                        <li><strong>Physics.OverlapSphere</strong>: 구체 영역에서 Collider 탐색</li>
+                        <li><strong>LayerMask.GetMask</strong>: 특정 레이어만 검사</li>
+                        <li><strong>TryGetComponent</strong>: 안전한 컴포넌트 가져오기</li>
+                        <li><strong>UnitSO.Equals</strong>: ScriptableObject 비교</li>
+                        <li><strong>Blackboard 변수</strong>: 노드 간 데이터 공유</li>
+                        <li><strong>Sequence 노드</strong>: 순차적 실행을 위한 노드</li>
+                        <li><strong>GameObject 이동</strong>: Vector3가 아닌 GameObject로 이동</li>
+                        <li><strong>탐색 반경</strong>: 효율적인 건물 탐색</li>
                     </ul>
                 </div>
             </div>
