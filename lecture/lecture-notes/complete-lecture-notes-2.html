@@ -291,6 +291,7 @@
                     <li><a href="#lecture-35">🏗️ 강의 35: More Buildings & Units</a></li>
                     <li><a href="#lecture-36">🌳 강의 36: Unity Behavior Tree</a></li>
                     <li><a href="#lecture-37">🔧 강의 37: Custom Behavior Nodes</a></li>
+                    <li><a href="#lecture-38">⛏️ 강의 38: Gatherable Supplies</a></li>
                 </ul>
             </div>
         </div>
@@ -4363,6 +4364,327 @@ List&lt;AbstractCommandable&gt; abstractCommandables = selectedUnits
                     <li><strong>OnStart/OnUpdate</strong>: 노드 생명주기 메서드</li>
                     <li><strong>TryGetComponent</strong>: 안전한 컴포넌트 가져오기</li>
                     <li><strong>NavMeshAgent 보호</strong>: 런타임 설정 덮어쓰기 방지</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 강의 38: Gatherable Supplies (수집 가능한 자원) -->
+        <div class="lecture-section" id="lecture-38">
+            <h2 class="lecture-title">⛏️ 강의 38: Gatherable Supplies (수집 가능한 자원)</h2>
+            
+            <div class="tech-stack" style="margin-top: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">
+                <h4 style="color: #2c3e50; margin-top: 0;">🎯 이번 강의를 왜 해야 하는가?</h4>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">자원 수집 시스템</strong>: <span style="color: #2c3e50;">RTS 게임의 핵심인 자원 수집 메커니즘 구현</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">경제 시스템 기반</strong>: <span style="color: #2c3e50;">게임의 경제적 요소를 위한 자원 관리 시스템</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">Worker AI 준비</strong>: <span style="color: #2c3e50;">Worker 유닛이 자동으로 자원을 수집할 수 있는 기반 구축</span></p>
+                <p style="margin: 8px 0;"><strong style="color: #2c3e50;">확장 가능한 설계</strong>: <span style="color: #2c3e50;">다양한 자원 타입을 쉽게 추가할 수 있는 구조</span></p>
+            </div>
+            
+            <div class="tech-stack" style="margin-top: 15px; background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px;">
+                <h4 style="color: #155724; margin-top: 0;">🧒 초딩도 이해하기 쉬운 설명</h4>
+                <p style="margin: 8px 0; color: #155724;"><strong>⛏️ 자원 수집이 뭐야?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">게임에서 Worker가 미네랄이나 가스를 캐서 건물을 짓거나 유닛을 만드는 데 사용하는 시스템이에요. 마치 농부가 농작물을 수확하는 것과 같아요!</p>
+                
+                <p style="margin: 8px 0; color: #155724;"><strong>🎯 왜 필요한가요?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>게임의 경제</strong>: 자원이 있어야 건물과 유닛을 만들 수 있어요</p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>전략적 요소</strong>: 자원을 많이 가진 플레이어가 유리해요</p>
+                <p style="margin: 8px 0; color: #155724;">• <strong>자동화</strong>: Worker가 알아서 자원을 캐도록 할 수 있어요</p>
+                
+                <p style="margin: 8px 0; color: #155724;"><strong>🏠 집으로 비유하면?</strong></p>
+                <p style="margin: 8px 0; color: #155724;">집에서 필요한 물건을 사려면 돈이 필요한 것처럼, 게임에서도 자원이 있어야 뭔가를 만들 수 있어요!</p>
+            </div>
+
+            <div class="lecture-goal">
+                <h3>🎯 학습 목표</h3>
+                <ul class="content-list">
+                    <li>SupplySO ScriptableObject 생성 및 설정</li>
+                    <li>IGatherable 인터페이스 설계</li>
+                    <li>GatherableSupply MonoBehaviour 구현</li>
+                    <li>자원 수집 알고리즘 이해</li>
+                    <li>Busy 상태 관리 시스템</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>⛏️ 자원 수집 시스템 설계</h3>
+                
+                <div class="tech-stack">
+                    <h4>🎮 시스템 구성 요소</h4>
+                    <ul class="content-list">
+                        <li><strong>SupplySO</strong>: 자원 타입별 설정 (미네랄, 가스)</li>
+                        <li><strong>IGatherable</strong>: 수집 가능한 객체의 인터페이스</li>
+                        <li><strong>GatherableSupply</strong>: 실제 수집 가능한 자원 객체</li>
+                        <li><strong>Worker</strong>: 자원을 수집하는 유닛 (다음 강의)</li>
+                    </ul>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>🔄 자원 수집 플로우</h4>
+                    <ol class="content-list">
+                        <li><strong>Worker 이동</strong>: 자원 위치로 이동</li>
+                        <li><strong>Busy 확인</strong>: 다른 Worker가 수집 중인지 확인</li>
+                        <li><strong>수집 시작</strong>: BeginGather() 호출</li>
+                        <li><strong>수집 대기</strong>: BaseGatherTime만큼 대기</li>
+                        <li><strong>수집 완료</strong>: EndGather() 호출하여 자원 획득</li>
+                        <li><strong>반복</strong>: 자원이 남아있으면 다시 수집</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>📝 SupplySO ScriptableObject</h3>
+                
+                <div class="code-block">
+<span class="comment">// SupplySO.cs - 자원 타입 설정</span>
+<span class="comment">// ScriptableObject: 자원 타입별 설정을 저장하는 데이터 컨테이너</span>
+
+<span class="keyword">using</span> <span class="class-name">UnityEngine</span>;
+
+<span class="keyword">namespace</span> <span class="class-name">GameDevTV.RTS.Environment</span>
+{
+    <span class="comment">// CreateAssetMenu: Unity Editor에서 자원 타입을 생성할 수 있는 메뉴 추가</span>
+    <span class="comment">// menuName: 메뉴에서 표시될 이름</span>
+    <span class="comment">// fileName: 생성될 파일의 기본 이름</span>
+    <span class="comment">// order: 메뉴에서의 순서 (낮을수록 위에 표시)</span>
+    [<span class="class-name">CreateAssetMenu</span>(<span class="parameter">menuName</span> = <span class="string">"Supply"</span>, <span class="parameter">fileName</span> = <span class="string">"Supply"</span>, <span class="parameter">order</span> = <span class="number">5</span>)]
+    
+    <span class="comment">// SupplySO: Supply ScriptableObject의 줄임말</span>
+    <span class="comment">// ScriptableObject: Unity에서 데이터를 저장하는 클래스</span>
+    <span class="keyword">public class</span> <span class="class-name">SupplySO</span> : <span class="class-name">ScriptableObject</span>
+    {
+        <span class="comment">// MaxAmount: 해당 자원의 최대 수량</span>
+        <span class="comment">// field: SerializeField: Unity Inspector에서 설정 가능하도록</span>
+        <span class="comment">// public get, private set: 외부에서는 읽기만 가능, 내부에서만 수정 가능</span>
+        <span class="comment">// 기본값: 1500 (미네랄이나 가스의 총량)</span>
+        [<span class="keyword">field</span>: <span class="class-name">SerializeField</span>] <span class="keyword">public</span> <span class="keyword">int</span> <span class="property-name">MaxAmount</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; } = <span class="number">1500</span>;
+        
+        <span class="comment">// AmountPerGather: 한 번에 수집할 수 있는 자원의 양</span>
+        <span class="comment">// Worker가 한 번의 수집 행동으로 얻을 수 있는 자원량</span>
+        <span class="comment">// 기본값: 8 (한 번에 8개씩 수집)</span>
+        [<span class="keyword">field</span>: <span class="class-name">SerializeField</span>] <span class="keyword">public</span> <span class="keyword">int</span> <span class="property-name">AmountPerGather</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; } = <span class="number">8</span>;
+        
+        <span class="comment">// BaseGatherTime: 자원 수집에 걸리는 기본 시간</span>
+        <span class="comment">// Worker가 자원을 수집하는 데 걸리는 시간 (초 단위)</span>
+        <span class="comment">// 기본값: 1.5초 (1.5초마다 자원 수집)</span>
+        [<span class="keyword">field</span>: <span class="class-name">SerializeField</span>] <span class="keyword">public</span> <span class="keyword">float</span> <span class="property-name">BaseGatherTime</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; } = <span class="number">1.5f</span>;
+    }
+}
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>🔌 IGatherable 인터페이스</h3>
+                
+                <div class="code-block">
+<span class="comment">// IGatherable.cs - 수집 가능한 객체 인터페이스</span>
+<span class="comment">// 인터페이스: 수집 가능한 모든 객체가 구현해야 하는 계약</span>
+
+<span class="keyword">namespace</span> <span class="class-name">GameDevTV.RTS.Environment</span>
+{
+    <span class="comment">// IGatherable: "수집 가능한"이라는 의미</span>
+    <span class="comment">// 인터페이스: 클래스가 구현해야 하는 메서드와 속성을 정의</span>
+    <span class="keyword">public interface</span> <span class="class-name">IGatherable</span>
+    {
+        <span class="comment">// Supply: 이 객체가 어떤 자원 타입인지</span>
+        <span class="comment">// SupplySO: 자원의 설정 정보 (MaxAmount, AmountPerGather 등)</span>
+        <span class="keyword">public</span> <span class="class-name">SupplySO</span> <span class="property-name">Supply</span> { <span class="keyword">get</span>; }
+        
+        <span class="comment">// Amount: 현재 남아있는 자원의 양</span>
+        <span class="comment">// int: 정수형 (자원은 정수 단위로 관리)</span>
+        <span class="keyword">public</span> <span class="keyword">int</span> <span class="property-name">Amount</span> { <span class="keyword">get</span>; }
+        
+        <span class="comment">// IsBusy: 현재 다른 Worker가 수집 중인지</span>
+        <span class="comment">// bool: true면 수집 중, false면 수집 가능</span>
+        <span class="keyword">public</span> <span class="keyword">bool</span> <span class="property-name">IsBusy</span> { <span class="keyword">get</span>; }
+
+        <span class="comment">// BeginGather: 자원 수집 시작</span>
+        <span class="comment">// 반환값: bool - 수집을 시작할 수 있으면 true, 아니면 false</span>
+        <span class="comment">// 용도: Worker가 수집을 시도할 때 호출</span>
+        <span class="keyword">public</span> <span class="keyword">bool</span> <span class="method-name">BeginGather</span>();
+        
+        <span class="comment">// EndGather: 자원 수집 완료</span>
+        <span class="comment">// 반환값: int - 실제로 수집된 자원의 양</span>
+        <span class="comment">// 용도: Worker가 수집을 완료했을 때 호출</span>
+        <span class="keyword">public</span> <span class="keyword">int</span> <span class="method-name">EndGather</span>();
+    }
+}
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>🏗️ GatherableSupply 구현</h3>
+                
+                <div class="code-block">
+<span class="comment">// GatherableSupply.cs - 수집 가능한 자원 객체</span>
+<span class="comment">// MonoBehaviour: Unity GameObject에 부착되는 컴포넌트</span>
+<span class="comment">// IGatherable: 수집 가능한 객체 인터페이스 구현</span>
+
+<span class="keyword">using</span> <span class="class-name">UnityEngine</span>;
+
+<span class="keyword">namespace</span> <span class="class-name">GameDevTV.RTS.Environment</span>
+{
+    <span class="comment">// GatherableSupply: 수집 가능한 자원 공급원</span>
+    <span class="comment">// MonoBehaviour: Unity 컴포넌트로 GameObject에 부착</span>
+    <span class="comment">// IGatherable: 수집 가능한 객체 인터페이스 구현</span>
+    <span class="keyword">public class</span> <span class="class-name">GatherableSupply</span> : <span class="class-name">MonoBehaviour</span>, <span class="class-name">IGatherable</span>
+    {
+        <span class="comment">// Supply: 이 자원의 타입과 설정</span>
+        <span class="comment">// field: SerializeField: Inspector에서 설정 가능</span>
+        <span class="comment">// public get, private set: 외부에서 읽기만 가능</span>
+        [<span class="keyword">field</span>: <span class="class-name">SerializeField</span>] <span class="keyword">public</span> <span class="class-name">SupplySO</span> <span class="property-name">Supply</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+        
+        <span class="comment">// Amount: 현재 남아있는 자원의 양</span>
+        <span class="comment">// Start()에서 Supply.MaxAmount로 초기화</span>
+        [<span class="keyword">field</span>: <span class="class-name">SerializeField</span>] <span class="keyword">public</span> <span class="keyword">int</span> <span class="property-name">Amount</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+        
+        <span class="comment">// IsBusy: 현재 수집 중인지 여부</span>
+        <span class="comment">// 다른 Worker가 수집 중이면 true</span>
+        [<span class="keyword">field</span>: <span class="class-name">SerializeField</span>] <span class="keyword">public</span> <span class="keyword">bool</span> <span class="property-name">IsBusy</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+
+        <span class="comment">// Start: GameObject가 활성화될 때 한 번 호출</span>
+        <span class="comment">// 자원의 초기 양을 설정</span>
+        <span class="keyword">private void</span> <span class="method-name">Start</span>()
+        {
+            <span class="comment">// Amount를 Supply의 최대 양으로 초기화</span>
+            <span class="comment">// 미네랄이면 1500, 가스면 1500으로 시작</span>
+            <span class="property-name">Amount</span> = <span class="property-name">Supply</span>.<span class="property-name">MaxAmount</span>;
+        }
+
+        <span class="comment">// BeginGather: 자원 수집 시작</span>
+        <span class="comment">// Worker가 수집을 시도할 때 호출</span>
+        <span class="comment">// 반환값: 수집을 시작할 수 있으면 true, 아니면 false</span>
+        <span class="keyword">public bool</span> <span class="method-name">BeginGather</span>()
+        {
+            <span class="comment">// Guardian Pattern: 수집 중이면 수집 불가</span>
+            <span class="comment">// 다른 Worker가 이미 수집 중인 경우</span>
+            <span class="keyword">if</span> (<span class="property-name">IsBusy</span>)
+            {
+                <span class="comment">// 수집 불가능</span>
+                <span class="keyword">return false</span>;
+            }
+
+            <span class="comment">// 수집 가능하므로 수집 중 상태로 변경</span>
+            <span class="comment">// 다른 Worker가 이 자원을 수집하지 못하도록</span>
+            <span class="property-name">IsBusy</span> = <span class="keyword">true</span>;
+            
+            <span class="comment">// 수집 시작 가능</span>
+            <span class="keyword">return true</span>;
+        }
+
+        <span class="comment">// EndGather: 자원 수집 완료</span>
+        <span class="comment">// Worker가 수집을 완료했을 때 호출</span>
+        <span class="comment">// 반환값: 실제로 수집된 자원의 양</span>
+        <span class="keyword">public int</span> <span class="method-name">EndGather</span>()
+        {
+            <span class="comment">// 수집 완료이므로 Busy 상태 해제</span>
+            <span class="comment">// 다른 Worker가 이제 이 자원을 수집할 수 있음</span>
+            <span class="property-name">IsBusy</span> = <span class="keyword">false</span>;
+            
+            <span class="comment">// 실제로 수집할 수 있는 양 계산</span>
+            <span class="comment">// Mathf.Min: 두 값 중 작은 값 반환</span>
+            <span class="comment">// Supply.AmountPerGather: 한 번에 수집할 수 있는 양 (8)</span>
+            <span class="comment">// Amount: 현재 남아있는 양</span>
+            <span class="comment">// 예: 남은 양이 4개면 4개만 수집, 8개 이상이면 8개 수집</span>
+            <span class="keyword">int</span> <span class="field-name">amountGathered</span> = <span class="class-name">Mathf</span>.<span class="method-name">Min</span>(<span class="property-name">Supply</span>.<span class="property-name">AmountPerGather</span>, <span class="property-name">Amount</span>);
+            
+            <span class="comment">// 수집한 만큼 자원에서 차감</span>
+            <span class="comment">// Amount에서 수집한 양만큼 빼기</span>
+            <span class="property-name">Amount</span> -= <span class="field-name">amountGathered</span>;
+
+            <span class="comment">// 자원이 모두 소진되었는지 확인</span>
+            <span class="comment">// Amount가 0 이하가 되면 자원이 고갈됨</span>
+            <span class="keyword">if</span> (<span class="property-name">Amount</span> &lt;= <span class="number">0</span>)
+            {
+                <span class="comment">// 자원이 모두 소진되었으므로 GameObject 삭제</span>
+                <span class="comment">// Destroy: Unity에서 GameObject를 삭제하는 메서드</span>
+                <span class="comment">// gameObject: 이 컴포넌트가 부착된 GameObject</span>
+                <span class="method-name">Destroy</span>(<span class="property-name">gameObject</span>);
+            }
+
+            <span class="comment">// 실제로 수집된 자원의 양 반환</span>
+            <span class="comment">// Worker가 이 값을 받아서 자원을 획득</span>
+            <span class="keyword">return</span> <span class="field-name">amountGathered</span>;
+        }
+    }
+}
+</div>
+            </div>
+
+            <div class="content-section">
+                <h3>🔄 자원 수집 알고리즘</h3>
+                
+                <div class="tech-stack">
+                    <h4>📊 수집 플로우 차트</h4>
+                    <ol class="content-list">
+                        <li><strong>Worker 이동</strong>: 자원 위치로 이동</li>
+                        <li><strong>Busy 확인</strong>: IsBusy가 true인지 확인</li>
+                        <li><strong>수집 가능</strong>: false면 BeginGather() 호출</li>
+                        <li><strong>수집 대기</strong>: BaseGatherTime만큼 대기</li>
+                        <li><strong>수집 완료</strong>: EndGather() 호출</li>
+                        <li><strong>자원 획득</strong>: 수집된 양만큼 자원 추가</li>
+                        <li><strong>반복</strong>: 자원이 남아있으면 다시 수집</li>
+                    </ol>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>⚠️ Busy 상태 처리</h4>
+                    <ul class="content-list">
+                        <li><strong>다른 Worker 수집 중</strong>: 근처의 다른 자원으로 이동</li>
+                        <li><strong>이동 중 Busy 확인</strong>: 도착했을 때 다시 Busy 상태 확인</li>
+                        <li><strong>새로운 자원 찾기</strong>: 여전히 Busy면 다른 자원 탐색</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>❓ 왜 필요한가?</h3>
+                
+                <div class="tech-stack">
+                    <h4>🎮 게임 개발 관점</h4>
+                    <p><strong>경제 시스템</strong>: RTS 게임의 핵심인 자원 관리 시스템</p>
+                    <p><strong>전략적 요소</strong>: 자원 확보가 게임 승리의 핵심</p>
+                    <p><strong>자동화</strong>: Worker가 지능적으로 자원을 수집</p>
+                    <p><strong>확장성</strong>: 다양한 자원 타입을 쉽게 추가</p>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>🔧 기술적 장점</h4>
+                    <p><strong>인터페이스 설계</strong>: 수집 가능한 모든 객체가 동일한 방식으로 동작</p>
+                    <p><strong>ScriptableObject 활용</strong>: 자원 타입별 설정을 데이터로 관리</p>
+                    <p><strong>상태 관리</strong>: Busy 상태로 동시 수집 방지</p>
+                    <p><strong>자동 정리</strong>: 자원 소진 시 자동으로 GameObject 삭제</p>
+                </div>
+
+                <div class="tech-stack">
+                    <h4>⚠️ 주의사항</h4>
+                    <p><strong>NavMesh 영향</strong>: 자원 소진 시 NavMesh에서 제거되어야 함</p>
+                    <p><strong>동시성 문제</strong>: 여러 Worker가 동시에 수집하지 않도록 보장</p>
+                    <p><strong>성능 고려</strong>: 많은 자원 객체의 상태 관리</p>
+                    <p><strong>자원 균형</strong>: 게임 밸런스를 위한 적절한 수치 설정</p>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>🎮 노바1492 적용 포인트</h3>
+                <ul class="content-list">
+                    <li><strong>다양한 자원</strong>: 미네랄, 가스 외에 에너지, 금속 등 추가</li>
+                    <li><strong>자원 등급</strong>: 일반, 희귀, 전설 등급의 자원</li>
+                    <li><strong>자원 보호</strong>: 중요한 자원을 보호하는 방어 시설</li>
+                    <li><strong>자원 교환</strong>: 서로 다른 자원 간의 교환 시스템</li>
+                    <li><strong>자원 부족</strong>: 자원 고갈 시 대체 자원 찾기</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h3>🔑 핵심 기술 개념</h3>
+                <ul class="content-list">
+                    <li><strong>SupplySO</strong>: 자원 타입별 설정을 위한 ScriptableObject</li>
+                    <li><strong>IGatherable</strong>: 수집 가능한 객체의 인터페이스</li>
+                    <li><strong>GatherableSupply</strong>: 실제 수집 가능한 자원 객체</li>
+                    <li><strong>Busy 상태</strong>: 동시 수집 방지를 위한 상태 관리</li>
+                    <li><strong>Mathf.Min</strong>: 안전한 수집량 계산</li>
+                    <li><strong>Destroy</strong>: 자원 소진 시 GameObject 삭제</li>
+                    <li><strong>CreateAssetMenu</strong>: Unity Editor에서 자원 타입 생성</li>
                 </ul>
             </div>
         </div>
