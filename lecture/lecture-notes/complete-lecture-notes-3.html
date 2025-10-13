@@ -235,6 +235,7 @@
                     <li><a href="#lecture-40">⛏️ 강의 40: Gathering Supplies with Behavior Tree</a></li>
                     <li><a href="#lecture-41">🏠 강의 41: Return Supplies to Command Post</a></li>
                     <li><a href="#lecture-42">🚶 강의 42: Smooth Gathering Movement</a></li>
+                    <li><a href="#lecture-43">🎯 강의 43: Pick Better Gathering Locations</a></li>
                 </ul>
             </div>
 
@@ -1532,6 +1533,344 @@
                         <li><strong>TryGetComponent</strong>: 안전한 컴포넌트 가져오기</li>
                         <li><strong>상황별 최적화</strong>: 각 상황에 맞는 이동 설정</li>
                         <li><strong>게임플레이 개선</strong>: 더 자연스러운 이동 패턴</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 강의 43: Pick Better Gathering Locations (더 나은 자원 수집 위치 선택) -->
+            <div class="lecture-section" id="lecture-43">
+                <h2 class="lecture-title">🎯 강의 43: Pick Better Gathering Locations (더 나은 자원 수집 위치 선택)</h2>
+                
+                <div class="tech-stack" style="margin-top: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">
+                    <h4 style="color: #2c3e50; margin-top: 0;">🎯 이번 강의를 왜 해야 하는가?</h4>
+                    <p style="margin: 8px 0;"><strong style="color: #2c3e50;">최적화된 위치 선택</strong>: <span style="color: #2c3e50;">Worker들이 자원과 Command Post의 가장 가까운 지점을 선택하도록 개선</span></p>
+                    <p style="margin: 8px 0;"><strong style="color: #2c3e50;">Collider 활용</strong>: <span style="color: #2c3e50;">Collider.ClosestPoint API를 사용하여 정확한 위치 계산</span></p>
+                    <p style="margin: 8px 0;"><strong style="color: #2c3e50;">자연스러운 이동</strong>: <span style="color: #2c3e50;">RTS 게임다운 직관적이고 효율적인 이동 패턴</span></p>
+                    <p style="margin: 8px 0;"><strong style="color: #2c3e50;">성능 개선</strong>: <span style="color: #2c3e50;">불필요한 우회 이동 제거로 더 빠른 자원 수집</span></p>
+                </div>
+                
+                <div class="tech-stack" style="margin-top: 15px; background: #e8f5e8; border: 2px solid #28a745; border-radius: 8px;">
+                    <h4 style="color: #155724; margin-top: 0;">🧒 초딩도 이해하기 쉬운 설명</h4>
+                    <p style="margin: 8px 0; color: #155724;"><strong>🎯 더 나은 위치 선택이 뭐야?</strong></p>
+                    <p style="margin: 8px 0; color: #155724;">Worker들이 자원을 캐러 갈 때, 자원의 뒤쪽이 아니라 가장 가까운 쪽으로 가도록 하는 시스템이에요!</p>
+                    
+                    <p style="margin: 8px 0; color: #155724;"><strong>🎮 어떻게 작동하나요?</strong></p>
+                    <p style="margin: 8px 0; color: #155724;">• <strong>자원 수집 시</strong>: 자원에서 가장 가까운 지점을 찾아요</p>
+                    <p style="margin: 8px 0; color: #155724;">• <strong>Command Post 반환 시</strong>: Command Post에서 가장 가까운 지점을 찾아요</p>
+                    <p style="margin: 8px 0; color: #155724;">• <strong>Collider 활용</strong>: 물체의 모양을 고려해서 정확한 위치를 계산해요</p>
+                    
+                    <p style="margin: 8px 0; color: #155724;"><strong>🏠 집으로 비유하면?</strong></p>
+                    <p style="margin: 8px 0; color: #155724;">장보기 갈 때 가게의 뒷문이 아니라 앞문으로 가는 것처럼, 게임에서도 가장 가까운 곳으로 가요!</p>
+                </div>
+
+                <div class="lecture-goal">
+                    <h3>🎯 학습 목표</h3>
+                    <ul class="content-list">
+                        <li>Collider.ClosestPoint API 이해 및 활용</li>
+                        <li>MoveToTargetGameObjectAction 개선</li>
+                        <li>Worker.Gather() 메서드 업데이트</li>
+                        <li>Behavior Tree Blackboard 변수 추가</li>
+                        <li>더 직관적인 자원 수집 위치 선택</li>
+                    </ul>
+                </div>
+
+                <div class="content-section">
+                    <h3>🎯 문제점과 해결책</h3>
+                    
+                    <div class="tech-stack">
+                        <h4>❌ 기존 문제점</h4>
+                        <ul class="content-list">
+                            <li><strong>임의의 위치 선택</strong>: 자원의 중심점에서 동일한 거리의 4개 지점 중 랜덤 선택</li>
+                            <li><strong>비효율적인 이동</strong>: Worker가 자원의 뒤쪽으로 돌아가는 경우</li>
+                            <li><strong>불필요한 우회</strong>: Command Post 반환 시에도 비효율적인 경로</li>
+                            <li><strong>부자연스러운 동작</strong>: RTS 게임다운 직관적이지 않은 이동</li>
+                        </ul>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>✅ 개선된 해결책</h4>
+                        <ul class="content-list">
+                            <li><strong>ClosestPoint API</strong>: Collider에서 가장 가까운 지점 계산</li>
+                            <li><strong>최적화된 경로</strong>: Worker 위치를 고려한 최단 경로</li>
+                            <li><strong>자연스러운 이동</strong>: 직관적이고 효율적인 이동 패턴</li>
+                            <li><strong>성능 향상</strong>: 불필요한 이동 시간 단축</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h3>📝 MoveToTargetGameObjectAction 개선</h3>
+                    
+                    <div class="code-block">
+<span class="comment">// MoveToTargetGameObjectAction.cs - 개선된 GameObject 이동 액션</span>
+<span class="comment">// Collider.ClosestPoint를 사용하여 최적의 위치 선택</span>
+
+<span class="keyword">using</span> <span class="class-name">System</span>;
+<span class="keyword">using</span> <span class="class-name">Unity.Behavior</span>;
+<span class="keyword">using</span> <span class="class-name">UnityEngine</span>;
+<span class="keyword">using</span> <span class="class-name">Action</span> = <span class="class-name">Unity.Behavior.Action</span>;
+<span class="keyword">using</span> <span class="class-name">Unity.Properties</span>;
+<span class="keyword">using</span> <span class="class-name">UnityEngine.AI</span>;
+
+<span class="keyword">namespace</span> <span class="class-name">GameDevTV.RTS.Behavior</span>
+{
+    <span class="comment">// Serializable: Unity에서 직렬화 가능하도록 하는 속성</span>
+    <span class="comment">// GeneratePropertyBag: Unity Behavior Tree에서 사용하는 속성 백 생성</span>
+    [<span class="class-name">Serializable</span>, <span class="class-name">GeneratePropertyBag</span>]
+    
+    <span class="comment">// NodeDescription: Behavior Tree 에디터에서 노드의 설명을 정의</span>
+    <span class="comment">// name: 노드의 이름</span>
+    <span class="comment">// story: 노드의 동작을 설명하는 텍스트</span>
+    <span class="comment">// category: 노드가 속할 카테고리 (Action/Navigation)</span>
+    <span class="comment">// id: 노드의 고유 식별자</span>
+    [<span class="class-name">NodeDescription</span>(<span class="parameter">name</span>: <span class="string">"Move to Target GameObject"</span>, <span class="parameter">story</span>: <span class="string">"[Agent] moves to [TargetGameObject] ."</span>, <span class="parameter">category</span>: <span class="string">"Action/Navigation"</span>, <span class="parameter">id</span>: <span class="string">"f07a8fab1fc459315f3380eef35b2aa0"</span>)]
+    
+    <span class="comment">// MoveToTargetGameObjectAction: GameObject로 이동하는 액션 노드</span>
+    <span class="comment">// partial: 클래스가 여러 파일에 나뉘어 정의될 수 있음 (Unity Behavior Tree가 자동 생성)</span>
+    <span class="keyword">public partial class</span> <span class="class-name">MoveToTargetGameObjectAction</span> : <span class="class-name">Action</span>
+    {
+        <span class="comment">// Agent: 이동할 NavMesh Agent가 있는 GameObject</span>
+        <span class="comment">// SerializeReference: Unity에서 직렬화 가능한 참조</span>
+        <span class="comment">// BlackboardVariable: Behavior Tree의 Blackboard에서 가져오는 변수</span>
+        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="property-name">Agent</span>;
+        
+        <span class="comment">// TargetGameObject: 이동할 대상 GameObject</span>
+        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="property-name">TargetGameObject</span>;
+
+        <span class="comment">// agent: NavMesh Agent 컴포넌트 참조</span>
+        <span class="comment">// private: 클래스 내부에서만 접근 가능</span>
+        <span class="keyword">private</span> <span class="class-name">NavMeshAgent</span> <span class="field-name">agent</span>;
+
+        <span class="comment">// OnStart: 액션이 시작될 때 호출되는 메서드</span>
+        <span class="comment">// Status: 액션의 실행 상태 (Success, Failure, Running)</span>
+        <span class="keyword">protected override</span> <span class="class-name">Status</span> <span class="method-name">OnStart</span>()
+        {
+            <span class="comment">// TryGetComponent: Agent GameObject에서 NavMeshAgent 컴포넌트를 가져옴</span>
+            <span class="comment">// out agent: 가져온 NavMeshAgent를 저장할 변수</span>
+            <span class="comment">// !: 논리 부정 연산자 (실패 시 true)</span>
+            <span class="keyword">if</span> (!<span class="property-name">Agent</span>.<span class="property-name">Value</span>.<span class="method-name">TryGetComponent</span>(<span class="keyword">out</span> <span class="field-name">agent</span>))
+            {
+                <span class="comment">// Failure: NavMeshAgent가 없는 경우</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Failure</span>;
+            }
+
+            <span class="comment">// GetTargetPosition: 최적의 목표 위치를 계산하는 메서드</span>
+            <span class="comment">// Vector3: 3차원 벡터 (x, y, z 좌표)</span>
+            <span class="class-name">Vector3</span> <span class="field-name">targetPosition</span> = <span class="method-name">GetTargetPosition</span>();
+
+            <span class="comment">// Vector3.Distance: 두 점 사이의 거리 계산</span>
+            <span class="comment">// agent.transform.position: 현재 NavMesh Agent의 위치</span>
+            <span class="comment">// agent.stoppingDistance: NavMesh Agent의 정지 거리</span>
+            <span class="comment">// <=: 작거나 같음 비교 연산자</span>
+            <span class="keyword">if</span> (<span class="class-name">Vector3</span>.<span class="method-name">Distance</span>(<span class="field-name">agent</span>.<span class="property-name">transform</span>.<span class="property-name">position</span>, <span class="field-name">targetPosition</span>) &lt;= <span class="field-name">agent</span>.<span class="property-name">stoppingDistance</span>)
+            {
+                <span class="comment">// Success: 이미 목표 위치에 도달한 경우</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Success</span>;
+            }
+
+            <span class="comment">// SetDestination: NavMesh Agent의 목표 위치 설정</span>
+            <span class="comment">// targetPosition: 계산된 최적의 목표 위치</span>
+            <span class="field-name">agent</span>.<span class="method-name">SetDestination</span>(<span class="field-name">targetPosition</span>);
+            
+            <span class="comment">// Running: 이동을 시작했으므로 계속 실행 중</span>
+            <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Running</span>;
+        }
+
+        <span class="comment">// OnUpdate: 액션이 실행 중일 때 매 프레임 호출되는 메서드</span>
+        <span class="keyword">protected override</span> <span class="class-name">Status</span> <span class="method-name">OnUpdate</span>()
+        {
+            <span class="comment">// remainingDistance: 목표까지 남은 거리</span>
+            <span class="comment">// stoppingDistance: 정지 거리</span>
+            <span class="keyword">if</span> (<span class="field-name">agent</span>.<span class="property-name">remainingDistance</span> &lt;= <span class="field-name">agent</span>.<span class="property-name">stoppingDistance</span>)
+            {
+                <span class="comment">// Success: 목표 위치에 도달함</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Success</span>;
+            }
+
+            <span class="comment">// Running: 아직 이동 중</span>
+            <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Running</span>;
+        }
+
+        <span class="comment">// GetTargetPosition: 최적의 목표 위치를 계산하는 private 메서드</span>
+        <span class="comment">// private: 클래스 내부에서만 호출 가능</span>
+        <span class="comment">// Vector3: 반환 타입 (3차원 벡터)</span>
+        <span class="keyword">private</span> <span class="class-name">Vector3</span> <span class="method-name">GetTargetPosition</span>()
+        {
+            <span class="comment">// targetPosition: 계산될 목표 위치를 저장할 변수</span>
+            <span class="class-name">Vector3</span> <span class="field-name">targetPosition</span>;
+            
+            <span class="comment">// TryGetComponent: TargetGameObject에서 Collider 컴포넌트를 가져옴</span>
+            <span class="comment">// out collider: 가져온 Collider를 저장할 변수</span>
+            <span class="keyword">if</span> (<span class="property-name">TargetGameObject</span>.<span class="property-name">Value</span>.<span class="method-name">TryGetComponent</span>(<span class="keyword">out</span> <span class="class-name">Collider</span> <span class="field-name">collider</span>))
+            {
+                <span class="comment">// ClosestPoint: Collider에서 가장 가까운 지점을 계산</span>
+                <span class="comment">// agent.transform.position: 현재 NavMesh Agent의 위치</span>
+                <span class="comment">// 반환값: Collider 표면에서 Agent에 가장 가까운 지점</span>
+                <span class="field-name">targetPosition</span> = <span class="field-name">collider</span>.<span class="method-name">ClosestPoint</span>(<span class="field-name">agent</span>.<span class="property-name">transform</span>.<span class="property-name">position</span>);
+            }
+            <span class="keyword">else</span>
+            {
+                <span class="comment">// Collider가 없는 경우: GameObject의 transform.position 사용</span>
+                <span class="comment">// TargetGameObject.Value.transform.position: GameObject의 중심 위치</span>
+                <span class="field-name">targetPosition</span> = <span class="property-name">TargetGameObject</span>.<span class="property-name">Value</span>.<span class="property-name">transform</span>.<span class="property-name">position</span>;
+            }
+
+            <span class="comment">// 계산된 목표 위치 반환</span>
+            <span class="keyword">return</span> <span class="field-name">targetPosition</span>;
+        }
+    }
+}
+</div>
+                </div>
+
+                <div class="content-section">
+                    <h3>🔧 Worker.Gather() 메서드 업데이트</h3>
+                    
+                    <div class="code-block">
+<span class="comment">// Worker.cs - 개선된 자원 수집 메서드</span>
+<span class="comment">// TargetGameObject를 사용하여 더 정확한 위치 설정</span>
+
+<span class="keyword">using</span> <span class="class-name">GameDevTV.RTS.Environment</span>;
+
+<span class="keyword">namespace</span> <span class="class-name">GameDevTV.RTS.Units</span>
+{
+    <span class="comment">// Worker: AbstractUnit을 상속하고 IGatherer 인터페이스를 구현</span>
+    <span class="comment">// IGatherer: 자원 수집 기능을 제공하는 인터페이스</span>
+    <span class="keyword">public class</span> <span class="class-name">Worker</span> : <span class="class-name">AbstractUnit</span>, <span class="class-name">IGatherer</span>
+    {
+        <span class="comment">// Gather: 자원 수집을 시작하는 메서드</span>
+        <span class="comment">// public: 외부에서 호출 가능</span>
+        <span class="comment">// void: 반환값 없음</span>
+        <span class="comment">// GatherableSupply supply: 수집할 자원 객체</span>
+        <span class="keyword">public void</span> <span class="method-name">Gather</span>(<span class="class-name">GatherableSupply</span> <span class="field-name">supply</span>)
+        {
+            <span class="comment">// SetVariableValue: Behavior Tree의 Blackboard에 변수 설정</span>
+            <span class="comment">// "Supply": Blackboard 변수 이름</span>
+            <span class="comment">// supply: 설정할 값 (GatherableSupply 객체)</span>
+            <span class="property-name">graphAgent</span>.<span class="method-name">SetVariableValue</span>(<span class="string">"Supply"</span>, <span class="field-name">supply</span>);
+            
+            <span class="comment">// SetVariableValue: Behavior Tree의 Blackboard에 변수 설정</span>
+            <span class="comment">// "TargetGameObject": Blackboard 변수 이름</span>
+            <span class="comment">// supply.gameObject: 수집할 자원의 GameObject</span>
+            <span class="comment">// 이전: TargetLocation (Vector3) 사용</span>
+            <span class="comment">// 개선: TargetGameObject (GameObject) 사용으로 Collider.ClosestPoint 활용 가능</span>
+            <span class="property-name">graphAgent</span>.<span class="method-name">SetVariableValue</span>(<span class="string">"TargetGameObject"</span>, <span class="field-name">supply</span>.<span class="property-name">gameObject</span>);
+            
+            <span class="comment">// SetVariableValue: Behavior Tree의 Blackboard에 변수 설정</span>
+            <span class="comment">// "Command": Blackboard 변수 이름</span>
+            <span class="comment">// UnitCommands.Gather: 수집 명령</span>
+            <span class="property-name">graphAgent</span>.<span class="method-name">SetVariableValue</span>(<span class="string">"Command"</span>, <span class="class-name">UnitCommands</span>.<span class="property-name">Gather</span>);
+        }
+    }
+}
+</div>
+                </div>
+
+                <div class="content-section">
+                    <h3>🎮 Behavior Tree 구조 업데이트</h3>
+                    
+                    <div class="tech-stack">
+                        <h4>📊 새로운 Blackboard 변수</h4>
+                        <ul class="content-list">
+                            <li><strong>TargetGameObject</strong>: 이동할 대상 GameObject (GameObject)</li>
+                            <li><strong>TargetLocation</strong>: 이동할 위치 (Vector3) - 기존 유지</li>
+                            <li><strong>Supply</strong>: 수집할 자원 (GatherableSupply)</li>
+                            <li><strong>Command</strong>: 현재 명령 (UnitCommands)</li>
+                        </ul>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>🔄 업데이트된 트리 구조</h4>
+                        <ol class="content-list">
+                            <li><strong>OnStart</strong>: 트리 시작점</li>
+                            <li><strong>Abort 노드</strong>: 명령 변경 시 즉시 중단</li>
+                            <li><strong>Switch 노드</strong>: 명령에 따른 분기</li>
+                            <li><strong>Gather 브랜치</strong>: 자원 수집 로직</li>
+                            <li><strong>SetAgentAvoidance (0)</strong>: 자원 수집 시 No Obstacle Avoidance</li>
+                            <li><strong>Sequence</strong>: 순차적으로 실행되는 노드들</li>
+                            <li><strong>MoveToTargetGameObject</strong>: 자원 GameObject로 이동 (개선됨)</li>
+                            <li><strong>GatherSupplies</strong>: 자원 수집 실행</li>
+                            <li><strong>FindClosestCommandPost</strong>: 가장 가까운 Command Post 찾기</li>
+                            <li><strong>MoveToTargetGameObject</strong>: Command Post GameObject로 이동 (개선됨)</li>
+                            <li><strong>SetAgentAvoidance (4)</strong>: 일반 이동 시 High Quality</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h3>🔧 Collider.ClosestPoint API</h3>
+                    
+                    <div class="tech-stack">
+                        <h4>📋 API 설명</h4>
+                        <ul class="content-list">
+                            <li><strong>Collider.ClosestPoint(Vector3 point)</strong>: Collider 표면에서 가장 가까운 지점 반환</li>
+                            <li><strong>매개변수</strong>: 기준점이 되는 Vector3 위치</li>
+                            <li><strong>반환값</strong>: Collider 표면에서 가장 가까운 Vector3 위치</li>
+                            <li><strong>용도</strong>: 정확한 접근 지점 계산</li>
+                        </ul>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>🎯 활용 예시</h4>
+                        <ul class="content-list">
+                            <li><strong>자원 수집</strong>: Worker 위치에서 자원 Collider까지의 최단 지점</li>
+                            <li><strong>건물 접근</strong>: 유닛 위치에서 건물 Collider까지의 최단 지점</li>
+                            <li><strong>장애물 회피</strong>: 장애물 주변의 안전한 경로 계산</li>
+                            <li><strong>정확한 배치</strong>: 객체 주변의 정확한 배치 위치</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h3>❓ 왜 필요한가?</h3>
+                    
+                    <div class="tech-stack">
+                        <h4>🎮 게임 개발 관점</h4>
+                        <p><strong>직관적인 이동</strong>: RTS 게임다운 자연스러운 이동 패턴</p>
+                        <p><strong>효율성</strong>: 불필요한 우회 이동 제거</p>
+                        <p><strong>사용자 경험</strong>: 예측 가능하고 합리적인 유닛 동작</p>
+                        <p><strong>게임플레이</strong>: 더 빠르고 효율적인 자원 수집</p>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>🔧 기술적 장점</h4>
+                        <p><strong>정확한 계산</strong>: Collider의 실제 모양을 고려한 위치 계산</p>
+                        <p><strong>유연성</strong>: 다양한 크기와 모양의 객체에 적용 가능</p>
+                        <p><strong>성능</strong>: Unity 내장 API 사용으로 최적화된 성능</p>
+                        <p><strong>확장성</strong>: 다른 이동 시나리오에도 적용 가능</p>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>⚠️ 주의사항</h4>
+                        <p><strong>Collider 존재 확인</strong>: TryGetComponent로 안전한 접근</p>
+                        <p><strong>폴백 로직</strong>: Collider가 없는 경우 기존 방식 사용</p>
+                        <p><strong>성능 고려</strong>: 매 프레임 호출 시 성능 영향 고려</p>
+                        <p><strong>정확도</strong>: Collider의 복잡도에 따른 계산 정확도</p>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h3>🎮 노바1492 적용 포인트</h3>
+                    <ul class="content-list">
+                        <li><strong>정확한 건물 접근</strong>: 건물의 입구나 특정 지점으로 정확한 접근</li>
+                        <li><strong>자원 수집 최적화</strong>: 자원에서 가장 효율적인 수집 지점 선택</li>
+                        <li><strong>전투 위치 계산</strong>: 적 건물이나 유닛에 대한 최적의 공격 위치</li>
+                        <li><strong>건설 위치 선택</strong>: 건물 건설 시 가장 적절한 위치 계산</li>
+                        <li><strong>탐색 최적화</strong>: 탐색 대상에 대한 효율적인 접근 경로</li>
+                    </ul>
+                </div>
+
+                <div class="content-section">
+                    <h3>🔑 핵심 기술 개념</h3>
+                    <ul class="content-list">
+                        <li><strong>Collider.ClosestPoint</strong>: Collider에서 가장 가까운 지점 계산 API</li>
+                        <li><strong>TryGetComponent</strong>: 안전한 컴포넌트 접근 방법</li>
+                        <li><strong>폴백 로직</strong>: 대안적 처리 방식 제공</li>
+                        <li><strong>Blackboard 변수</strong>: Behavior Tree의 데이터 통신</li>
+                        <li><strong>GameObject vs Vector3</strong>: 위치 정보의 표현 방식 차이</li>
+                        <li><strong>최적화된 경로</strong>: 효율적인 이동 경로 계산</li>
+                        <li><strong>RTS 게임 패턴</strong>: 전략 게임의 표준적인 이동 방식</li>
+                        <li><strong>사용자 경험</strong>: 직관적이고 예측 가능한 동작</li>
                     </ul>
                 </div>
             </div>
