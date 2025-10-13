@@ -1895,6 +1895,287 @@
             </div>
 
         </div>
+        
+        <!-- Lecture 44: Smart Gathering -->
+        <div class="lecture-section">
+            <h2 id="lecture-44">강의 44: Smart Gathering - 지능적인 자원 수집</h2>
+            
+            <div class="lecture-content">
+                <h3>🎯 왜 필요한가?</h3>
+                <p>기존 시스템에서는 Worker가 지정된 자원에만 집착해서, 그 자원이 다른 Worker에 의해 사용 중이면 계속 기다리기만 했습니다. 이는 비효율적이고 Worker들이 제대로 활용되지 않는 문제가 있었습니다.</p>
+                
+                <h3>🧠 초딩도 이해하기 쉬운 설명</h3>
+                <p>마치 여러 명이 같은 과자 봉지를 두고 싸우는 것과 같습니다. 한 명이 과자를 먹고 있으면 다른 사람들은 그냥 기다려야 했어요. 하지만 이제는 주변에 다른 과자 봉지가 있는지 살펴보고, 비어있는 과자 봉지로 가서 먹을 수 있게 됩니다!</p>
+                
+                <h3>🔧 핵심 구현</h3>
+                
+                <h4>1. MoveToGatherableSupplyAction</h4>
+                <p>기존의 단순한 이동 대신, 지능적인 자원 선택 로직을 포함한 새로운 액션:</p>
+                
+                <div class="code-block">
+<pre><code>// MoveToGatherableSupplyAction.cs - 지능적인 자원 수집 액션
+// 바쁘지 않은 자원을 찾아서 이동하는 스마트한 시스템
+
+using GameDevTV.RTS.Environment;
+using System;
+using Unity.Behavior;
+using UnityEngine;
+using Action = Unity.Behavior.Action;
+using Unity.Properties;
+using UnityEngine.AI;
+using System.Collections.Generic;
+using System.Linq;
+using GameDevTV.RTS.Utilities;
+
+namespace GameDevTV.RTS.Behavior
+{
+    // Serializable: Unity에서 직렬화 가능하도록 하는 속성
+    // GeneratePropertyBag: Unity Behavior Tree에서 사용하는 속성 백 생성
+    [Serializable, GeneratePropertyBag]
+    
+    // NodeDescription: Behavior Tree 에디터에서 노드의 설명을 정의
+    // name: 노드의 이름
+    // story: 노드의 동작을 설명하는 텍스트
+    // category: 노드가 속할 카테고리 (Action/Navigation)
+    // id: 노드의 고유 식별자
+    [NodeDescription(
+        name: "Move to GatherableSupply", 
+        story: "[Agent] moves to [Supply] or nearby not busy supply.", 
+        category: "Action/Navigation", 
+        id: "b9248f874f11b1a358e671809522dbfc"
+    )]
+    
+    // MoveToGatherableSupplyAction: 지능적인 자원 수집을 위한 액션 노드
+    // partial: 클래스가 여러 파일에 나뉘어 정의될 수 있음 (Unity Behavior Tree가 자동 생성)
+    public partial class MoveToGatherableSupplyAction : Action
+    {
+        // Agent: 이동할 NavMesh Agent가 있는 GameObject
+        // SerializeReference: Unity에서 직렬화 가능한 참조
+        // BlackboardVariable: Behavior Tree의 Blackboard에서 가져오는 변수
+        [SerializeReference] 
+        public BlackboardVariable<GameObject> Agent;
+        
+        // Supply: 수집할 자원 객체
+        [SerializeReference] 
+        public BlackboardVariable<GatherableSupply> Supply;
+        
+        // SearchRadius: 주변 자원을 찾을 반경
+        // float: 실수형 (미터 단위)
+        // new(7f): 기본값 7미터로 초기화
+        [SerializeReference] 
+        public BlackboardVariable<float> SearchRadius = new(7f);
+
+        // agent: NavMesh Agent 컴포넌트 참조
+        // private: 클래스 내부에서만 접근 가능
+        private NavMeshAgent agent;
+        
+        // suppliesMask: Supplies 레이어 마스크
+        // LayerMask: 레이어 마스크 타입
+        private LayerMask suppliesMask;
+
+        // OnStart: 액션이 시작될 때 호출되는 메서드
+        // Status: 액션의 실행 상태 (Success, Failure, Running)
+        protected override Status OnStart()
+        {
+            // TryGetComponent: Agent GameObject에서 NavMeshAgent 컴포넌트를 가져옴
+            // out agent: 가져온 NavMeshAgent를 저장할 변수
+            // !: 논리 부정 연산자 (실패 시 true)
+            if (!Agent.Value.TryGetComponent(out agent))
+            {
+                // Failure: NavMeshAgent가 없는 경우
+                return Status.Failure;
+            }
+
+            // LayerMask.GetMask: "Supplies" 레이어의 마스크를 가져옴
+            // 이렇게 하면 Supplies 레이어에 있는 객체만 검사
+            suppliesMask = LayerMask.GetMask("Supplies");
+
+            // GetTargetPosition: 현재 자원의 최적 위치를 계산
+            Vector3 targetPosition = GetTargetPosition();
+
+            // SetDestination: NavMesh Agent의 목표 위치 설정
+            // targetPosition: 계산된 목표 위치
+            agent.SetDestination(targetPosition);
+            
+            // Running: 이동을 시작했으므로 계속 실행 중
+            return Status.Running;
+        }
+
+        // OnUpdate: 액션이 실행 중일 때 매 프레임 호출되는 메서드
+        protected override Status OnUpdate()
+        {
+            // remainingDistance: 목표까지 남은 거리
+            // stoppingDistance: 정지 거리
+            // >=: 크거나 같음 비교 연산자
+            if (agent.remainingDistance >= agent.stoppingDistance)
+            {
+                // Running: 아직 목표에 도달하지 못함
+                return Status.Running;
+            }
+
+            // IsBusy: 자원이 다른 Worker에 의해 사용 중인지 확인
+            // Amount: 자원의 남은 양
+            // !: 논리 부정 연산자
+            // &&: 논리 AND 연산자
+            if (!Supply.Value.IsBusy && Supply.Value.Amount > 0)
+            {
+                // Success: 자원이 사용 가능하고 양이 남아있음
+                return Status.Success;
+            }
+
+            // Physics.OverlapSphere: 구체 모양의 영역에서 Collider들을 찾음
+            // agent.transform.position: 현재 NavMesh Agent의 위치
+            // SearchRadius: 탐색 반경
+            // suppliesMask: Supplies 레이어만 검사
+            // .Where(): LINQ 확장 메서드로 조건에 맞는 요소만 필터링
+            // .ToArray(): 필터링된 결과를 배열로 변환
+            Collider[] colliders = Physics.OverlapSphere(
+                agent.transform.position,
+                SearchRadius,
+                suppliesMask
+            ).Where(collider => 
+                    // TryGetComponent: Collider에서 GatherableSupply 컴포넌트를 가져옴
+                    // out supply: 가져온 GatherableSupply를 저장할 변수
+                    collider.TryGetComponent(out GatherableSupply supply)
+                    // !supply.IsBusy: 자원이 사용 중이 아님
+                    && !supply.IsBusy
+                    // supply.Supply.Equals: 같은 타입의 자원인지 확인
+                    // Supply.Value.Supply: 원래 목표했던 자원의 타입
+                    && supply.Supply.Equals(Supply.Value.Supply)
+            ).ToArray();
+
+            // colliders.Length: 찾은 자원의 개수
+            if (colliders.Length > 0)
+            {
+                // Array.Sort: 배열을 정렬
+                // colliders: 정렬할 Collider 배열
+                // ClosestColliderComparer: 거리 기준으로 정렬하는 비교자
+                // agent.transform.position: 거리 계산의 기준점
+                Array.Sort(colliders, new ClosestColliderComparer(agent.transform.position));
+
+                // colliders[0]: 가장 가까운 자원 (정렬 후 첫 번째)
+                // GetComponent: Collider에서 GatherableSupply 컴포넌트를 가져옴
+                // Supply.Value: Blackboard의 Supply 변수에 새로운 자원 설정
+                Supply.Value = colliders[0].GetComponent<GatherableSupply>();
+                
+                // SetDestination: 새로운 자원으로 이동
+                // GetTargetPosition: 새로운 자원의 최적 위치 계산
+                agent.SetDestination(GetTargetPosition());
+                
+                // Running: 새로운 자원으로 이동 중
+                return Status.Running;
+            }
+
+            // Failure: 주변에 사용 가능한 자원이 없음
+            return Status.Failure;
+        }
+
+        // GetTargetPosition: 최적의 목표 위치를 계산하는 private 메서드
+        // private: 클래스 내부에서만 호출 가능
+        // Vector3: 반환 타입 (3차원 벡터)
+        private Vector3 GetTargetPosition()
+        {
+            // targetPosition: 계산될 목표 위치를 저장할 변수
+            Vector3 targetPosition;
+            
+            // TryGetComponent: Supply GameObject에서 Collider 컴포넌트를 가져옴
+            // out collider: 가져온 Collider를 저장할 변수
+            if (Supply.Value.TryGetComponent(out Collider collider))
+            {
+                // ClosestPoint: Collider에서 가장 가까운 지점을 계산
+                // agent.transform.position: 현재 NavMesh Agent의 위치
+                // 반환값: Collider 표면에서 Agent에 가장 가까운 지점
+                targetPosition = collider.ClosestPoint(agent.transform.position);
+            }
+            else
+            {
+                // Collider가 없는 경우: GameObject의 transform.position 사용
+                // Supply.Value.transform.position: 자원 GameObject의 중심 위치
+                targetPosition = Supply.Value.transform.position;
+            }
+
+            // 계산된 목표 위치 반환
+            return targetPosition;
+        }
+    }
+}</code></pre>
+                </div>
+                
+                <h4>2. ClosestColliderComparer</h4>
+                <p>거리 기준으로 Collider들을 정렬하는 유틸리티 클래스:</p>
+                
+                <div class="code-block">
+<pre><code>// ClosestColliderComparer.cs - 거리 기준 Collider 정렬기
+// 가장 가까운 자원을 찾기 위한 비교자
+
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace GameDevTV.RTS.Utilities
+{
+    // ClosestColliderComparer: Collider들을 거리 기준으로 정렬하는 구조체
+    // struct: 값 타입 (메모리 효율적)
+    // IComparer<Collider>: Collider 비교를 위한 인터페이스 구현
+    public struct ClosestColliderComparer : IComparer<Collider>
+    {
+        // targetPosition: 거리 계산의 기준점
+        // private: 구조체 내부에서만 접근 가능
+        // Vector3: 3차원 벡터 (x, y, z 좌표)
+        private Vector3 targetPosition;
+
+        // 생성자: 기준점을 받아서 초기화
+        // public: 외부에서 호출 가능
+        // Vector3 position: 거리 계산의 기준점
+        public ClosestColliderComparer(Vector3 position)
+        {
+            // targetPosition: 기준점 저장
+            targetPosition = position;
+        }
+
+        // Compare: 두 Collider를 비교하는 메서드
+        // public: 외부에서 호출 가능
+        // int: 반환 타입 (음수, 0, 양수)
+        // Collider x, y: 비교할 두 Collider
+        public int Compare(Collider x, Collider y)
+        {
+            // sqrMagnitude: 벡터의 제곱 크기 (거리 계산에 효율적)
+            // transform.position: Collider의 위치
+            // -: 벡터 빼기 연산
+            // CompareTo: 두 값을 비교하여 정렬 순서 결정
+            return (x.transform.position - targetPosition).sqrMagnitude
+                .CompareTo((y.transform.position - targetPosition).sqrMagnitude);
+        }
+    }
+}</code></pre>
+                </div>
+                
+                <h3>🔄 동작 과정</h3>
+                <ol>
+                    <li><strong>초기 이동</strong>: 지정된 자원으로 이동 시작</li>
+                    <li><strong>도달 확인</strong>: 자원에 도달했는지 확인</li>
+                    <li><strong>사용 가능성 체크</strong>: 자원이 사용 가능하고 양이 남아있는지 확인</li>
+                    <li><strong>대안 탐색</strong>: 사용 불가능하면 주변 7미터 내에서 같은 타입의 사용 가능한 자원 탐색</li>
+                    <li><strong>가장 가까운 자원 선택</strong>: ClosestColliderComparer로 가장 가까운 자원 선택</li>
+                    <li><strong>새로운 목표로 이동</strong>: 선택된 자원으로 이동</li>
+                </ol>
+                
+                <h3>🎮 게임에서의 효과</h3>
+                <ul>
+                    <li><strong>효율성 향상</strong>: Worker들이 더 이상 한 자원에만 집착하지 않음</li>
+                    <li><strong>자동 분산</strong>: 여러 Worker가 같은 자원을 타겟팅해도 자동으로 분산됨</li>
+                    <li><strong>대기 시간 단축</strong>: 바쁜 자원을 기다리지 않고 다른 자원으로 이동</li>
+                    <li><strong>자연스러운 동작</strong>: 실제 RTS 게임과 같은 지능적인 자원 수집</li>
+                </ul>
+                
+                <h3>🔧 기술적 특징</h3>
+                <ul>
+                    <li><strong>LINQ 활용</strong>: Where()와 ToArray()로 효율적인 필터링</li>
+                    <li><strong>커스텀 비교자</strong>: ClosestColliderComparer로 거리 기준 정렬</li>
+                    <li><strong>LayerMask 최적화</strong>: Supplies 레이어만 검사하여 성능 향상</li>
+                    <li><strong>동적 목표 변경</strong>: Blackboard의 Supply 변수를 실시간으로 업데이트</li>
+                </ul>
+            </div>
+        </div>
     </div>
 </body>
 </html>
