@@ -1387,7 +1387,12 @@
     <span class="comment">// story: 노드의 동작을 설명하는 텍스트</span>
     <span class="comment">// category: 노드가 속할 카테고리 (Action/Navigation)</span>
     <span class="comment">// id: 노드의 고유 식별자</span>
-    [<span class="class-name">NodeDescription</span>(<span class="parameter">name</span>: <span class="string">"Set Agent Avoidance"</span>, <span class="parameter">story</span>: <span class="string">"Set [Agent] avoidance quality to [AvoidanceQuality] ."</span>, <span class="parameter">category</span>: <span class="string">"Action/Navigation"</span>, <span class="parameter">id</span>: <span class="string">"3a4f7ab7967bf186b0c645339d0ace1e"</span>)]
+    [<span class="class-name">NodeDescription</span>(
+        <span class="parameter">name</span>: <span class="string">"Set Agent Avoidance"</span>, 
+        <span class="parameter">story</span>: <span class="string">"Set [Agent] avoidance quality to [AvoidanceQuality] ."</span>, 
+        <span class="parameter">category</span>: <span class="string">"Action/Navigation"</span>, 
+        <span class="parameter">id</span>: <span class="string">"3a4f7ab7967bf186b0c645339d0ace1e"</span>
+    )]
     
     <span class="comment">// SetAgentAvoidanceAction: NavMesh Agent의 Obstacle Avoidance를 설정하는 액션 노드</span>
     <span class="comment">// partial: 클래스가 여러 파일에 나뉘어 정의될 수 있음 (Unity Behavior Tree가 자동 생성)</span>
@@ -1396,11 +1401,13 @@
         <span class="comment">// Agent: 설정할 NavMesh Agent가 있는 GameObject</span>
         <span class="comment">// SerializeReference: Unity에서 직렬화 가능한 참조</span>
         <span class="comment">// BlackboardVariable: Behavior Tree의 Blackboard에서 가져오는 변수</span>
-        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="property-name">Agent</span>;
+        [<span class="class-name">SerializeReference</span>] 
+        <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="property-name">Agent</span>;
         
         <span class="comment">// AvoidanceQuality: 설정할 avoidance 품질 (0-4)</span>
         <span class="comment">// int: 정수형 (0=No, 1=Low, 2=Medium, 3=Good, 4=High)</span>
-        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="keyword">int</span>&gt; <span class="property-name">AvoidanceQuality</span>;
+        [<span class="class-name">SerializeReference</span>] 
+        <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="keyword">int</span>&gt; <span class="property-name">AvoidanceQuality</span>;
 
         <span class="comment">// OnStart: 액션이 시작될 때 호출되는 메서드</span>
         <span class="comment">// Status: 액션의 실행 상태 (Success, Failure, Running)</span>
@@ -1411,7 +1418,9 @@
             <span class="comment">// !: 논리 부정 연산자 (실패 시 true)</span>
             <span class="comment">// AvoidanceQuality > 4: 유효하지 않은 높은 값</span>
             <span class="comment">// AvoidanceQuality < 0: 유효하지 않은 낮은 값</span>
-            <span class="keyword">if</span> (!<span class="property-name">Agent</span>.<span class="property-name">Value</span>.<span class="method-name">TryGetComponent</span>(<span class="keyword">out</span> <span class="class-name">NavMeshAgent</span> <span class="field-name">agent</span>) || <span class="property-name">AvoidanceQuality</span>.<span class="property-name">Value</span> > <span class="number">4</span> || <span class="property-name">AvoidanceQuality</span>.<span class="property-name">Value</span> &lt; <span class="number">0</span>)
+            <span class="keyword">if</span> (!<span class="property-name">Agent</span>.<span class="property-name">Value</span>.<span class="method-name">TryGetComponent</span>(<span class="keyword">out</span> <span class="class-name">NavMeshAgent</span> <span class="field-name">agent</span>) || 
+                <span class="property-name">AvoidanceQuality</span>.<span class="property-name">Value</span> > <span class="number">4</span> || 
+                <span class="property-name">AvoidanceQuality</span>.<span class="property-name">Value</span> &lt; <span class="number">0</span>)
             {
                 <span class="comment">// Failure: NavMeshAgent가 없거나 유효하지 않은 avoidance 품질</span>
                 <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Failure</span>;
@@ -1623,7 +1632,12 @@
     <span class="comment">// story: 노드의 동작을 설명하는 텍스트</span>
     <span class="comment">// category: 노드가 속할 카테고리 (Action/Navigation)</span>
     <span class="comment">// id: 노드의 고유 식별자</span>
-    [<span class="class-name">NodeDescription</span>(<span class="parameter">name</span>: <span class="string">"Move to Target GameObject"</span>, <span class="parameter">story</span>: <span class="string">"[Agent] moves to [TargetGameObject] ."</span>, <span class="parameter">category</span>: <span class="string">"Action/Navigation"</span>, <span class="parameter">id</span>: <span class="string">"f07a8fab1fc459315f3380eef35b2aa0"</span>)]
+    [<span class="class-name">NodeDescription</span>(
+        <span class="parameter">name</span>: <span class="string">"Move to Target GameObject"</span>, 
+        <span class="parameter">story</span>: <span class="string">"[Agent] moves to [TargetGameObject] ."</span>, 
+        <span class="parameter">category</span>: <span class="string">"Action/Navigation"</span>, 
+        <span class="parameter">id</span>: <span class="string">"f07a8fab1fc459315f3380eef35b2aa0"</span>
+    )]
     
     <span class="comment">// MoveToTargetGameObjectAction: GameObject로 이동하는 액션 노드</span>
     <span class="comment">// partial: 클래스가 여러 파일에 나뉘어 정의될 수 있음 (Unity Behavior Tree가 자동 생성)</span>
@@ -1632,10 +1646,12 @@
         <span class="comment">// Agent: 이동할 NavMesh Agent가 있는 GameObject</span>
         <span class="comment">// SerializeReference: Unity에서 직렬화 가능한 참조</span>
         <span class="comment">// BlackboardVariable: Behavior Tree의 Blackboard에서 가져오는 변수</span>
-        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="property-name">Agent</span>;
+        [<span class="class-name">SerializeReference</span>] 
+        <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="property-name">Agent</span>;
         
         <span class="comment">// TargetGameObject: 이동할 대상 GameObject</span>
-        [<span class="class-name">SerializeReference</span>] <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="property-name">TargetGameObject</span>;
+        [<span class="class-name">SerializeReference</span>] 
+        <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="property-name">TargetGameObject</span>;
 
         <span class="comment">// agent: NavMesh Agent 컴포넌트 참조</span>
         <span class="comment">// private: 클래스 내부에서만 접근 가능</span>
@@ -1662,7 +1678,10 @@
             <span class="comment">// agent.transform.position: 현재 NavMesh Agent의 위치</span>
             <span class="comment">// agent.stoppingDistance: NavMesh Agent의 정지 거리</span>
             <span class="comment">// <=: 작거나 같음 비교 연산자</span>
-            <span class="keyword">if</span> (<span class="class-name">Vector3</span>.<span class="method-name">Distance</span>(<span class="field-name">agent</span>.<span class="property-name">transform</span>.<span class="property-name">position</span>, <span class="field-name">targetPosition</span>) &lt;= <span class="field-name">agent</span>.<span class="property-name">stoppingDistance</span>)
+            <span class="keyword">if</span> (<span class="class-name">Vector3</span>.<span class="method-name">Distance</span>(
+                <span class="field-name">agent</span>.<span class="property-name">transform</span>.<span class="property-name">position</span>, 
+                <span class="field-name">targetPosition</span>
+            ) &lt;= <span class="field-name">agent</span>.<span class="property-name">stoppingDistance</span>)
             {
                 <span class="comment">// Success: 이미 목표 위치에 도달한 경우</span>
                 <span class="keyword">return</span> <span class="class-name">Status</span>.<span class="property-name">Success</span>;
