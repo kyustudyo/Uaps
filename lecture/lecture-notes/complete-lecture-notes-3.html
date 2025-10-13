@@ -2713,6 +2713,311 @@ protected override Status OnStart()
                 </ul>
             </div>
         </div>
+        
+        <!-- Lecture 46: Animation Synchronization -->
+        <div class="lecture-section">
+            <h2 id="lecture-46">강의 46: Animation Synchronization - 애니메이션 동기화</h2>
+            
+            <div class="lecture-content">
+                <h3>🎯 왜 필요한가?</h3>
+                <p>기존 시스템에서는 Worker들이 움직이고 자원을 수집할 때 애니메이션이 제대로 동기화되지 않았습니다. RTS 게임에서는 많은 유닛들이 동시에 움직이므로 성능을 고려한 효율적인 애니메이션 시스템이 필요합니다.</p>
+                
+                <h3>🧠 초딩도 이해하기 쉬운 설명</h3>
+                <p>마치 연극에서 배우들이 대사만 하고 몸짓은 하지 않는 것과 같아요! 이제는 Worker들이 실제로 뛰어다니고 자원을 캐는 모습을 보여줍니다. 마치 실제 사람처럼 걸을 때는 걷는 애니메이션, 뛸 때는 뛰는 애니메이션, 일할 때는 일하는 애니메이션을 보여줘요!</p>
+                
+                <h3>🔧 핵심 구현</h3>
+                
+                <h4>1. AnimationConstants 유틸리티 클래스</h4>
+                <p>애니메이션 파라미터 해시를 캐싱하여 성능을 최적화:</p>
+                
+                <div class="code-block">
+<span class="comment">// AnimationConstants.cs - 애니메이션 파라미터 상수</span>
+<span class="comment">// 성능 최적화를 위한 해시 캐싱</span>
+
+<span class="keyword">using</span> UnityEngine;
+
+<span class="keyword">namespace</span> GameDevTV.RTS.Utilities
+{
+    <span class="comment">// AnimationConstants: 애니메이션 파라미터 해시를 캐싱하는 정적 클래스</span>
+    <span class="comment">// static: 인스턴스를 생성하지 않고 클래스 이름으로 직접 접근</span>
+    <span class="comment">// public: 외부에서 접근 가능</span>
+    <span class="keyword">public static class</span> <span class="class-name">AnimationConstants</span>
+    {
+        <span class="comment">// SPEED: 이동 속도 애니메이션 파라미터</span>
+        <span class="comment">// public static int: 정적 정수 변수 (모든 인스턴스가 공유)</span>
+        <span class="comment">// Animator.StringToHash: 문자열을 정수 해시로 변환 (성능 최적화)</span>
+        <span class="comment">// "Speed": Animator Controller에서 정의된 파라미터 이름</span>
+        <span class="keyword">public static int</span> <span class="property-name">SPEED</span> = <span class="class-name">Animator</span>.StringToHash(<span class="string">"Speed"</span>);
+        
+        <span class="comment">// IS_GATHERING: 자원 수집 상태 애니메이션 파라미터</span>
+        <span class="comment">// "IsGathering": Animator Controller에서 정의된 불린 파라미터 이름</span>
+        <span class="keyword">public static int</span> <span class="property-name">IS_GATHERING</span> = <span class="class-name">Animator</span>.StringToHash(<span class="string">"IsGathering"</span>);
+    }
+}</div>
+                
+                <h4>2. MoveToTargetLocationAction 애니메이션 동기화</h4>
+                <p>이동 액션에서 속도 기반 애니메이션 제어:</p>
+                
+                <div class="code-block">
+<span class="comment">// MoveToTargetLocationAction.cs - 애니메이션 동기화가 추가된 이동 액션</span>
+<span class="comment">// NavMesh Agent의 속도에 따른 애니메이션 제어</span>
+
+<span class="keyword">using</span> System;
+<span class="keyword">using</span> Unity.Behavior;
+<span class="keyword">using</span> UnityEngine;
+<span class="keyword">using</span> Action = Unity.Behavior.Action;
+<span class="keyword">using</span> Unity.Properties;
+<span class="keyword">using</span> UnityEngine.AI;
+<span class="keyword">using</span> GameDevTV.RTS.Utilities;
+
+<span class="keyword">namespace</span> GameDevTV.RTS.Behavior
+{
+    [Serializable, GeneratePropertyBag]
+    [NodeDescription(
+        name: <span class="string">"Move to Target Location"</span>, 
+        story: <span class="string">"[Agent] moves to [TargetLocation] ."</span>, 
+        category: <span class="string">"Action/Navigation"</span>, 
+        id: <span class="string">"c96373f56a4b683d189e362795d042fa"</span>
+    )]
+    
+    <span class="keyword">public partial class</span> <span class="class-name">MoveToTargetLocationAction</span> : <span class="class-name">Action</span>
+    {
+        [SerializeReference] 
+        <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="property-name">Agent</span>;
+        
+        [SerializeReference] 
+        <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">Vector3</span>&gt; <span class="property-name">TargetLocation</span>;
+
+        <span class="comment">// agent: NavMesh Agent 컴포넌트 참조</span>
+        <span class="keyword">private</span> <span class="class-name">NavMeshAgent</span> agent;
+        
+        <span class="comment">// animator: Animator 컴포넌트 참조 (새로 추가)</span>
+        <span class="keyword">private</span> <span class="class-name">Animator</span> animator;
+
+        <span class="keyword">protected override</span> <span class="class-name">Status</span> OnStart()
+        {
+            <span class="comment">// TryGetComponent: Agent GameObject에서 NavMeshAgent 컴포넌트를 가져옴</span>
+            <span class="keyword">if</span> (!Agent.Value.TryGetComponent(<span class="keyword">out</span> agent))
+            {
+                <span class="comment">// Failure: NavMeshAgent가 없는 경우</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.Failure;
+            }
+
+            <span class="comment">// TryGetComponent: Agent GameObject에서 Animator 컴포넌트를 가져옴</span>
+            <span class="comment">// Animator가 없어도 액션은 실패하지 않음 (애니메이션만 없을 뿐)</span>
+            Agent.Value.TryGetComponent(<span class="keyword">out</span> animator);
+
+            <span class="comment">// Vector3.Distance: 두 점 사이의 거리 계산</span>
+            <span class="comment">// agent.stoppingDistance: NavMesh Agent의 정지 거리</span>
+            <span class="keyword">if</span> (<span class="class-name">Vector3</span>.Distance(agent.transform.position, TargetLocation.Value) <= agent.stoppingDistance)
+            {
+                <span class="comment">// Success: 이미 목표 위치에 도달한 경우</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.Success;
+            }
+
+            <span class="comment">// SetDestination: NavMesh Agent의 목표 위치 설정</span>
+            agent.SetDestination(TargetLocation.Value);
+
+            <span class="comment">// Running: 이동을 시작했으므로 계속 실행 중</span>
+            <span class="keyword">return</span> <span class="class-name">Status</span>.Running;
+        }
+
+        <span class="keyword">protected override</span> <span class="class-name">Status</span> OnUpdate()
+        {
+            <span class="comment">// animator != null: Animator 컴포넌트가 있는 경우</span>
+            <span class="keyword">if</span> (animator != <span class="keyword">null</span>)
+            {
+                <span class="comment">// SetFloat: Animator의 float 파라미터 설정</span>
+                <span class="comment">// AnimationConstants.SPEED: 캐싱된 해시 값 (성능 최적화)</span>
+                <span class="comment">// agent.velocity.magnitude: NavMesh Agent의 현재 속도 크기</span>
+                animator.SetFloat(<span class="class-name">AnimationConstants</span>.SPEED, agent.velocity.magnitude);
+            }
+            
+            <span class="comment">// remainingDistance: 목표까지 남은 거리</span>
+            <span class="comment">// stoppingDistance: 정지 거리</span>
+            <span class="keyword">if</span> (agent.remainingDistance <= agent.stoppingDistance)
+            {
+                <span class="comment">// Success: 목표 위치에 도달함</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.Success;
+            }
+
+            <span class="comment">// Running: 아직 이동 중</span>
+            <span class="keyword">return</span> <span class="class-name">Status</span>.Running;
+        }
+
+        <span class="comment">// OnEnd: 액션이 종료될 때 호출되는 메서드</span>
+        <span class="keyword">protected override void</span> OnEnd()
+        {
+            <span class="comment">// animator != null: Animator 컴포넌트가 있는 경우</span>
+            <span class="keyword">if</span> (animator != <span class="keyword">null</span>)
+            {
+                <span class="comment">// SetFloat: 속도를 0으로 설정하여 Idle 상태로 전환</span>
+                <span class="comment">// 액션 종료 시 애니메이션을 정지 상태로 리셋</span>
+                animator.SetFloat(<span class="class-name">AnimationConstants</span>.SPEED, <span class="number">0</span>);
+            }
+        }
+    }
+}</div>
+                
+                <h4>3. GatherSuppliesAction 애니메이션 동기화</h4>
+                <p>자원 수집 액션에서 수집 상태 애니메이션 제어:</p>
+                
+                <div class="code-block">
+<span class="comment">// GatherSuppliesAction.cs - 애니메이션 동기화가 추가된 자원 수집 액션</span>
+<span class="comment">// 수집 상태에 따른 애니메이션 제어</span>
+
+<span class="keyword">using</span> GameDevTV.RTS.Environment;
+<span class="keyword">using</span> System;
+<span class="keyword">using</span> Unity.Behavior;
+<span class="keyword">using</span> UnityEngine;
+<span class="keyword">using</span> Action = Unity.Behavior.Action;
+<span class="keyword">using</span> Unity.Properties;
+<span class="keyword">using</span> GameDevTV.RTS.Utilities;
+
+<span class="keyword">namespace</span> GameDevTV.RTS.Behavior
+{
+    [Serializable, GeneratePropertyBag]
+    [NodeDescription(
+        name: <span class="string">"Gather Supplies"</span>, 
+        story: <span class="string">"[Unit] gathers [Amount] supplies from [GatherableSupplies] ."</span>, 
+        category: <span class="string">"Action/Units"</span>, 
+        id: <span class="string">"3b941d7ae99d1e36b7d806875379c977"</span>
+    )]
+    
+    <span class="keyword">public partial class</span> <span class="class-name">GatherSuppliesAction</span> : <span class="class-name">Action</span>
+    {
+        [SerializeReference] 
+        <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="property-name">Unit</span>;
+        
+        [SerializeReference] 
+        <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="keyword">int</span>&gt; <span class="property-name">Amount</span>;
+        
+        [SerializeReference] 
+        <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GatherableSupply</span>&gt; <span class="property-name">GatherableSupplies</span>;
+
+        <span class="comment">// animator: Animator 컴포넌트 참조 (새로 추가)</span>
+        <span class="keyword">private</span> <span class="class-name">Animator</span> animator;
+        
+        <span class="comment">// enterTime: 수집 시작 시간을 저장할 변수</span>
+        <span class="keyword">private</span> <span class="keyword">float</span> enterTime;
+
+        <span class="keyword">protected override</span> <span class="class-name">Status</span> OnStart()
+        {
+            <span class="comment">// GatherableSupplies.Value == null: 자원 객체가 없는 경우</span>
+            <span class="keyword">if</span> (GatherableSupplies.Value == <span class="keyword">null</span>) 
+            {
+                <span class="comment">// Failure: 자원이 없으므로 수집 불가</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.Failure;
+            }
+            
+            <span class="comment">// Time.time: 게임 시작 후 경과 시간</span>
+            <span class="comment">// enterTime: 수집 시작 시간 저장</span>
+            enterTime = <span class="class-name">Time</span>.time;
+
+            <span class="comment">// TryGetComponent: Unit GameObject에서 Animator 컴포넌트를 가져옴</span>
+            <span class="keyword">if</span> (Unit.Value.TryGetComponent(<span class="keyword">out</span> animator))
+            {
+                <span class="comment">// SetBool: Animator의 bool 파라미터 설정</span>
+                <span class="comment">// AnimationConstants.IS_GATHERING: 캐싱된 해시 값</span>
+                <span class="comment">// true: 수집 상태로 애니메이션 전환</span>
+                animator.SetBool(<span class="class-name">AnimationConstants</span>.IS_GATHERING, <span class="keyword">true</span>);
+            }
+            
+            <span class="comment">// BeginGather: 자원 수집 시작</span>
+            GatherableSupplies.Value.BeginGather();
+            
+            <span class="comment">// Running: 수집을 시작했으므로 계속 실행 중</span>
+            <span class="keyword">return</span> <span class="class-name">Status</span>.Running;
+        }
+
+        <span class="keyword">protected override</span> <span class="class-name">Status</span> OnUpdate()
+        {
+            <span class="comment">// Supply.BaseGatherTime: 자원 타입별 기본 수집 시간</span>
+            <span class="comment">// enterTime: 수집 시작 시간</span>
+            <span class="comment">// Time.time: 현재 시간</span>
+            <span class="keyword">if</span> (GatherableSupplies.Value.Supply.BaseGatherTime + enterTime <= <span class="class-name">Time</span>.time)
+            {
+                <span class="comment">// Success: 수집 시간이 완료됨</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.Success;
+            }
+
+            <span class="comment">// Running: 아직 수집 중</span>
+            <span class="keyword">return</span> <span class="class-name">Status</span>.Running;
+        }
+
+        <span class="keyword">protected override void</span> OnEnd()
+        {
+            <span class="comment">// animator != null: Animator 컴포넌트가 있는 경우</span>
+            <span class="keyword">if</span> (animator != <span class="keyword">null</span>)
+            {
+                <span class="comment">// SetBool: 수집 상태를 false로 설정하여 일반 상태로 전환</span>
+                <span class="comment">// 액션 종료 시 애니메이션을 정지 상태로 리셋</span>
+                animator.SetBool(<span class="class-name">AnimationConstants</span>.IS_GATHERING, <span class="keyword">false</span>);
+            }
+
+            <span class="comment">// GatherableSupplies.Value == null: 자원 객체가 파괴된 경우</span>
+            <span class="keyword">if</span> (GatherableSupplies.Value == <span class="keyword">null</span>) 
+            {
+                <span class="comment">// return: 아무것도 하지 않고 종료</span>
+                <span class="keyword">return</span>;
+            }
+
+            <span class="comment">// CurrentStatus: 현재 액션의 상태</span>
+            <span class="comment">// Status.Success: 성공적으로 완료된 경우</span>
+            <span class="keyword">if</span> (CurrentStatus == <span class="class-name">Status</span>.Success)
+            {
+                <span class="comment">// EndGather: 자원 수집 완료 처리</span>
+                <span class="comment">// Amount.Value: Blackboard의 Amount 변수에 수집량 저장</span>
+                Amount.Value = GatherableSupplies.Value.EndGather();
+            }
+            <span class="keyword">else</span>
+            {
+                <span class="comment">// AbortGather: 자원 수집 중단 처리</span>
+                <span class="comment">// 새로운 명령을 받거나 실패한 경우 자원을 해제</span>
+                GatherableSupplies.Value.AbortGather();
+            }
+        }
+    }
+}</div>
+                
+                <h3>🔄 동작 과정</h3>
+                <ol>
+                    <li><strong>이동 시작</strong>: `MoveToTargetLocationAction`에서 `agent.velocity.magnitude`로 속도 설정</li>
+                    <li><strong>이동 중</strong>: 매 프레임마다 현재 속도에 따라 걷기/뛰기 애니메이션 전환</li>
+                    <li><strong>이동 완료</strong>: `OnEnd`에서 속도를 0으로 설정하여 Idle 상태로 전환</li>
+                    <li><strong>수집 시작</strong>: `GatherSuppliesAction`에서 `IsGathering = true`로 수집 애니메이션 시작</li>
+                    <li><strong>수집 완료</strong>: `OnEnd`에서 `IsGathering = false`로 일반 상태로 전환</li>
+                </ol>
+                
+                <h3>🎮 게임에서의 효과</h3>
+                <ul>
+                    <li><strong>시각적 피드백</strong>: Worker들이 실제로 움직이고 일하는 모습을 보여줌</li>
+                    <li><strong>상태 구분</strong>: 이동, 수집, 대기 상태를 애니메이션으로 명확히 구분</li>
+                    <li><strong>자연스러운 동작</strong>: 속도에 따른 걷기/뛰기 전환이 자연스러움</li>
+                    <li><strong>성능 최적화</strong>: Update 루프 없이 Behavior Tree 액션에서만 애니메이션 제어</li>
+                </ul>
+                
+                <h3>🔧 기술적 특징</h3>
+                <ul>
+                    <li><strong>성능 최적화</strong>: `Animator.StringToHash`로 해시 캐싱하여 문자열 비교 비용 제거</li>
+                    <li><strong>Behavior Tree 통합</strong>: 애니메이션 로직을 Behavior Tree 액션에 통합</li>
+                    <li><strong>Update 루프 제거</strong>: MonoBehaviour Update 없이 액션 기반 애니메이션 제어</li>
+                    <li><strong>안전한 처리</strong>: Animator가 없어도 액션은 정상 동작</li>
+                    <li><strong>상태 관리</strong>: `OnEnd`에서 애니메이션 상태를 안전하게 리셋</li>
+                </ul>
+                
+                <h3>📊 성능 비교</h3>
+                <div class="info-box">
+                    <h4>🚀 성능 최적화 전략</h4>
+                    <ul>
+                        <li><strong>기존 방식</strong>: 각 유닛마다 Update 루프에서 애니메이션 파라미터 설정</li>
+                        <li><strong>개선된 방식</strong>: Behavior Tree 액션에서만 필요할 때 애니메이션 제어</li>
+                        <li><strong>해시 캐싱</strong>: `StringToHash`로 문자열 비교 비용 제거</li>
+                        <li><strong>조건부 실행</strong>: Animator가 있을 때만 애니메이션 로직 실행</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>

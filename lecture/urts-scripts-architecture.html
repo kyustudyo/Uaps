@@ -952,6 +952,7 @@ IEvent <|.. ActionSelectedEvent
                     <li><strong>새로운 이벤트</strong>: IEvent를 구현하여 이벤트 시스템 확장</li>
                     <li><strong>새로운 입력 방식</strong>: PlayerInput에 새로운 핸들러 추가</li>
                     <li><strong>새로운 로봇 부품</strong>: RobotPart 시스템 확장</li>
+                    <li><strong>새로운 애니메이션</strong>: AnimationConstants로 파라미터 해시 캐싱</li>
                 </ul>
             </div>
 
@@ -1845,6 +1846,13 @@ public class SupplyHut : MonoBehaviour, ISelectable
                         <li><strong>ClosestColliderComparer</strong>: 거리 기준으로 Collider들을 정렬하는 커스텀 비교자</li>
                         <li><strong>동적 자원 선택</strong>: 사용 불가능한 자원 대신 주변의 사용 가능한 자원으로 자동 전환</li>
                         <li><strong>자동 분산 시스템</strong>: 여러 Worker가 같은 자원을 타겟팅해도 자동으로 분산</li>
+                        <li><strong>Animation Synchronization</strong>: Behavior Tree 액션과 애니메이션 동기화</li>
+                        <li><strong>AnimationConstants</strong>: 애니메이션 파라미터 해시 캐싱으로 성능 최적화</li>
+                        <li><strong>Behavior Tree Integration</strong>: 애니메이션 로직을 Behavior Tree 액션에 통합</li>
+                        <li><strong>Update Loop Removal</strong>: MonoBehaviour Update 없이 액션 기반 애니메이션 제어</li>
+                        <li><strong>Speed-based Animation</strong>: NavMesh Agent 속도에 따른 걷기/뛰기 전환</li>
+                        <li><strong>State-based Animation</strong>: 수집 상태에 따른 애니메이션 제어</li>
+                        <li><strong>Safe State Management</strong>: OnEnd에서 애니메이션 상태 안전하게 리셋</li>
                     </ul>
                 </div>
 
