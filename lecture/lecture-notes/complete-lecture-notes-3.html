@@ -1913,193 +1913,192 @@
                 <p>기존의 단순한 이동 대신, 지능적인 자원 선택 로직을 포함한 새로운 액션:</p>
                 
                 <div class="code-block">
-<pre><code>// MoveToGatherableSupplyAction.cs - 지능적인 자원 수집 액션
-// 바쁘지 않은 자원을 찾아서 이동하는 스마트한 시스템
+<span class="comment">// MoveToGatherableSupplyAction.cs - 지능적인 자원 수집 액션</span>
+<span class="comment">// 바쁘지 않은 자원을 찾아서 이동하는 스마트한 시스템</span>
 
-using GameDevTV.RTS.Environment;
-using System;
-using Unity.Behavior;
-using UnityEngine;
-using Action = Unity.Behavior.Action;
-using Unity.Properties;
-using UnityEngine.AI;
-using System.Collections.Generic;
-using System.Linq;
-using GameDevTV.RTS.Utilities;
+<span class="keyword">using</span> GameDevTV.RTS.Environment;
+<span class="keyword">using</span> System;
+<span class="keyword">using</span> Unity.Behavior;
+<span class="keyword">using</span> UnityEngine;
+<span class="keyword">using</span> Action = Unity.Behavior.Action;
+<span class="keyword">using</span> Unity.Properties;
+<span class="keyword">using</span> UnityEngine.AI;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Linq;
+<span class="keyword">using</span> GameDevTV.RTS.Utilities;
 
-namespace GameDevTV.RTS.Behavior
+<span class="keyword">namespace</span> GameDevTV.RTS.Behavior
 {
-    // Serializable: Unity에서 직렬화 가능하도록 하는 속성
-    // GeneratePropertyBag: Unity Behavior Tree에서 사용하는 속성 백 생성
+    <span class="comment">// Serializable: Unity에서 직렬화 가능하도록 하는 속성</span>
+    <span class="comment">// GeneratePropertyBag: Unity Behavior Tree에서 사용하는 속성 백 생성</span>
     [Serializable, GeneratePropertyBag]
     
-    // NodeDescription: Behavior Tree 에디터에서 노드의 설명을 정의
-    // name: 노드의 이름
-    // story: 노드의 동작을 설명하는 텍스트
-    // category: 노드가 속할 카테고리 (Action/Navigation)
-    // id: 노드의 고유 식별자
+    <span class="comment">// NodeDescription: Behavior Tree 에디터에서 노드의 설명을 정의</span>
+    <span class="comment">// name: 노드의 이름</span>
+    <span class="comment">// story: 노드의 동작을 설명하는 텍스트</span>
+    <span class="comment">// category: 노드가 속할 카테고리 (Action/Navigation)</span>
+    <span class="comment">// id: 노드의 고유 식별자</span>
     [NodeDescription(
-        name: "Move to GatherableSupply", 
-        story: "[Agent] moves to [Supply] or nearby not busy supply.", 
-        category: "Action/Navigation", 
-        id: "b9248f874f11b1a358e671809522dbfc"
+        name: <span class="string">"Move to GatherableSupply"</span>, 
+        story: <span class="string">"[Agent] moves to [Supply] or nearby not busy supply."</span>, 
+        category: <span class="string">"Action/Navigation"</span>, 
+        id: <span class="string">"b9248f874f11b1a358e671809522dbfc"</span>
     )]
     
-    // MoveToGatherableSupplyAction: 지능적인 자원 수집을 위한 액션 노드
-    // partial: 클래스가 여러 파일에 나뉘어 정의될 수 있음 (Unity Behavior Tree가 자동 생성)
-    public partial class MoveToGatherableSupplyAction : Action
+    <span class="comment">// MoveToGatherableSupplyAction: 지능적인 자원 수집을 위한 액션 노드</span>
+    <span class="comment">// partial: 클래스가 여러 파일에 나뉘어 정의될 수 있음 (Unity Behavior Tree가 자동 생성)</span>
+    <span class="keyword">public partial class</span> <span class="class-name">MoveToGatherableSupplyAction</span> : <span class="class-name">Action</span>
     {
-        // Agent: 이동할 NavMesh Agent가 있는 GameObject
-        // SerializeReference: Unity에서 직렬화 가능한 참조
-        // BlackboardVariable: Behavior Tree의 Blackboard에서 가져오는 변수
+        <span class="comment">// Agent: 이동할 NavMesh Agent가 있는 GameObject</span>
+        <span class="comment">// SerializeReference: Unity에서 직렬화 가능한 참조</span>
+        <span class="comment">// BlackboardVariable: Behavior Tree의 Blackboard에서 가져오는 변수</span>
         [SerializeReference] 
-        public BlackboardVariable<GameObject> Agent;
+        <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; <span class="property-name">Agent</span>;
         
-        // Supply: 수집할 자원 객체
+        <span class="comment">// Supply: 수집할 자원 객체</span>
         [SerializeReference] 
-        public BlackboardVariable<GatherableSupply> Supply;
+        <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GatherableSupply</span>&gt; <span class="property-name">Supply</span>;
         
-        // SearchRadius: 주변 자원을 찾을 반경
-        // float: 실수형 (미터 단위)
-        // new(7f): 기본값 7미터로 초기화
+        <span class="comment">// SearchRadius: 주변 자원을 찾을 반경</span>
+        <span class="comment">// float: 실수형 (미터 단위)</span>
+        <span class="comment">// new(7f): 기본값 7미터로 초기화</span>
         [SerializeReference] 
-        public BlackboardVariable<float> SearchRadius = new(7f);
+        <span class="keyword">public</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="keyword">float</span>&gt; <span class="property-name">SearchRadius</span> = <span class="keyword">new</span>(<span class="number">7f</span>);
 
-        // agent: NavMesh Agent 컴포넌트 참조
-        // private: 클래스 내부에서만 접근 가능
-        private NavMeshAgent agent;
+        <span class="comment">// agent: NavMesh Agent 컴포넌트 참조</span>
+        <span class="comment">// private: 클래스 내부에서만 접근 가능</span>
+        <span class="keyword">private</span> <span class="class-name">NavMeshAgent</span> agent;
         
-        // suppliesMask: Supplies 레이어 마스크
-        // LayerMask: 레이어 마스크 타입
-        private LayerMask suppliesMask;
+        <span class="comment">// suppliesMask: Supplies 레이어 마스크</span>
+        <span class="comment">// LayerMask: 레이어 마스크 타입</span>
+        <span class="keyword">private</span> <span class="class-name">LayerMask</span> suppliesMask;
 
-        // OnStart: 액션이 시작될 때 호출되는 메서드
-        // Status: 액션의 실행 상태 (Success, Failure, Running)
-        protected override Status OnStart()
+        <span class="comment">// OnStart: 액션이 시작될 때 호출되는 메서드</span>
+        <span class="comment">// Status: 액션의 실행 상태 (Success, Failure, Running)</span>
+        <span class="keyword">protected override</span> <span class="class-name">Status</span> OnStart()
         {
-            // TryGetComponent: Agent GameObject에서 NavMeshAgent 컴포넌트를 가져옴
-            // out agent: 가져온 NavMeshAgent를 저장할 변수
-            // !: 논리 부정 연산자 (실패 시 true)
-            if (!Agent.Value.TryGetComponent(out agent))
+            <span class="comment">// TryGetComponent: Agent GameObject에서 NavMeshAgent 컴포넌트를 가져옴</span>
+            <span class="comment">// out agent: 가져온 NavMeshAgent를 저장할 변수</span>
+            <span class="comment">// !: 논리 부정 연산자 (실패 시 true)</span>
+            <span class="keyword">if</span> (!Agent.Value.TryGetComponent(<span class="keyword">out</span> agent))
             {
-                // Failure: NavMeshAgent가 없는 경우
-                return Status.Failure;
+                <span class="comment">// Failure: NavMeshAgent가 없는 경우</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.Failure;
             }
 
-            // LayerMask.GetMask: "Supplies" 레이어의 마스크를 가져옴
-            // 이렇게 하면 Supplies 레이어에 있는 객체만 검사
-            suppliesMask = LayerMask.GetMask("Supplies");
+            <span class="comment">// LayerMask.GetMask: "Supplies" 레이어의 마스크를 가져옴</span>
+            <span class="comment">// 이렇게 하면 Supplies 레이어에 있는 객체만 검사</span>
+            suppliesMask = <span class="class-name">LayerMask</span>.GetMask(<span class="string">"Supplies"</span>);
 
-            // GetTargetPosition: 현재 자원의 최적 위치를 계산
-            Vector3 targetPosition = GetTargetPosition();
+            <span class="comment">// GetTargetPosition: 현재 자원의 최적 위치를 계산</span>
+            <span class="class-name">Vector3</span> targetPosition = GetTargetPosition();
 
-            // SetDestination: NavMesh Agent의 목표 위치 설정
-            // targetPosition: 계산된 목표 위치
+            <span class="comment">// SetDestination: NavMesh Agent의 목표 위치 설정</span>
+            <span class="comment">// targetPosition: 계산된 목표 위치</span>
             agent.SetDestination(targetPosition);
             
-            // Running: 이동을 시작했으므로 계속 실행 중
-            return Status.Running;
+            <span class="comment">// Running: 이동을 시작했으므로 계속 실행 중</span>
+            <span class="keyword">return</span> <span class="class-name">Status</span>.Running;
         }
 
-        // OnUpdate: 액션이 실행 중일 때 매 프레임 호출되는 메서드
-        protected override Status OnUpdate()
+        <span class="comment">// OnUpdate: 액션이 실행 중일 때 매 프레임 호출되는 메서드</span>
+        <span class="keyword">protected override</span> <span class="class-name">Status</span> OnUpdate()
         {
-            // remainingDistance: 목표까지 남은 거리
-            // stoppingDistance: 정지 거리
-            // >=: 크거나 같음 비교 연산자
-            if (agent.remainingDistance >= agent.stoppingDistance)
+            <span class="comment">// remainingDistance: 목표까지 남은 거리</span>
+            <span class="comment">// stoppingDistance: 정지 거리</span>
+            <span class="comment">// >=: 크거나 같음 비교 연산자</span>
+            <span class="keyword">if</span> (agent.remainingDistance >= agent.stoppingDistance)
             {
-                // Running: 아직 목표에 도달하지 못함
-                return Status.Running;
+                <span class="comment">// Running: 아직 목표에 도달하지 못함</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.Running;
             }
 
-            // IsBusy: 자원이 다른 Worker에 의해 사용 중인지 확인
-            // Amount: 자원의 남은 양
-            // !: 논리 부정 연산자
-            // &&: 논리 AND 연산자
-            if (!Supply.Value.IsBusy && Supply.Value.Amount > 0)
+            <span class="comment">// IsBusy: 자원이 다른 Worker에 의해 사용 중인지 확인</span>
+            <span class="comment">// Amount: 자원의 남은 양</span>
+            <span class="comment">// !: 논리 부정 연산자</span>
+            <span class="comment">// &&: 논리 AND 연산자</span>
+            <span class="keyword">if</span> (!Supply.Value.IsBusy && Supply.Value.Amount > <span class="number">0</span>)
             {
-                // Success: 자원이 사용 가능하고 양이 남아있음
-                return Status.Success;
+                <span class="comment">// Success: 자원이 사용 가능하고 양이 남아있음</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.Success;
             }
 
-            // Physics.OverlapSphere: 구체 모양의 영역에서 Collider들을 찾음
-            // agent.transform.position: 현재 NavMesh Agent의 위치
-            // SearchRadius: 탐색 반경
-            // suppliesMask: Supplies 레이어만 검사
-            // .Where(): LINQ 확장 메서드로 조건에 맞는 요소만 필터링
-            // .ToArray(): 필터링된 결과를 배열로 변환
-            Collider[] colliders = Physics.OverlapSphere(
+            <span class="comment">// Physics.OverlapSphere: 구체 모양의 영역에서 Collider들을 찾음</span>
+            <span class="comment">// agent.transform.position: 현재 NavMesh Agent의 위치</span>
+            <span class="comment">// SearchRadius: 탐색 반경</span>
+            <span class="comment">// suppliesMask: Supplies 레이어만 검사</span>
+            <span class="comment">// .Where(): LINQ 확장 메서드로 조건에 맞는 요소만 필터링</span>
+            <span class="comment">// .ToArray(): 필터링된 결과를 배열로 변환</span>
+            <span class="class-name">Collider</span>[] colliders = <span class="class-name">Physics</span>.OverlapSphere(
                 agent.transform.position,
                 SearchRadius,
                 suppliesMask
             ).Where(collider => 
-                    // TryGetComponent: Collider에서 GatherableSupply 컴포넌트를 가져옴
-                    // out supply: 가져온 GatherableSupply를 저장할 변수
-                    collider.TryGetComponent(out GatherableSupply supply)
-                    // !supply.IsBusy: 자원이 사용 중이 아님
+                    <span class="comment">// TryGetComponent: Collider에서 GatherableSupply 컴포넌트를 가져옴</span>
+                    <span class="comment">// out supply: 가져온 GatherableSupply를 저장할 변수</span>
+                    collider.TryGetComponent(<span class="keyword">out</span> <span class="class-name">GatherableSupply</span> supply)
+                    <span class="comment">// !supply.IsBusy: 자원이 사용 중이 아님</span>
                     && !supply.IsBusy
-                    // supply.Supply.Equals: 같은 타입의 자원인지 확인
-                    // Supply.Value.Supply: 원래 목표했던 자원의 타입
+                    <span class="comment">// supply.Supply.Equals: 같은 타입의 자원인지 확인</span>
+                    <span class="comment">// Supply.Value.Supply: 원래 목표했던 자원의 타입</span>
                     && supply.Supply.Equals(Supply.Value.Supply)
             ).ToArray();
 
-            // colliders.Length: 찾은 자원의 개수
-            if (colliders.Length > 0)
+            <span class="comment">// colliders.Length: 찾은 자원의 개수</span>
+            <span class="keyword">if</span> (colliders.Length > <span class="number">0</span>)
             {
-                // Array.Sort: 배열을 정렬
-                // colliders: 정렬할 Collider 배열
-                // ClosestColliderComparer: 거리 기준으로 정렬하는 비교자
-                // agent.transform.position: 거리 계산의 기준점
-                Array.Sort(colliders, new ClosestColliderComparer(agent.transform.position));
+                <span class="comment">// Array.Sort: 배열을 정렬</span>
+                <span class="comment">// colliders: 정렬할 Collider 배열</span>
+                <span class="comment">// ClosestColliderComparer: 거리 기준으로 정렬하는 비교자</span>
+                <span class="comment">// agent.transform.position: 거리 계산의 기준점</span>
+                <span class="class-name">Array</span>.Sort(colliders, <span class="keyword">new</span> <span class="class-name">ClosestColliderComparer</span>(agent.transform.position));
 
-                // colliders[0]: 가장 가까운 자원 (정렬 후 첫 번째)
-                // GetComponent: Collider에서 GatherableSupply 컴포넌트를 가져옴
-                // Supply.Value: Blackboard의 Supply 변수에 새로운 자원 설정
-                Supply.Value = colliders[0].GetComponent<GatherableSupply>();
+                <span class="comment">// colliders[0]: 가장 가까운 자원 (정렬 후 첫 번째)</span>
+                <span class="comment">// GetComponent: Collider에서 GatherableSupply 컴포넌트를 가져옴</span>
+                <span class="comment">// Supply.Value: Blackboard의 Supply 변수에 새로운 자원 설정</span>
+                Supply.Value = colliders[<span class="number">0</span>].GetComponent&lt;<span class="class-name">GatherableSupply</span>&gt;();
                 
-                // SetDestination: 새로운 자원으로 이동
-                // GetTargetPosition: 새로운 자원의 최적 위치 계산
+                <span class="comment">// SetDestination: 새로운 자원으로 이동</span>
+                <span class="comment">// GetTargetPosition: 새로운 자원의 최적 위치 계산</span>
                 agent.SetDestination(GetTargetPosition());
                 
-                // Running: 새로운 자원으로 이동 중
-                return Status.Running;
+                <span class="comment">// Running: 새로운 자원으로 이동 중</span>
+                <span class="keyword">return</span> <span class="class-name">Status</span>.Running;
             }
 
-            // Failure: 주변에 사용 가능한 자원이 없음
-            return Status.Failure;
+            <span class="comment">// Failure: 주변에 사용 가능한 자원이 없음</span>
+            <span class="keyword">return</span> <span class="class-name">Status</span>.Failure;
         }
 
-        // GetTargetPosition: 최적의 목표 위치를 계산하는 private 메서드
-        // private: 클래스 내부에서만 호출 가능
-        // Vector3: 반환 타입 (3차원 벡터)
-        private Vector3 GetTargetPosition()
+        <span class="comment">// GetTargetPosition: 최적의 목표 위치를 계산하는 private 메서드</span>
+        <span class="comment">// private: 클래스 내부에서만 호출 가능</span>
+        <span class="comment">// Vector3: 반환 타입 (3차원 벡터)</span>
+        <span class="keyword">private</span> <span class="class-name">Vector3</span> GetTargetPosition()
         {
-            // targetPosition: 계산될 목표 위치를 저장할 변수
-            Vector3 targetPosition;
+            <span class="comment">// targetPosition: 계산될 목표 위치를 저장할 변수</span>
+            <span class="class-name">Vector3</span> targetPosition;
             
-            // TryGetComponent: Supply GameObject에서 Collider 컴포넌트를 가져옴
-            // out collider: 가져온 Collider를 저장할 변수
-            if (Supply.Value.TryGetComponent(out Collider collider))
+            <span class="comment">// TryGetComponent: Supply GameObject에서 Collider 컴포넌트를 가져옴</span>
+            <span class="comment">// out collider: 가져온 Collider를 저장할 변수</span>
+            <span class="keyword">if</span> (Supply.Value.TryGetComponent(<span class="keyword">out</span> <span class="class-name">Collider</span> collider))
             {
-                // ClosestPoint: Collider에서 가장 가까운 지점을 계산
-                // agent.transform.position: 현재 NavMesh Agent의 위치
-                // 반환값: Collider 표면에서 Agent에 가장 가까운 지점
+                <span class="comment">// ClosestPoint: Collider에서 가장 가까운 지점을 계산</span>
+                <span class="comment">// agent.transform.position: 현재 NavMesh Agent의 위치</span>
+                <span class="comment">// 반환값: Collider 표면에서 Agent에 가장 가까운 지점</span>
                 targetPosition = collider.ClosestPoint(agent.transform.position);
             }
-            else
+            <span class="keyword">else</span>
             {
-                // Collider가 없는 경우: GameObject의 transform.position 사용
-                // Supply.Value.transform.position: 자원 GameObject의 중심 위치
+                <span class="comment">// Collider가 없는 경우: GameObject의 transform.position 사용</span>
+                <span class="comment">// Supply.Value.transform.position: 자원 GameObject의 중심 위치</span>
                 targetPosition = Supply.Value.transform.position;
             }
 
-            // 계산된 목표 위치 반환
-            return targetPosition;
+            <span class="comment">// 계산된 목표 위치 반환</span>
+            <span class="keyword">return</span> targetPosition;
         }
     }
-}</code></pre>
-                </div>
+}</div>
                 
                 <h4>2. ClosestColliderComparer</h4>
                 <p>거리 기준으로 Collider들을 정렬하는 유틸리티 클래스:</p>
@@ -2173,6 +2172,544 @@ namespace GameDevTV.RTS.Utilities
                     <li><strong>커스텀 비교자</strong>: ClosestColliderComparer로 거리 기준 정렬</li>
                     <li><strong>LayerMask 최적화</strong>: Supplies 레이어만 검사하여 성능 향상</li>
                     <li><strong>동적 목표 변경</strong>: Blackboard의 Supply 변수를 실시간으로 업데이트</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Lecture 45: Gathering Edge Cases -->
+        <div class="lecture-section">
+            <h2 id="lecture-45">강의 45: Gathering Edge Cases - 자원 수집 엣지 케이스 해결</h2>
+            
+            <div class="lecture-content">
+                <h3>🎯 왜 필요한가?</h3>
+                <p>기존 자원 수집 시스템에는 여러 엣지 케이스들이 있었습니다. Worker가 자원을 수집하는 중에 새로운 명령을 받으면 자원이 계속 "busy" 상태로 남아있거나, 자원이 완전히 고갈되어 파괴된 후에도 참조하려고 시도하는 등의 문제가 발생했습니다.</p>
+                
+                <h3>🧠 초딩도 이해하기 쉬운 설명</h3>
+                <p>마치 여러 명이 같은 과자 봉지를 두고 싸우는 상황에서, 한 명이 과자를 먹고 있는데 다른 사람이 "그만 먹어!"라고 외치면, 과자 봉지가 계속 "사용 중"이라고 표시되어 아무도 먹을 수 없게 되는 것과 같습니다. 이제는 "그만 먹어!"라고 하면 과자 봉지가 다시 사용 가능해지고, 과자가 다 떨어지면 봉지가 사라져도 문제없이 다른 과자를 찾을 수 있게 됩니다!</p>
+                
+                <h3>🔧 핵심 구현</h3>
+                
+                <h4>1. IGatherable 인터페이스 확장</h4>
+                <p>자원 수집을 중단할 수 있는 `AbortGather` 메서드 추가:</p>
+                
+                <div class="code-block">
+<pre><code>// IGatherable.cs - 자원 수집 인터페이스 확장
+// 수집 중단 기능 추가
+
+namespace GameDevTV.RTS.Environment
+{
+    // IGatherable: 수집 가능한 객체를 위한 인터페이스
+    // interface: 클래스가 구현해야 하는 메서드들을 정의
+    public interface IGatherable
+    {
+        // Supply: 자원의 타입 (ScriptableObject)
+        // SupplySO: 자원 타입을 정의하는 ScriptableObject
+        public SupplySO Supply { get; }
+        
+        // Amount: 자원의 남은 양
+        // int: 정수형 (자원의 개수)
+        public int Amount { get; }
+        
+        // IsBusy: 자원이 다른 Worker에 의해 사용 중인지 확인
+        // bool: 불린형 (true/false)
+        public bool IsBusy { get; }
+
+        // BeginGather: 자원 수집을 시작하는 메서드
+        // bool: 수집 시작 성공 여부 반환
+        public bool BeginGather();
+        
+        // EndGather: 자원 수집을 완료하는 메서드
+        // int: 수집한 자원의 양 반환
+        public int EndGather();
+        
+        // AbortGather: 자원 수집을 중단하는 메서드 (새로 추가)
+        // void: 반환값 없음
+        // 수집 중단 시 자원을 해제하지만 수집량은 주지 않음
+        public void AbortGather();
+    }
+}</code></pre>
+                </div>
+                
+                <h4>2. GatherableSupply.AbortGather 구현</h4>
+                <p>자원 수집 중단 시 `IsBusy` 상태만 해제하는 간단한 구현:</p>
+                
+                <div class="code-block">
+<pre><code>// GatherableSupply.cs - 자원 수집 중단 메서드 구현
+// AbortGather 메서드 추가
+
+using UnityEngine;
+
+namespace GameDevTV.RTS.Environment
+{
+    // GatherableSupply: MonoBehaviour를 상속하고 IGatherable 인터페이스를 구현
+    // MonoBehaviour: Unity의 기본 컴포넌트 클래스
+    // IGatherable: 수집 가능한 객체 인터페이스
+    public class GatherableSupply : MonoBehaviour, IGatherable
+    {
+        // Supply: 자원의 타입 (ScriptableObject)
+        // [field: SerializeField]: Unity Inspector에서 설정 가능하도록 하는 속성
+        // get; private set;: 외부에서는 읽기만 가능, 내부에서만 설정 가능
+        [field: SerializeField] 
+        public SupplySO Supply { get; private set; }
+        
+        // Amount: 자원의 남은 양
+        [field: SerializeField] 
+        public int Amount { get; private set; }
+        
+        // IsBusy: 자원이 다른 Worker에 의해 사용 중인지 확인
+        [field: SerializeField] 
+        public bool IsBusy { get; private set; }
+
+        // Start: Unity의 생명주기 메서드 (게임 시작 시 한 번 호출)
+        private void Start()
+        {
+            // Supply.MaxAmount: ScriptableObject에서 정의된 최대 자원량
+            // Amount: 현재 자원량을 최대량으로 초기화
+            Amount = Supply.MaxAmount;
+        }
+
+        // BeginGather: 자원 수집을 시작하는 메서드
+        // bool: 수집 시작 성공 여부 반환
+        public bool BeginGather()
+        {
+            // IsBusy: 이미 다른 Worker가 사용 중인지 확인
+            if (IsBusy)
+            {
+                // false: 수집 시작 실패 (이미 사용 중)
+                return false;
+            }
+
+            // IsBusy: 자원을 사용 중으로 표시
+            IsBusy = true;
+            
+            // true: 수집 시작 성공
+            return true;
+        }
+
+        // EndGather: 자원 수집을 완료하는 메서드
+        // int: 수집한 자원의 양 반환
+        public int EndGather()
+        {
+            // IsBusy: 자원 사용 상태 해제
+            IsBusy = false;
+            
+            // Mathf.Min: 두 값 중 작은 값 반환
+            // Supply.AmountPerGather: 한 번에 수집할 수 있는 자원량
+            // Amount: 현재 남은 자원량
+            int amountGathered = Mathf.Min(Supply.AmountPerGather, Amount);
+            
+            // Amount: 수집한 만큼 자원량 감소
+            Amount -= amountGathered;
+
+            // Amount <= 0: 자원이 모두 고갈된 경우
+            if (Amount <= 0)
+            {
+                // Destroy: GameObject를 파괴
+                // gameObject: 현재 컴포넌트가 붙어있는 GameObject
+                Destroy(gameObject);
+            }
+
+            // amountGathered: 실제로 수집한 자원량 반환
+            return amountGathered;
+        }
+
+        // AbortGather: 자원 수집을 중단하는 메서드 (새로 추가)
+        // void: 반환값 없음
+        public void AbortGather()
+        {
+            // IsBusy: 자원 사용 상태만 해제
+            // 자원량은 감소시키지 않음 (수집 중단이므로)
+            IsBusy = false;
+        }
+    }
+}</code></pre>
+                </div>
+                
+                <h4>3. GatherSuppliesAction 개선</h4>
+                <p>`OnEnd` 메서드에서 성공/실패에 따른 적절한 처리:</p>
+                
+                <div class="code-block">
+<pre><code>// GatherSuppliesAction.cs - 개선된 자원 수집 액션
+// OnEnd 메서드에서 성공/실패에 따른 적절한 처리
+
+using GameDevTV.RTS.Environment;
+using System;
+using Unity.Behavior;
+using UnityEngine;
+using Action = Unity.Behavior.Action;
+using Unity.Properties;
+
+namespace GameDevTV.RTS.Behavior
+{
+    // Serializable: Unity에서 직렬화 가능하도록 하는 속성
+    // GeneratePropertyBag: Unity Behavior Tree에서 사용하는 속성 백 생성
+    [Serializable, GeneratePropertyBag]
+    
+    // NodeDescription: Behavior Tree 에디터에서 노드의 설명을 정의
+    [NodeDescription(
+        name: "Gather Supplies", 
+        story: "[Unit] gathers [Amount] supplies from [GatherableSupplies] .", 
+        category: "Action/Units", 
+        id: "3b941d7ae99d1e36b7d806875379c977"
+    )]
+    
+    // GatherSuppliesAction: 자원 수집을 수행하는 액션 노드
+    public partial class GatherSuppliesAction : Action
+    {
+        // Unit: 자원을 수집할 유닛의 GameObject
+        [SerializeReference] 
+        public BlackboardVariable<GameObject> Unit;
+        
+        // Amount: 수집한 자원의 양을 저장할 변수
+        [SerializeReference] 
+        public BlackboardVariable<int> Amount;
+        
+        // GatherableSupplies: 수집할 자원 객체
+        [SerializeReference] 
+        public BlackboardVariable<GatherableSupply> GatherableSupplies;
+
+        // enterTime: 수집 시작 시간을 저장할 변수
+        // private: 클래스 내부에서만 접근 가능
+        // float: 실수형 (시간)
+        private float enterTime;
+
+        // OnStart: 액션이 시작될 때 호출되는 메서드
+        protected override Status OnStart()
+        {
+            // GatherableSupplies.Value == null: 자원 객체가 없는 경우
+            if (GatherableSupplies.Value == null) 
+            {
+                // Failure: 자원이 없으므로 수집 불가
+                return Status.Failure;
+            }
+            
+            // Time.time: 게임 시작 후 경과 시간
+            // enterTime: 수집 시작 시간 저장
+            enterTime = Time.time;
+
+            // BeginGather: 자원 수집 시작
+            // GatherableSupplies.Value: 수집할 자원 객체
+            GatherableSupplies.Value.BeginGather();
+            
+            // Running: 수집을 시작했으므로 계속 실행 중
+            return Status.Running;
+        }
+
+        // OnUpdate: 액션이 실행 중일 때 매 프레임 호출되는 메서드
+        protected override Status OnUpdate()
+        {
+            // Supply.BaseGatherTime: 자원 타입별 기본 수집 시간
+            // enterTime: 수집 시작 시간
+            // Time.time: 현재 시간
+            // <=: 작거나 같음 비교 연산자
+            if (GatherableSupplies.Value.Supply.BaseGatherTime + enterTime <= Time.time)
+            {
+                // Success: 수집 시간이 완료됨
+                return Status.Success;
+            }
+
+            // Running: 아직 수집 중
+            return Status.Running;
+        }
+
+        // OnEnd: 액션이 종료될 때 호출되는 메서드 (성공/실패 관계없이 항상 호출)
+        // protected override void: 상위 클래스의 메서드를 재정의
+        protected override void OnEnd()
+        {
+            // GatherableSupplies.Value == null: 자원 객체가 파괴된 경우
+            if (GatherableSupplies.Value == null) 
+            {
+                // return: 아무것도 하지 않고 종료
+                return;
+            }
+
+            // CurrentStatus: 현재 액션의 상태
+            // Status.Success: 성공적으로 완료된 경우
+            if (CurrentStatus == Status.Success)
+            {
+                // EndGather: 자원 수집 완료 처리
+                // Amount.Value: Blackboard의 Amount 변수에 수집량 저장
+                Amount.Value = GatherableSupplies.Value.EndGather();
+            }
+            else
+            {
+                // AbortGather: 자원 수집 중단 처리
+                // 새로운 명령을 받거나 실패한 경우 자원을 해제
+                GatherableSupplies.Value.AbortGather();
+            }
+        }
+    }
+}</code></pre>
+                </div>
+                
+                <h4>4. MoveToGatherableSupplyAction 강화</h4>
+                <p>자원이 파괴된 경우를 대비한 null 체크와 자동 재타겟팅:</p>
+                
+                <div class="code-block">
+<pre><code>// MoveToGatherableSupplyAction.cs - 강화된 자원 이동 액션
+// null 체크와 자동 재타겟팅 기능 추가
+
+using GameDevTV.RTS.Environment;
+using System;
+using Unity.Behavior;
+using UnityEngine;
+using Action = Unity.Behavior.Action;
+using Unity.Properties;
+using UnityEngine.AI;
+using System.Collections.Generic;
+using System.Linq;
+using GameDevTV.RTS.Utilities;
+
+namespace GameDevTV.RTS.Behavior
+{
+    [Serializable, GeneratePropertyBag]
+    [NodeDescription(
+        name: "Move to GatherableSupply", 
+        story: "[Agent] moves to [Supply] or nearby not busy supply.", 
+        category: "Action/Navigation", 
+        id: "b9248f874f11b1a358e671809522dbfc"
+    )]
+    
+    public partial class MoveToGatherableSupplyAction : Action
+    {
+        [SerializeReference] 
+        public BlackboardVariable<GameObject> Agent;
+        
+        [SerializeReference] 
+        public BlackboardVariable<GatherableSupply> Supply;
+        
+        [SerializeReference] 
+        public BlackboardVariable<float> SearchRadius = new(7f);
+
+        // agent: NavMesh Agent 컴포넌트 참조
+        private NavMeshAgent agent;
+        
+        // suppliesMask: Supplies 레이어 마스크
+        private LayerMask suppliesMask;
+        
+        // supplySO: 자원 타입을 저장하는 변수 (자원이 파괴되어도 타입 정보 유지)
+        private SupplySO supplySO;
+
+        protected override Status OnStart()
+        {
+            // LayerMask.GetMask: "Supplies" 레이어의 마스크를 가져옴
+            suppliesMask = LayerMask.GetMask("Supplies");
+
+            // HasValidInputs: 입력값들이 유효한지 확인
+            if (!HasValidInputs())
+            {
+                // Failure: 유효하지 않은 입력
+                return Status.Failure;
+            }
+
+            // GetTargetPosition: 현재 자원의 최적 위치를 계산
+            Vector3 targetPosition = GetTargetPosition();
+
+            // SetDestination: NavMesh Agent의 목표 위치 설정
+            agent.SetDestination(targetPosition);
+            
+            // Running: 이동을 시작했으므로 계속 실행 중
+            return Status.Running;
+        }
+
+        protected override Status OnUpdate()
+        {
+            // remainingDistance: 목표까지 남은 거리
+            // stoppingDistance: 정지 거리
+            if (agent.remainingDistance >= agent.stoppingDistance)
+            {
+                // Running: 아직 목표에 도달하지 못함
+                return Status.Running;
+            }
+
+            // Supply.Value != null: 자원 객체가 존재하는 경우
+            // !Supply.Value.IsBusy: 자원이 사용 중이 아님
+            // Supply.Value.Amount > 0: 자원의 양이 남아있음
+            if (Supply.Value != null && 
+                !Supply.Value.IsBusy && 
+                Supply.Value.Amount > 0)
+            {
+                // Success: 자원이 사용 가능하고 양이 남아있음
+                return Status.Success;
+            }
+            
+            // FindNearbyNotBusyColliders: 주변의 사용 가능한 자원들을 찾음
+            Collider[] colliders = FindNearbyNotBusyColliders();
+
+            // colliders.Length > 0: 사용 가능한 자원이 있는 경우
+            if (colliders.Length > 0)
+            {
+                // Array.Sort: 거리 기준으로 정렬
+                // ClosestColliderComparer: 거리 비교자
+                Array.Sort(colliders, new ClosestColliderComparer(agent.transform.position));
+
+                // colliders[0]: 가장 가까운 자원
+                // GetComponent: Collider에서 GatherableSupply 컴포넌트를 가져옴
+                // Supply.Value: Blackboard의 Supply 변수에 새로운 자원 설정
+                Supply.Value = colliders[0].GetComponent<GatherableSupply>();
+                
+                // SetDestination: 새로운 자원으로 이동
+                agent.SetDestination(GetTargetPosition());
+                
+                // Running: 새로운 자원으로 이동 중
+                return Status.Running;
+            }
+
+            // Failure: 주변에 사용 가능한 자원이 없음
+            return Status.Failure;
+        }
+
+        // HasValidInputs: 입력값들이 유효한지 확인하는 private 메서드
+        private bool HasValidInputs()
+        {
+            // TryGetComponent: Agent GameObject에서 NavMeshAgent 컴포넌트를 가져옴
+            // Supply.Value == null && supplySO == null: 자원 객체도 없고 타입 정보도 없는 경우
+            if (!Agent.Value.TryGetComponent(out agent) || 
+                (Supply.Value == null && supplySO == null))
+            {
+                // false: 유효하지 않은 입력
+                return false;
+            }
+
+            // Supply.Value != null: 자원 객체가 존재하는 경우
+            if (Supply.Value != null)
+            {
+                // supplySO: 자원 타입 정보 저장 (자원이 파괴되어도 타입 정보 유지)
+                supplySO = Supply.Value.Supply;
+            }
+            else
+            {
+                // FindNearbyNotBusyColliders: 주변의 사용 가능한 자원들을 찾음
+                Collider[] colliders = FindNearbyNotBusyColliders();
+                
+                // colliders.Length > 0: 사용 가능한 자원이 있는 경우
+                if (colliders.Length > 0)
+                {
+                    // Array.Sort: 거리 기준으로 정렬
+                    Array.Sort(colliders, new ClosestColliderComparer(agent.transform.position));
+                    
+                    // colliders[0]: 가장 가까운 자원
+                    // GetComponent: Collider에서 GatherableSupply 컴포넌트를 가져옴
+                    Supply.Value = colliders[0].GetComponent<GatherableSupply>();
+                }
+                else
+                {
+                    // false: 주변에 사용 가능한 자원이 없음
+                    return false;
+                }
+            }
+
+            // true: 모든 입력이 유효함
+            return true;
+        }
+
+        // FindNearbyNotBusyColliders: 주변의 사용 가능한 자원들을 찾는 private 메서드
+        private Collider[] FindNearbyNotBusyColliders()
+        {
+            // Physics.OverlapSphere: 구체 모양의 영역에서 Collider들을 찾음
+            // .Where(): LINQ 확장 메서드로 조건에 맞는 요소만 필터링
+            // .ToArray(): 필터링된 결과를 배열로 변환
+            return Physics.OverlapSphere(
+                agent.transform.position,
+                SearchRadius,
+                suppliesMask
+            ).Where(collider =>
+                    // TryGetComponent: Collider에서 GatherableSupply 컴포넌트를 가져옴
+                    collider.TryGetComponent(out GatherableSupply supply)
+                    // !supply.IsBusy: 자원이 사용 중이 아님
+                    && !supply.IsBusy
+                    // supply.Supply.Equals: 같은 타입의 자원인지 확인
+                    // supplySO: 저장된 자원 타입 정보
+                    && supply.Supply.Equals(supplySO)
+            ).ToArray();
+        }
+
+        // GetTargetPosition: 최적의 목표 위치를 계산하는 private 메서드
+        private Vector3 GetTargetPosition()
+        {
+            // targetPosition: 계산될 목표 위치를 저장할 변수
+            Vector3 targetPosition;
+            
+            // TryGetComponent: Supply GameObject에서 Collider 컴포넌트를 가져옴
+            if (Supply.Value.TryGetComponent(out Collider collider))
+            {
+                // ClosestPoint: Collider에서 가장 가까운 지점을 계산
+                targetPosition = collider.ClosestPoint(agent.transform.position);
+            }
+            else
+            {
+                // Collider가 없는 경우: GameObject의 transform.position 사용
+                targetPosition = Supply.Value.transform.position;
+            }
+
+            // 계산된 목표 위치 반환
+            return targetPosition;
+        }
+    }
+}</code></pre>
+                </div>
+                
+                <h4>5. MoveToTargetGameObjectAction 보호</h4>
+                <p>간단한 null 체크로 GameObject 파괴 상황 대비:</p>
+                
+                <div class="code-block">
+<pre><code>// MoveToTargetGameObjectAction.cs - null 체크 추가
+// GameObject 파괴 상황 대비
+
+protected override Status OnStart()
+{
+    // TryGetComponent: Agent GameObject에서 NavMeshAgent 컴포넌트를 가져옴
+    // TargetGameObject.Value == null: 목표 GameObject가 파괴된 경우
+    if (!Agent.Value.TryGetComponent(out agent) || 
+        TargetGameObject.Value == null)
+    {
+        // Failure: NavMeshAgent가 없거나 목표 GameObject가 파괴됨
+        return Status.Failure;
+    }
+
+    // GetTargetPosition: 목표 GameObject의 최적 위치를 계산
+    Vector3 targetPosition = GetTargetPosition();
+
+    // Vector3.Distance: 두 점 사이의 거리 계산
+    // agent.stoppingDistance: NavMesh Agent의 정지 거리
+    if (Vector3.Distance(agent.transform.position, targetPosition) <= agent.stoppingDistance)
+    {
+        // Success: 이미 목표 위치에 도달한 경우
+        return Status.Success;
+    }
+
+    // SetDestination: NavMesh Agent의 목표 위치 설정
+    agent.SetDestination(targetPosition);
+    
+    // Running: 이동을 시작했으므로 계속 실행 중
+    return Status.Running;
+}</code></pre>
+                </div>
+                
+                <h3>🔄 해결된 엣지 케이스들</h3>
+                <ol>
+                    <li><strong>명령 변경 시 자원 잠금</strong>: `AbortGather`로 자원을 즉시 해제</li>
+                    <li><strong>자원 파괴 후 참조</strong>: null 체크로 안전한 처리</li>
+                    <li><strong>자원 고갈 시 대안 탐색</strong>: 자동으로 주변 자원 재탐색</li>
+                    <li><strong>타입 정보 유지</strong>: `supplySO` 변수로 자원 타입 보존</li>
+                    <li><strong>우선순위 조정</strong>: Gather 명령이 Move 명령보다 우선</li>
+                </ol>
+                
+                <h3>🎮 게임에서의 효과</h3>
+                <ul>
+                    <li><strong>안정성 향상</strong>: null 참조 예외 없이 안전한 동작</li>
+                    <li><strong>사용자 경험 개선</strong>: 우클릭으로 바로 자원 수집 가능</li>
+                    <li><strong>자동 복구</strong>: 자원이 고갈되어도 자동으로 다른 자원 탐색</li>
+                    <li><strong>명령 중단 처리</strong>: 새로운 명령 시 이전 자원을 안전하게 해제</li>
+                </ul>
+                
+                <h3>🔧 기술적 특징</h3>
+                <ul>
+                    <li><strong>OnEnd 보장</strong>: Behavior Tree의 OnEnd는 항상 호출됨</li>
+                    <li><strong>상태 기반 처리</strong>: CurrentStatus에 따른 성공/실패 구분</li>
+                    <li><strong>타입 정보 캐싱</strong>: 자원 파괴 후에도 타입 정보 유지</li>
+                    <li><strong>자동 재타겟팅</strong>: 자원이 없어지면 주변 자원 자동 탐색</li>
+                    <li><strong>Guardian Pattern</strong>: null 체크로 안전한 처리</li>
                 </ul>
             </div>
         </div>
