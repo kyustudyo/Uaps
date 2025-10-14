@@ -3018,6 +3018,289 @@ protected override Status OnStart()
                 </div>
             </div>
         </div>
+        
+        <!-- Lecture 47: Behavior Events -->
+        <div class="lecture-section">
+            <h2 id="lecture-47">강의 47: Behavior Events - Behavior Tree 이벤트 시스템</h2>
+            
+            <div class="lecture-content">
+                <h3>🎯 왜 필요한가?</h3>
+                <p>기존 시스템에서는 Worker가 자원을 수집해도 실제로 플레이어에게 자원이 전달되지 않았습니다. Behavior Tree 내부에서 일어나는 일과 게임의 나머지 부분(UI, 자원 저장소 등)을 연결하기 위해 Behavior Events 시스템이 필요합니다.</p>
+                
+                <h3>🧠 초딩도 이해하기 쉬운 설명</h3>
+                <p>마치 우체부가 편지를 배달하는 것과 같아요! Worker가 자원을 수집하면 "편지(이벤트)"를 보내서 "우체부(Behavior Events)"가 게임의 다른 부분들에게 "자원을 수집했어요!"라고 알려줍니다. 그러면 UI가 업데이트되고 플레이어의 자원 저장소에 자원이 추가돼요!</p>
+                
+                <h3>🔧 핵심 구현</h3>
+                
+                <h4>1. GatherSuppliesEventChannel</h4>
+                <p>Behavior Tree에서 자원 수집 이벤트를 전송하는 이벤트 채널:</p>
+                
+                <div class="code-block">
+<span class="comment">// GatherSuppliesEventChannel.cs - Behavior Tree 이벤트 채널</span>
+<span class="comment">// Behavior Tree와 게임 코드 간의 통신을 위한 델리게이트 시스템</span>
+
+<span class="keyword">using</span> System;
+<span class="keyword">using</span> GameDevTV.RTS.Environment;
+<span class="keyword">using</span> Unity.Behavior;
+<span class="keyword">using</span> UnityEngine;
+<span class="keyword">using</span> Unity.Properties;
+
+<span class="keyword">namespace</span> GameDevTV.RTS.Behavior
+{
+    <span class="comment">// CreateAssetMenu: Unity 에디터에서 생성 가능한 ScriptableObject</span>
+    <span class="comment">// EventChannelDescription: Behavior Tree 에디터에서 이벤트 채널 설명</span>
+    [CreateAssetMenu(menuName = <span class="string">"Behavior/Event Channels/GatherSuppliesEventChannel"</span>)]
+    [Serializable, GeneratePropertyBag]
+    [EventChannelDescription(
+        name: <span class="string">"GatherSuppliesEventChannel"</span>, 
+        message: <span class="string">"[Self] gathers [Amount] [Supplies] ."</span>, 
+        category: <span class="string">"Events"</span>, 
+        id: <span class="string">"005c0743a2e96d985e33a1feeef75d29"</span>
+    )]
+    
+    <span class="comment">// GatherSuppliesEventChannel: 자원 수집 이벤트를 전송하는 이벤트 채널</span>
+    <span class="comment">// EventChannelBase: Unity Behavior Tree의 기본 이벤트 채널 클래스</span>
+    <span class="keyword">public partial class</span> <span class="class-name">GatherSuppliesEventChannel</span> : <span class="class-name">EventChannelBase</span>
+    {
+        <span class="comment">// GatherSuppliesEventChannelEventHandler: 자원 수집 이벤트 델리게이트</span>
+        <span class="comment">// delegate: 함수 포인터와 같은 역할을 하는 타입</span>
+        <span class="comment">// GameObject Self: 이벤트를 발생시킨 객체</span>
+        <span class="comment">// int Amount: 수집한 자원의 양</span>
+        <span class="comment">// SupplySO Supplies: 수집한 자원의 타입</span>
+        <span class="keyword">public delegate void</span> <span class="class-name">GatherSuppliesEventChannelEventHandler</span>(<span class="class-name">GameObject</span> Self, <span class="keyword">int</span> Amount, <span class="class-name">SupplySO</span> Supplies);
+        
+        <span class="comment">// Event: 실제 이벤트 델리게이트 인스턴스</span>
+        <span class="comment">// event: 외부에서 직접 할당할 수 없도록 보호</span>
+        <span class="keyword">public event</span> <span class="class-name">GatherSuppliesEventChannelEventHandler</span> Event;
+
+        <span class="comment">// SendEventMessage: 이벤트를 전송하는 public 메서드</span>
+        <span class="comment">// ?.: null 조건부 연산자 (Event가 null이 아니면 Invoke 호출)</span>
+        <span class="keyword">public void</span> SendEventMessage(<span class="class-name">GameObject</span> Self, <span class="keyword">int</span> Amount, <span class="class-name">SupplySO</span> Supplies)
+        {
+            Event?.Invoke(Self, Amount, Supplies);
+        }
+
+        <span class="comment">// SendEventMessage: Behavior Tree에서 호출되는 오버라이드 메서드</span>
+        <span class="comment">// BlackboardVariable[]: Behavior Tree의 Blackboard 변수 배열</span>
+        <span class="keyword">public override void</span> SendEventMessage(<span class="class-name">BlackboardVariable</span>[] messageData)
+        {
+            <span class="comment">// messageData[0]: Self (GameObject)</span>
+            <span class="comment">// as: 안전한 타입 캐스팅 (실패 시 null 반환)</span>
+            <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; SelfBlackboardVariable = messageData[<span class="number">0</span>] <span class="keyword">as</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt;;
+            <span class="comment">// ?: null 조건부 연산자</span>
+            <span class="comment">// ??: null 병합 연산자 (왼쪽이 null이면 오른쪽 값 사용)</span>
+            <span class="keyword">var</span> Self = SelfBlackboardVariable != <span class="keyword">null</span> ? SelfBlackboardVariable.Value : <span class="keyword">default</span>(<span class="class-name">GameObject</span>);
+
+            <span class="comment">// messageData[1]: Amount (int)</span>
+            <span class="class-name">BlackboardVariable</span>&lt;<span class="keyword">int</span>&gt; AmountBlackboardVariable = messageData[<span class="number">1</span>] <span class="keyword">as</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="keyword">int</span>&gt;;
+            <span class="keyword">var</span> Amount = AmountBlackboardVariable != <span class="keyword">null</span> ? AmountBlackboardVariable.Value : <span class="keyword">default</span>(<span class="keyword">int</span>);
+
+            <span class="comment">// messageData[2]: Supplies (SupplySO)</span>
+            <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">SupplySO</span>&gt; SuppliesBlackboardVariable = messageData[<span class="number">2</span>] <span class="keyword">as</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">SupplySO</span>&gt;;
+            <span class="keyword">var</span> Supplies = SuppliesBlackboardVariable != <span class="keyword">null</span> ? SuppliesBlackboardVariable.Value : <span class="keyword">default</span>(<span class="class-name">SupplySO</span>);
+
+            <span class="comment">// Event?.Invoke: 이벤트가 등록되어 있으면 호출</span>
+            Event?.Invoke(Self, Amount, Supplies);
+        }
+
+        <span class="comment">// CreateEventHandler: Behavior Tree에서 이벤트 핸들러 생성</span>
+        <span class="comment">// callback: 이벤트 발생 시 실행될 콜백 함수</span>
+        <span class="keyword">public override</span> <span class="class-name">Delegate</span> CreateEventHandler(<span class="class-name">BlackboardVariable</span>[] vars, <span class="class-name">System.Action</span> callback)
+        {
+            <span class="comment">// 람다 표현식으로 델리게이트 생성</span>
+            <span class="class-name">GatherSuppliesEventChannelEventHandler</span> del = (Self, Amount, Supplies) =>
+            {
+                <span class="comment">// vars[0]: Self 변수에 값 할당</span>
+                <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt; var0 = vars[<span class="number">0</span>] <span class="keyword">as</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GameObject</span>&gt;;
+                <span class="keyword">if</span> (var0 != <span class="keyword">null</span>)
+                    var0.Value = Self;
+
+                <span class="comment">// vars[1]: Amount 변수에 값 할당</span>
+                <span class="class-name">BlackboardVariable</span>&lt;<span class="keyword">int</span>&gt; var1 = vars[<span class="number">1</span>] <span class="keyword">as</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="keyword">int</span>&gt;;
+                <span class="keyword">if</span> (var1 != <span class="keyword">null</span>)
+                    var1.Value = Amount;
+
+                <span class="comment">// vars[2]: Supplies 변수에 값 할당</span>
+                <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">SupplySO</span>&gt; var2 = vars[<span class="number">2</span>] <span class="keyword">as</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">SupplySO</span>&gt;;
+                <span class="keyword">if</span> (var2 != <span class="keyword">null</span>)
+                    var2.Value = Supplies;
+
+                <span class="comment">// callback: 이벤트 발생 시 실행될 콜백</span>
+                callback();
+            };
+            <span class="keyword">return</span> del;
+        }
+
+        <span class="comment">// RegisterListener: 이벤트 리스너 등록</span>
+        <span class="keyword">public override void</span> RegisterListener(<span class="class-name">Delegate</span> del)
+        {
+            <span class="comment">// +=: 이벤트에 델리게이트 추가</span>
+            Event += del <span class="keyword">as</span> <span class="class-name">GatherSuppliesEventChannelEventHandler</span>;
+        }
+
+        <span class="comment">// UnregisterListener: 이벤트 리스너 해제</span>
+        <span class="keyword">public override void</span> UnregisterListener(<span class="class-name">Delegate</span> del)
+        {
+            <span class="comment">// -=: 이벤트에서 델리게이트 제거</span>
+            Event -= del <span class="keyword">as</span> <span class="class-name">GatherSuppliesEventChannelEventHandler</span>;
+        }
+    }
+}</div>
+                
+                <h4>2. SupplyEvent</h4>
+                <p>Event Bus를 통해 전송되는 자원 수집 이벤트:</p>
+                
+                <div class="code-block">
+<span class="comment">// SupplyEvent.cs - 자원 수집 이벤트</span>
+<span class="comment">// Event Bus를 통해 게임의 다른 부분에 자원 수집 알림</span>
+
+<span class="keyword">using</span> GameDevTV.RTS.Environment;
+<span class="keyword">using</span> GameDevTV.RTS.EventBus;
+
+<span class="keyword">namespace</span> GameDevTV.RTS.Events
+{
+    <span class="comment">// SupplyEvent: 자원 수집 이벤트 구조체</span>
+    <span class="comment">// struct: 값 타입으로 성능 최적화</span>
+    <span class="comment">// IEvent: Event Bus 시스템의 인터페이스</span>
+    <span class="keyword">public struct</span> <span class="class-name">SupplyEvent</span> : <span class="class-name">IEvent</span>
+    {
+        <span class="comment">// Amount: 수집한 자원의 양</span>
+        <span class="comment">// { get; private set; }: 읽기 전용 프로퍼티</span>
+        <span class="keyword">public int</span> <span class="property-name">Amount</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+        
+        <span class="comment">// Supply: 수집한 자원의 타입</span>
+        <span class="keyword">public</span> <span class="class-name">SupplySO</span> <span class="property-name">Supply</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+
+        <span class="comment">// 생성자: 이벤트 데이터 초기화</span>
+        <span class="comment">// amount: 수집한 자원의 양</span>
+        <span class="comment">// supply: 수집한 자원의 타입</span>
+        <span class="keyword">public</span> <span class="class-name">SupplyEvent</span>(<span class="keyword">int</span> amount, <span class="class-name">SupplySO</span> supply)
+        {
+            <span class="comment">// Amount: 수집한 자원의 양 저장</span>
+            Amount = amount;
+            <span class="comment">// Supply: 수집한 자원의 타입 저장</span>
+            Supply = supply;
+        }
+    }
+}</div>
+                
+                <h4>3. Worker 이벤트 처리</h4>
+                <p>Worker에서 Behavior Tree 이벤트를 받아 Event Bus로 전달:</p>
+                
+                <div class="code-block">
+<span class="comment">// Worker.cs - Behavior Tree 이벤트 처리</span>
+<span class="comment">// Behavior Tree와 Event Bus 간의 브리지 역할</span>
+
+<span class="keyword">using</span> GameDevTV.RTS.Behavior;
+<span class="keyword">using</span> GameDevTV.RTS.Environment;
+<span class="keyword">using</span> GameDevTV.RTS.EventBus;
+<span class="keyword">using</span> GameDevTV.RTS.Events;
+<span class="keyword">using</span> Unity.Behavior;
+<span class="keyword">using</span> UnityEngine;
+
+<span class="keyword">namespace</span> GameDevTV.RTS.Units
+{
+    <span class="comment">// Worker: AbstractUnit을 상속하고 IGatherer 인터페이스를 구현</span>
+    <span class="keyword">public class</span> <span class="class-name">Worker</span> : <span class="class-name">AbstractUnit</span>, <span class="class-name">IGatherer</span>
+    {
+        <span class="comment">// Start: Unity 생명주기 메서드</span>
+        <span class="comment">// protected override: 상위 클래스의 메서드를 재정의</span>
+        <span class="keyword">protected override void</span> Start()
+        {
+            <span class="comment">// base.Start(): 상위 클래스의 Start 메서드 호출</span>
+            <span class="comment">// AbstractUnit의 Start에서 Behavior Tree 초기화</span>
+            base.Start();
+            
+            <span class="comment">// GetVariable: Behavior Tree의 Blackboard에서 변수 가져오기</span>
+            <span class="comment">// "GatherSuppliesEvent": Blackboard에 등록된 이벤트 채널 이름</span>
+            <span class="comment">// out: 출력 매개변수로 변수에 값 할당</span>
+            <span class="keyword">if</span> (graphAgent.GetVariable(<span class="string">"GatherSuppliesEvent"</span>, <span class="keyword">out</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GatherSuppliesEventChannel</span>&gt; eventChannelVariable))
+            {
+                <span class="comment">// Event +=: 이벤트에 핸들러 등록</span>
+                <span class="comment">// HandleGatherSupplies: 이벤트 발생 시 호출될 메서드</span>
+                eventChannelVariable.Value.Event += HandleGatherSupplies;
+            }
+        }
+
+        <span class="comment">// Gather: 자원 수집을 시작하는 메서드</span>
+        <span class="comment">// public: 외부에서 호출 가능</span>
+        <span class="comment">// void: 반환값 없음</span>
+        <span class="comment">// GatherableSupply supply: 수집할 자원 객체</span>
+        <span class="keyword">public void</span> Gather(<span class="class-name">GatherableSupply</span> supply)
+        {
+            <span class="comment">// SetVariableValue: Behavior Tree의 Blackboard에 변수 설정</span>
+            <span class="comment">// "Supply": Blackboard 변수 이름</span>
+            <span class="comment">// supply: 설정할 값 (GatherableSupply 객체)</span>
+            graphAgent.SetVariableValue(<span class="string">"Supply"</span>, supply);
+            
+            <span class="comment">// SetVariableValue: Behavior Tree의 Blackboard에 변수 설정</span>
+            <span class="comment">// "TargetGameObject": Blackboard 변수 이름</span>
+            <span class="comment">// supply.gameObject: 수집할 자원의 GameObject</span>
+            graphAgent.SetVariableValue(<span class="string">"TargetGameObject"</span>, supply.gameObject);
+            
+            <span class="comment">// SetVariableValue: Behavior Tree의 Blackboard에 변수 설정</span>
+            <span class="comment">// "Command": Blackboard 변수 이름</span>
+            <span class="comment">// UnitCommands.Gather: 수집 명령</span>
+            graphAgent.SetVariableValue(<span class="string">"Command"</span>, <span class="class-name">UnitCommands</span>.Gather);
+        }
+
+        <span class="comment">// HandleGatherSupplies: Behavior Tree 이벤트 핸들러</span>
+        <span class="comment">// private: 클래스 내부에서만 호출 가능</span>
+        <span class="comment">// void: 반환값 없음</span>
+        <span class="comment">// GameObject self: 이벤트를 발생시킨 객체</span>
+        <span class="comment">// int amount: 수집한 자원의 양</span>
+        <span class="comment">// SupplySO supply: 수집한 자원의 타입</span>
+        <span class="keyword">private void</span> HandleGatherSupplies(<span class="class-name">GameObject</span> self, <span class="keyword">int</span> amount, <span class="class-name">SupplySO</span> supply)
+        {
+            <span class="comment">// Bus<SupplyEvent>.Raise: Event Bus를 통해 SupplyEvent 전송</span>
+            <span class="comment">// new SupplyEvent: 새로운 SupplyEvent 인스턴스 생성</span>
+            <span class="comment">// amount: 수집한 자원의 양</span>
+            <span class="comment">// supply: 수집한 자원의 타입</span>
+            <span class="class-name">Bus</span>&lt;<span class="class-name">SupplyEvent</span>&gt;.Raise(<span class="keyword">new</span> <span class="class-name">SupplyEvent</span>(amount, supply));
+        }
+    }
+}</div>
+                
+                <h3>🔄 동작 과정</h3>
+                <ol>
+                    <li><strong>자원 수집 완료</strong>: `GatherSuppliesAction`에서 자원 수집 완료</li>
+                    <li><strong>이벤트 전송</strong>: Behavior Tree에서 `GatherSuppliesEventChannel`로 이벤트 전송</li>
+                    <li><strong>Worker 수신</strong>: `Worker.HandleGatherSupplies`에서 이벤트 수신</li>
+                    <li><strong>Event Bus 전달</strong>: `SupplyEvent`를 Event Bus로 전송</li>
+                    <li><strong>게임 시스템 업데이트</strong>: UI, 자원 저장소 등이 이벤트 수신하여 업데이트</li>
+                </ol>
+                
+                <h3>🎮 게임에서의 효과</h3>
+                <ul>
+                    <li><strong>자원 전달</strong>: Worker가 수집한 자원이 실제로 플레이어에게 전달됨</li>
+                    <li><strong>UI 업데이트</strong>: 자원 수집 시 UI가 실시간으로 업데이트</li>
+                    <li><strong>시스템 연결</strong>: Behavior Tree와 게임 시스템 간의 완전한 연결</li>
+                    <li><strong>확장성</strong>: 새로운 이벤트 타입을 쉽게 추가 가능</li>
+                </ul>
+                
+                <h3>🔧 기술적 특징</h3>
+                <ul>
+                    <li><strong>델리게이트 시스템</strong>: Behavior Tree 내부의 이벤트 통신</li>
+                    <li><strong>Event Bus 연동</strong>: Behavior Tree와 게임 시스템 간의 브리지</li>
+                    <li><strong>타입 안전성</strong>: 강타입 이벤트 시스템으로 런타임 오류 방지</li>
+                    <li><strong>디커플링</strong>: Behavior Tree와 게임 로직의 완전한 분리</li>
+                    <li><strong>확장성</strong>: 새로운 이벤트 채널을 쉽게 추가 가능</li>
+                </ul>
+                
+                <h3>📊 이벤트 흐름도</h3>
+                <div class="info-box">
+                    <h4>🔄 Behavior Tree → Event Bus 흐름</h4>
+                    <ol>
+                        <li><strong>GatherSuppliesAction</strong>: 자원 수집 완료</li>
+                        <li><strong>Send Event Message</strong>: Behavior Tree에서 이벤트 전송</li>
+                        <li><strong>GatherSuppliesEventChannel</strong>: 이벤트 채널을 통해 전달</li>
+                        <li><strong>Worker.HandleGatherSupplies</strong>: 이벤트 수신</li>
+                        <li><strong>SupplyEvent</strong>: Event Bus로 이벤트 전송</li>
+                        <li><strong>게임 시스템</strong>: UI, 자원 저장소 등 업데이트</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>
