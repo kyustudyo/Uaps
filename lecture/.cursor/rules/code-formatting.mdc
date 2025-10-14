@@ -1,0 +1,96 @@
+---
+alwaysApply: true
+description: Code formatting guidelines for better readability
+---
+
+# Code Formatting Guidelines
+
+## 📝 Documentation Writing Rules
+
+When writing documentation or lecture notes, always ensure code blocks are properly formatted with line breaks for better readability.
+
+### ✅ Good Formatting Examples
+
+```csharp
+// UnitCommands.cs - 유닛 명령 열거형
+// BlackboardEnum: Unity Behavior Tree에서 사용할 수 있는 열거형
+
+using Unity.Behavior;
+
+namespace GameDevTV.RTS.Units
+{
+    // BlackboardEnum: Unity Behavior Tree의 Blackboard에서 사용할 수 있도록 하는 속성
+    // 이 속성이 있으면 Behavior Tree 에디터에서 이 열거형을 선택할 수 있음
+    [BlackboardEnum]
+    
+    // UnitCommands: 유닛이 수행할 수 있는 명령들의 열거형
+    // enum: 상수들의 집합을 정의하는 C# 키워드
+    public enum UnitCommands
+    {
+        // Stop: 유닛을 정지시키는 명령
+        // 첫 번째 값이므로 기본값은 0
+        Stop,
+        
+        // Move: 유닛을 이동시키는 명령
+        // 두 번째 값이므로 기본값은 1
+        Move
+    }
+}
+```
+
+### ❌ Bad Formatting Examples
+
+```csharp
+// UnitCommands.cs - 유닛 명령 열거형 // BlackboardEnum: Unity Behavior Tree에서 사용할 수 있는 열거형 using Unity.Behavior; namespace GameDevTV.RTS.Units { // BlackboardEnum: Unity Behavior Tree의 Blackboard에서 사용할 수 있도록 하는 속성 // 이 속성이 있으면 Behavior Tree 에디터에서 이 열거형을 선택할 수 있음 [BlackboardEnum] // UnitCommands: 유닛이 수행할 수 있는 명령들의 열거형 // enum: 상수들의 집합을 정의하는 C# 키워드 public enum UnitCommands { // Stop: 유닛을 정지시키는 명령 // 첫 번째 값이므로 기본값은 0 Stop, // Move: 유닛을 이동시키는 명령 // 두 번째 값이므로 기본값은 1 Move } }
+```
+
+## 🎯 Formatting Rules
+
+### 1. **Line Breaks After Comments**
+- Always add line breaks after comment blocks
+- Separate different logical sections with empty lines
+
+### 2. **Namespace and Class Structure**
+- Put `using` statements at the top with proper spacing
+- Separate namespace declaration with empty line
+- Separate class/interface declarations with empty lines
+
+### 3. **Method and Property Formatting**
+- Add line breaks between methods
+- Add line breaks between properties
+- Use proper indentation for nested structures
+
+### 4. **Comment Formatting**
+- Keep comments concise but descriptive
+- Add line breaks after comment blocks
+- Use consistent comment style throughout
+
+### 5. **Code Block Structure**
+- Use proper HTML structure with `<div class="code-block">`
+- Apply appropriate CSS classes for syntax highlighting
+- Ensure proper indentation and spacing
+
+## 🔧 Implementation Guidelines
+
+When editing documentation files like:
+- [complete-lecture-notes-3.html](mdc:lecture-notes/complete-lecture-notes-3.html)
+- [urts-scripts-architecture.html](mdc:urts-scripts-architecture.html)
+
+Always ensure:
+1. **Readability**: Code should be easy to scan and understand
+2. **Consistency**: Maintain consistent formatting throughout
+3. **Professional**: Code should look professional and well-organized
+4. **Accessibility**: Developers should be able to quickly understand the code structure
+
+## 📋 Checklist
+
+Before finalizing any documentation:
+- [ ] All code blocks have proper line breaks
+- [ ] Comments are properly spaced
+- [ ] Namespace and class declarations are separated
+- [ ] Methods and properties have appropriate spacing
+- [ ] HTML structure is properly formatted
+- [ ] CSS classes are correctly applied
+- [ ] Overall readability is maintained
+
+Remember: **Good formatting makes code more maintainable and easier to understand for all developers.**

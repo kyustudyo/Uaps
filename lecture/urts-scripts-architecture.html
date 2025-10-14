@@ -51,163 +51,145 @@
         }
 
         .section h2 {
-            color: #667eea;
-            margin-bottom: 20px;
+            color: #2c3e50;
             font-size: 2rem;
-            border-bottom: 3px solid #667eea;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #3498db;
             padding-bottom: 10px;
         }
 
         .section h3 {
-            color: #764ba2;
-            margin: 25px 0 15px 0;
+            color: #34495e;
             font-size: 1.5rem;
+            margin: 20px 0 15px 0;
         }
 
         .section h4 {
-            color: #555;
-            margin: 20px 0 10px 0;
+            color: #7f8c8d;
             font-size: 1.2rem;
+            margin: 15px 0 10px 0;
+        }
+
+        .tech-stack {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .tech-stack h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .content-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-list li {
+            background: #ecf0f1;
+            margin: 8px 0;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+        }
+
+        .content-list li:hover {
+            background: #d5dbdb;
+            transform: translateX(5px);
+        }
+
+        .content-list li strong {
+            color: #2c3e50;
         }
 
         .code-block {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
+            background: #2c3e50;
+            color: #ecf0f1;
             padding: 20px;
-            margin: 15px 0;
+            border-radius: 10px;
             font-family: 'Courier New', monospace;
             font-size: 14px;
-            line-height: 1.8;
-            white-space: pre;
+            line-height: 1.6;
+            margin: 20px 0;
             overflow-x: auto;
+            white-space: pre-wrap;
         }
 
-        .keyword {
-            color: #d73a49;
+        .code-block .keyword {
+            color: #e74c3c;
             font-weight: bold;
         }
 
-        .comment {
-            color: #6a737d;
+        .code-block .class-name {
+            color: #f39c12;
+            font-weight: bold;
+        }
+
+        .code-block .method-name {
+            color: #9b59b6;
+        }
+
+        .code-block .property-name {
+            color: #1abc9c;
+        }
+
+        .code-block .string {
+            color: #2ecc71;
+        }
+
+        .code-block .number {
+            color: #e67e22;
+        }
+
+        .code-block .comment {
+            color: #95a5a6;
             font-style: italic;
         }
 
-        .class-name {
-            color: #6f42c1;
-            font-weight: bold;
+        .code-block .field-name {
+            color: #3498db;
         }
 
-        .method-name {
-            color: #005cc5;
-            font-weight: bold;
-        }
-
-        .interface-name {
-            color: #e36209;
-            font-weight: bold;
-        }
-
-        .abstract-class {
-            color: #6f42c1;
-            font-weight: bold;
-            font-style: italic;
-        }
-
-        .highlight {
-            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            border-left: 4px solid #667eea;
-        }
-
-        .architecture-diagram {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
+        .info-box {
+            background: #e8f4fd;
+            border: 2px solid #3498db;
+            border-radius: 10px;
             padding: 20px;
             margin: 20px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            line-height: 1.6;
-            white-space: pre;
-            overflow-x: auto;
         }
 
-        .package-box {
-            background: #e3f2fd;
-            border: 2px solid #2196f3;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-        }
-
-        .package-title {
-            color: #1976d2;
-            font-weight: bold;
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-        }
-
-        .relationship {
-            background: #f3e5f5;
-            border-left: 4px solid #9c27b0;
-            padding: 10px;
-            margin: 10px 0;
+        .info-box h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
         }
 
         .flow-diagram {
-            background: #fff3e0;
-            border: 2px solid #ff9800;
-            border-radius: 8px;
+            background: #f8f9fa;
+            border: 2px solid #34495e;
+            border-radius: 10px;
             padding: 20px;
             margin: 20px 0;
             text-align: center;
         }
 
         .flow-step {
-            background: white;
-            border: 2px solid #ff9800;
-            border-radius: 8px;
-            padding: 15px;
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
             margin: 10px;
             display: inline-block;
-            min-width: 200px;
+            font-weight: bold;
         }
 
         .flow-arrow {
-            font-size: 2rem;
-            color: #ff9800;
+            color: #e74c3c;
+            font-size: 1.5rem;
             margin: 0 10px;
-        }
-
-        .emoji {
-            font-size: 1.2em;
-        }
-
-        .warning {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-        }
-
-        .success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-        }
-
-        .info-box {
-            background: #d1ecf1;
-            border: 1px solid #bee5eb;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
         }
     </style>
 </head>
@@ -215,1671 +197,288 @@
     <div class="container">
         <div class="header">
             <h1>🏗️ URTS Scripts Architecture</h1>
-            <p>Complete Guide to Unity RTS Project Structure</p>
+            <p>Unity Real-Time Strategy Game - Complete Technical Architecture Guide</p>
         </div>
 
+        <!-- 핵심 기술 개념 -->
         <div class="section">
-            <h2>📁 Project Structure Overview</h2>
+            <h2>🔧 핵심 기술 개념</h2>
             
-            <div class="architecture-diagram">
-Assets/Scripts/
-├── Commands/                    <span class="comment">// Command Pattern 시스템</span>
-│   ├── CommandContext.cs        <span class="comment">// 명령 컨텍스트 구조체</span>
-│   ├── ICommand.cs              <span class="comment">// 명령 인터페이스</span>
-│   ├── ActionBase.cs            <span class="comment">// 명령 추상 기본 클래스 (UI 필드 포함)</span>
-│   └── MoveCommand.cs           <span class="comment">// 이동 명령 구현 (radial placement)</span>
-├── EventBus/                    <span class="comment">// 이벤트 시스템</span>
-│   ├── Bus.cs                   <span class="comment">// 제네릭 이벤트 버스</span>
-│   └── IEvent.cs                <span class="comment">// 이벤트 마커 인터페이스</span>
-├── Events/                      <span class="comment">// 이벤트 데이터 구조</span>
-│   ├── UnitSelectedEvent.cs     <span class="comment">// 유닛 선택 이벤트</span>
-│   ├── UnitDeselectedEvent.cs    <span class="comment">// 유닛 선택 해제 이벤트</span>
-│   ├── UnitSpawnEvent.cs        <span class="comment">// 유닛 스폰 이벤트</span>
-│   └── ActionSelectedEvent.cs   <span class="comment">// 명령 선택 이벤트</span>
-├── Player/                      <span class="comment">// 플레이어 관련</span>
-│   └── PlayerInput.cs           <span class="comment">// 입력 처리 및 카메라 제어</span>
-├── UI/                          <span class="comment">// 사용자 인터페이스</span>
-│   ├── ActionsUI.cs             <span class="comment">// 명령 버튼 UI 관리</span>
-│   └── UIActionButton.cs        <span class="comment">// 개별 명령 버튼</span>
-└── Units/                       <span class="comment">// 유닛 관련</span>
-    ├── AbstractCommandable.cs   <span class="comment">// 명령 가능한 객체 기본 클래스</span>
-    ├── AbstractUnit.cs          <span class="comment">// 모든 유닛의 추상 기본 클래스</span>
-    ├── BaseBuilding.cs          <span class="comment">// 모든 건물의 기본 클래스</span>
-    ├── Worker.cs                <span class="comment">// 기본 작업자 유닛</span>
-    ├── WorkerThreeRobot.cs      <span class="comment">// 3부품 로봇 유닛</span>
-    ├── AirTransportThreeRobot.cs <span class="comment">// 3부품 공중 수송 유닛</span>
-    ├── RobotPart.cs             <span class="comment">// 로봇 부품 회전 시스템</span>
-    ├── ISelectable.cs           <span class="comment">// 선택 가능 인터페이스</span>
-    ├── IMoveable.cs             <span class="comment">// 이동 가능 인터페이스</span>
-    ├── UnitSO.cs                <span class="comment">// 유닛 설정 ScriptableObject</span>
-    └── HoldGunIK.cs             <span class="comment">// 총기 애니메이션</span>
+            <div class="tech-stack">
+                <h4>🎮 Unity Behavior Tree 시스템</h4>
+                <ul class="content-list">
+                    <li><strong>BehaviorGraphAgent</strong>: Behavior Tree 실행 엔진</li>
+                    <li><strong>Blackboard</strong>: Behavior Tree 데이터 저장소</li>
+                    <li><strong>Custom Action Nodes</strong>: 커스텀 액션 노드들</li>
+                    <li><strong>Switch Node</strong>: 명령에 따른 분기 처리</li>
+                    <li><strong>Abort Node</strong>: 명령 변경 시 즉시 중단</li>
+                    <li><strong>Conditional Branch</strong>: 조건부 분기 처리</li>
+                    <li><strong>Wait For Any/All</strong>: 병렬 실행 및 경로 합치기</li>
+                </ul>
+            </div>
+
+            <div class="tech-stack">
+                <h4>🎯 커스텀 Behavior Tree 노드들</h4>
+                <ul class="content-list">
+                    <li><strong>MoveToTargetLocationAction</strong>: 목표 위치로 이동</li>
+                    <li><strong>MoveToTargetGameObjectAction</strong>: GameObject로 이동 (Collider.ClosestPoint 활용)</li>
+                    <li><strong>MoveToGatherableSupplyAction</strong>: 지능적인 자원 이동 (자동 재타겟팅)</li>
+                    <li><strong>StopAgentAction</strong>: NavMesh Agent 정지</li>
+                    <li><strong>GatherSuppliesAction</strong>: 자원 수집 액션</li>
+                    <li><strong>FindClosestCommandPostAction</strong>: 가장 가까운 Command Post 찾기</li>
+                    <li><strong>SetAgentAvoidanceAction</strong>: 동적 회피 품질 설정</li>
+                </ul>
+            </div>
+
+            <div class="tech-stack">
+                <h4>🎮 게임 시스템</h4>
+                <ul class="content-list">
+                    <li><strong>UnitCommands</strong>: 유닛 명령 열거형 (Stop, Move, Gather)</li>
+                    <li><strong>Command Pattern</strong>: ICommand 인터페이스 및 ActionBase ScriptableObjects</li>
+                    <li><strong>Event Bus</strong>: 전역 이벤트 시스템</li>
+                    <li><strong>Supply System</strong>: 자원 수집 및 관리 시스템</li>
+                    <li><strong>Player Supplies</strong>: 플레이어 자원 관리 (정적 변수)</li>
+                    <li><strong>Animation Synchronization</strong>: Behavior Tree와 애니메이션 동기화</li>
+                    <li><strong>Behavior Events</strong>: Behavior Tree 이벤트 시스템</li>
+                </ul>
+            </div>
+
+            <div class="tech-stack">
+                <h4>🔧 유틸리티 및 최적화</h4>
+                <ul class="content-list">
+                    <li><strong>AnimationConstants</strong>: 애니메이션 파라미터 해시 캐싱</li>
+                    <li><strong>ClosestColliderComparer</strong>: 거리 기준 Collider 정렬</li>
+                    <li><strong>LINQ Integration</strong>: 효율적인 컬렉션 처리</li>
+                    <li><strong>Guardian Pattern</strong>: null 체크 및 안전한 접근</li>
+                    <li><strong>Update Loop Removal</strong>: 성능 최적화를 위한 Update 제거</li>
+                </ul>
             </div>
         </div>
 
+        <!-- 시스템 아키텍처 -->
         <div class="section">
-            <h2>📊 전체 아키텍처 다이어그램</h2>
+            <h2>🏛️ 시스템 아키텍처</h2>
             
-            <div class="code-block">
-@startuml
-!theme plain
-skinparam backgroundColor #FFFFFF
-skinparam class {
-    BackgroundColor #F8F9FA
-    BorderColor #667eea
-    ArrowColor #764ba2
-}
-
-package "GameDevTV.RTS.Commands" {
-    struct CommandContext {
-        +Commandable: AbstractCommandable
-        +Hit: RaycastHit
-        +UnitIndex: int
-        +CommandContext(commandable, hit, unitIndex): void
-    }
-    
-    interface ICommand {
-        +CanHandle(context: CommandContext): bool
-        +Handle(context: CommandContext): void
-    }
-    
-    abstract class ActionBase {
-        +Icon: Sprite
-        +Slot: int
-        +RequiresClickToActivate: bool
-        +CanHandle(context: CommandContext): bool
-        +Handle(context: CommandContext): void
-    }
-    
-    class MoveCommand {
-        -radiusMultiplier: float
-        -unitsOnLayer: int
-        -maxUnitsOnLayer: int
-        -circleRadius: float
-        -radialOffset: float
-        +CanHandle(context: CommandContext): bool
-        +Handle(context: CommandContext): void
-    }
-    
-    class BuildUnitCommand {
-        +Unit: UnitSO
-        +CanHandle(context: CommandContext): bool
-        +Handle(context: CommandContext): void
-    }
-}
-
-package "GameDevTV.RTS.UI" {
-    interface IUIElement&lt;T&gt; {
-        +EnableFor(item: T): void
-        +Disable(): void
-    }
-    
-    interface IUIElement&lt;T1, T2&gt; {
-        +EnableFor(item: T1, callback: T2): void
-        +Disable(): void
-    }
-    
-    class RuntimeUI {
-        -actionsUI: ActionsUI
-        -selectedUnits: HashSet&lt;AbstractCommandable&gt;
-        +Awake(): void
-        +OnDestroy(): void
-        +HandleUnitSelected(evt: UnitSelectedEvent): void
-        +HandleUnitDeselected(evt: UnitDeselectedEvent): void
-    }
-}
-
-package "GameDevTV.RTS.UI.Containers" {
-    class ActionsUI {
-        -actionButtons: UIActionButton[]
-        +EnableFor(selectedUnits: HashSet&lt;AbstractCommandable&gt;): void
-        +Disable(): void
-        -RefreshButtons(selectedUnits: HashSet&lt;AbstractCommandable&gt;): void
-    }
-    
-    class BuildingBuildingUI {
-        +EnableFor(context: BuildingContext): void
-        +Disable(): void
-    }
-}
-
-package "GameDevTV.RTS.UI.Components" {
-    class UIActionButton {
-        -button: Button
-        -iconImage: Image
-        +EnableFor(action: ActionBase, onClick: UnityAction): void
-        +Disable(): void
-    }
-}
-
-package "GameDevTV.RTS.Units" {
-    abstract class AbstractCommandable {
-        +CurrentHealth: int
-        +MaxHealth: int
-        +AvailableCommands: ActionBase[]
-        +Select(): void
-        +Deselect(): void
-    }
-    
-    abstract class AbstractUnit {
-        +AgentRadius: float
-        +MoveTo(position: Vector3): void
-    }
-    
-    class Worker {
-        +RotateParts(direction: Vector3): void
-    }
-    
-    class WorkerThreeRobot {
-        +headPart: RobotPart
-        +bodyPart: RobotPart
-        +legsPart: RobotPart
-        +headRotationSpeed: float
-        +bodyRotationSpeed: float
-        +legsRotationSpeed: float
-        +RotateParts(direction: Vector3): void
-    }
-    
-    class AirTransportThreeRobot {
-        +headPart: RobotPart
-        +bodyPart: RobotPart
-        +legsPart: RobotPart
-        +headRotationSpeed: float
-        +bodyRotationSpeed: float
-        +legsRotationSpeed: float
-        +RotateParts(direction: Vector3): void
-    }
-    
-    class BaseBuilding {
-        -buildingQueue: Queue&lt;UnitSO&gt;
-        -maxQueueSize: int
-        +Select(): void
-        +Deselect(): void
-        +BuildUnit(unit: UnitSO): void
-        -DoBuildUnits(): IEnumerator
-    }
-    
-    class RobotPart {
-        +partType: string
-        +rotationSpeed: float
-        +RotateTowards(direction: Vector3, baseSpeed: float): void
-    }
-}
-
-package "GameDevTV.RTS.Player" {
-    class PlayerInput {
-        -selectedUnits: List&lt;ISelectable&gt;
-        -aliveUnits: HashSet&lt;AbstractUnit&gt;
-        -addedUnits: HashSet&lt;AbstractUnit&gt;
-        +HandleRightClick(): void
-        +HandleDragSelect(): void
-        +HandleLeftClick(): void
-    }
-}
-
-package "GameDevTV.RTS.EventBus" {
-    class Bus&lt;T&gt; {
-        +OnEvent: event
-        +Raise(event: T): void
-    }
-}
-
-package "GameDevTV.RTS.Events" {
-    interface IEvent
-    class UnitSelectedEvent
-    class UnitDeselectedEvent
-    class UnitSpawnEvent
-    class ActionSelectedEvent
-}
-
-' 상속 관계
-AbstractCommandable <|-- AbstractUnit
-AbstractCommandable <|-- BaseBuilding
-AbstractUnit <|-- Worker
-AbstractUnit <|-- WorkerThreeRobot
-AbstractUnit <|-- AirTransportThreeRobot
-
-' 인터페이스 구현
-ICommand <|.. ActionBase
-ActionBase <|-- MoveCommand
-ISelectable <|.. AbstractCommandable
-IMoveable <|.. AbstractUnit
-
-' 컴포지션 관계
-WorkerThreeRobot *-- RobotPart : headPart
-WorkerThreeRobot *-- RobotPart : bodyPart
-WorkerThreeRobot *-- RobotPart : legsPart
-AirTransportThreeRobot *-- RobotPart : headPart
-AirTransportThreeRobot *-- RobotPart : bodyPart
-AirTransportThreeRobot *-- RobotPart : legsPart
-
-' 이벤트 관계
-AbstractCommandable ..> Bus&lt;UnitSelectedEvent&gt; : raises
-AbstractCommandable ..> Bus&lt;UnitDeselectedEvent&gt; : raises
-AbstractUnit ..> Bus&lt;UnitSpawnEvent&gt; : raises
-PlayerInput ..> Bus&lt;UnitSelectedEvent&gt; : subscribes
-PlayerInput ..> Bus&lt;UnitDeselectedEvent&gt; : subscribes
-PlayerInput ..> Bus&lt;UnitSpawnEvent&gt; : subscribes
-
-' Command Pattern 관계
-PlayerInput ..> AbstractCommandable : uses AvailableCommands
-PlayerInput ..> CommandContext : creates
-AbstractCommandable *-- ActionBase : AvailableCommands
-ActionBase ..> CommandContext : CanHandle & Handle
-CommandContext *-- AbstractCommandable : contains
-CommandContext *-- RaycastHit : contains
-
-' UI 시스템 관계
-RuntimeUI ..> Bus&lt;UnitSelectedEvent&gt; : subscribes
-RuntimeUI ..> Bus&lt;UnitDeselectedEvent&gt; : subscribes
-RuntimeUI *-- ActionsUI : actionsUI
-RuntimeUI ..> HashSet&lt;AbstractCommandable&gt; : selectedUnits
-ActionsUI ..|> IUIElement&lt;HashSet&lt;AbstractCommandable&gt;&gt; : implements
-ActionsUI *-- UIActionButton : actionButtons
-ActionsUI ..> ActionBase : reads Icon & Slot
-UIActionButton ..|> IUIElement&lt;ActionBase, UnityAction&gt; : implements
-UIActionButton ..> Image : iconImage
-UIActionButton ..> Button : button
-BuildingBuildingUI ..|> IUIElement&lt;BuildingContext&gt; : implements
-PlayerInput ..> Bus&lt;ActionSelectedEvent&gt; : subscribes
-
-' 이벤트 인터페이스
-IEvent <|.. UnitSelectedEvent
-IEvent <|.. UnitDeselectedEvent
-IEvent <|.. UnitSpawnEvent
-IEvent <|.. ActionSelectedEvent
-
-@enduml
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>🎯 Core Architecture Patterns</h2>
-
-            <div class="package-box">
-                <div class="package-title">🔄 Event Bus Pattern</div>
-                <p><strong>목적:</strong> 컴포넌트 간 느슨한 결합을 통한 이벤트 기반 통신</p>
-                <p><strong>핵심:</strong> Publisher-Subscriber 패턴으로 시스템 간 독립성 확보</p>
-                
-                <div class="code-block">
-<span class="comment">// 이벤트 발행</span>
-<span class="keyword">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.<span class="method-name">Raise</span>(<span class="keyword">new</span> <span class="class-name">UnitSelectedEvent</span>(<span class="keyword">this</span>));
-
-<span class="comment">// 이벤트 구독</span>
-<span class="keyword">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.<span class="keyword">OnEvent</span> += <span class="method-name">HandleUnitSelected</span>;
-            </div>
-        </div>
-
-            <div class="package-box">
-                <div class="package-title">🏗️ Abstract Base Class Pattern</div>
-                <p><strong>목적:</strong> 공통 기능을 추상화하여 코드 중복 제거</p>
-                <p><strong>핵심:</strong> AbstractUnit이 모든 유닛의 기본 동작을 제공</p>
-                
-                <div class="code-block">
-<span class="abstract-class">AbstractUnit</span> : <span class="keyword">MonoBehaviour</span>, <span class="interface-name">ISelectable</span>, <span class="interface-name">IMoveable</span>
-├── <span class="method-name">Select()</span>           <span class="comment">// 선택 시 이벤트 발행</span>
-├── <span class="method-name">Deselect()</span>        <span class="comment">// 선택 해제 시 이벤트 발행</span>
-├── <span class="method-name">MoveTo()</span>           <span class="comment">// NavMeshAgent 이동</span>
-└── <span class="method-name">Start()</span>            <span class="comment">// 스폰 이벤트 발행</span>
-                </div>
-            </div>
-
-            <div class="package-box">
-                <div class="package-title">🎮 Multi-Unit Selection System</div>
-                <p><strong>목적:</strong> 드래그 선택과 Shift 키를 통한 다중 유닛 선택</p>
-                <p><strong>핵심:</strong> HashSet과 List를 활용한 효율적인 선택 관리</p>
-                
-                <div class="code-block">
-<span class="comment">// 선택된 유닛 관리</span>
-<span class="keyword">List</span>&lt;<span class="interface-name">ISelectable</span>&gt; <span class="keyword">selectedUnits</span> = <span class="keyword">new</span>(12);
-
-<span class="comment">// 살아있는 유닛 추적</span>
-<span class="keyword">HashSet</span>&lt;<span class="abstract-class">AbstractUnit</span>&gt; <span class="keyword">aliveUnits</span> = <span class="keyword">new</span>(100);
-
-<span class="comment">// 드래그 선택 임시 저장</span>
-<span class="keyword">HashSet</span>&lt;<span class="abstract-class">AbstractUnit</span>&gt; <span class="keyword">addedUnits</span> = <span class="keyword">new</span>(24);
-                </div>
-            </div>
-            </div>
-
-        <div class="section">
-            <h2>🔄 Event Flow Diagram</h2>
-
             <div class="flow-diagram">
-                <div class="flow-step">
-                    <h4>🎯 유닛 스폰</h4>
-                    <p>AbstractUnit.Start()</p>
-                </div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-step">
-                    <h4>📢 이벤트 발행</h4>
-                    <p>UnitSpawnEvent</p>
-                </div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-step">
-                    <h4>📥 이벤트 수신</h4>
-                    <p>PlayerInput.HandleUnitSpawn()</p>
-                </div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-step">
-                    <h4>📝 aliveUnits 추가</h4>
-                    <p>선택 가능한 유닛 목록 업데이트</p>
-                </div>
+                <h3>🔄 전체 시스템 흐름</h3>
+                <div class="flow-step">Player Input</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">Command System</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">Behavior Tree</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">Unit Actions</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">Event Bus</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">Game Systems</div>
             </div>
 
+            <div class="info-box">
+                <h4>📊 핵심 컴포넌트 관계</h4>
+                <ol>
+                    <li><strong>PlayerInput</strong>: 사용자 입력 처리 및 명령 생성</li>
+                    <li><strong>AbstractUnit</strong>: 모든 유닛의 기본 클래스</li>
+                    <li><strong>Worker</strong>: 자원 수집 전용 유닛</li>
+                    <li><strong>BehaviorGraphAgent</strong>: Behavior Tree 실행 엔진</li>
+                    <li><strong>Blackboard</strong>: Behavior Tree 데이터 저장소</li>
+                    <li><strong>Event Bus</strong>: 시스템 간 통신</li>
+                    <li><strong>Supplies</strong>: 플레이어 자원 관리</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Behavior Tree 구조 -->
+        <div class="section">
+            <h2>🌳 Behavior Tree 구조</h2>
+            
+            <div class="info-box">
+                <h4>🎯 Worker Behavior Tree (강의 49 기준)</h4>
+                <ol>
+                    <li><strong>Switch (Command)</strong>: 명령에 따른 분기</li>
+                    <li><strong>Stop</strong>: StopAgentAction</li>
+                    <li><strong>Move</strong>: MoveToTargetLocationAction</li>
+                    <li><strong>Gather</strong>: 조건부 분기 시스템</li>
+                    <ul>
+                        <li><strong>SetAgentAvoidance</strong>: 회피 품질 설정</li>
+                        <li><strong>MoveToGatherableSupply</strong>: 자원으로 이동</li>
+                        <li><strong>Conditional Branch</strong>: SupplyAmountHeld 확인</li>
+                        <ul>
+                            <li><strong>True (자원 없음)</strong>: GatherSupplies</li>
+                            <li><strong>False (자원 있음)</strong>: 수집 생략</li>
+                        </ul>
+                        <li><strong>Wait For Any</strong>: 경로 합치기</li>
+                        <li><strong>FindClosestCommandPost</strong>: Command Post 찾기</li>
+                        <li><strong>MoveToTargetGameObject</strong>: Command Post로 이동</li>
+                        <li><strong>RaiseEvent</strong>: 수집 완료 이벤트</li>
+                    </ul>
+                </ol>
+            </div>
+
+            <div class="tech-stack">
+                <h4>🔧 Behavior Tree 노드 타입</h4>
+                <ul class="content-list">
+                    <li><strong>Control Flow</strong>: Switch, Sequence, Conditional Branch</li>
+                    <li><strong>Action Nodes</strong>: 커스텀 액션 노드들</li>
+                    <li><strong>Flow Control</strong>: Wait For Any/All, Abort</li>
+                    <li><strong>Event Nodes</strong>: RaiseEvent, EventChannel</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 자원 수집 시스템 -->
+        <div class="section">
+            <h2>⛏️ 자원 수집 시스템</h2>
+            
             <div class="flow-diagram">
-                <div class="flow-step">
-                    <h4>🖱️ 마우스 클릭</h4>
-                    <p>PlayerInput.HandleLeftClick()</p>
-                </div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-step">
-                    <h4>🎯 레이캐스트</h4>
-                    <p>Physics.Raycast()</p>
-                </div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-step">
-                    <h4>✅ 유닛 선택</h4>
-                    <p>ISelectable.Select()</p>
-                </div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-step">
-                    <h4>📢 선택 이벤트</h4>
-                    <p>UnitSelectedEvent</p>
-                </div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-step">
-                    <h4>📝 선택 목록 업데이트</h4>
-                    <p>selectedUnits.Add()</p>
-                </div>
-                </div>
+                <h3>🔄 자원 수집 흐름</h3>
+                <div class="flow-step">Gather 명령</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">자원으로 이동</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">조건 확인</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">수집 또는 생략</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">Command Post로 이동</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">이벤트 발생</div>
             </div>
 
-        <div class="section">
-            <h2>🤖 Unit System Deep Dive</h2>
-
-            <div class="package-box">
-                <div class="package-title">🏗️ AbstractUnit - 모든 유닛의 기반</div>
-                
-                <div class="code-block">
-<span class="keyword">public abstract class</span> <span class="abstract-class">AbstractUnit</span> : <span class="keyword">MonoBehaviour</span>, <span class="interface-name">ISelectable</span>, <span class="interface-name">IMoveable</span>
-{
-    [<span class="keyword">RequireComponent</span>(<span class="keyword">typeof</span>(NavMeshAgent))]
-    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> DecalProjector decalProjector;
-    <span class="keyword">private</span> NavMeshAgent agent;
-
-    <span class="comment">// 공통 기능</span>
-    <span class="keyword">public void</span> <span class="method-name">Select</span>() { <span class="comment">/* 선택 시각화 + 이벤트 발행 */</span> }
-    <span class="keyword">public void</span> <span class="method-name">Deselect</span>() { <span class="comment">/* 선택 해제 + 이벤트 발행 */</span> }
-    <span class="keyword">public void</span> <span class="method-name">MoveTo</span>(Vector3 position) { <span class="comment">/* NavMeshAgent 이동 */</span> }
-    <span class="keyword">private void</span> <span class="method-name">Start</span>() { <span class="comment">/* 스폰 이벤트 발행 */</span> }
-}
-                </div>
-
-                <div class="info-box">
-                    <strong>💡 왜 AbstractUnit이 필요한가?</strong><br>
-                    • 모든 유닛이 공통으로 가져야 할 기능을 한 곳에서 관리<br>
-                    • NavMeshAgent, DecalProjector 등 공통 컴포넌트 설정<br>
-                    • 이벤트 발행 로직의 일관성 보장<br>
-                    • 새로운 유닛 타입 추가 시 개발 시간 단축
-                </div>
-            </div>
-
-            <div class="package-box">
-                <div class="package-title">👷 Worker - 기본 작업자</div>
-                
-                <div class="code-block">
-<span class="keyword">public class</span> <span class="class-name">Worker</span> : <span class="abstract-class">AbstractUnit</span>
-{
-    <span class="comment">// AbstractUnit의 모든 기능을 상속받음</span>
-    <span class="comment">// 추가적인 작업자 특화 기능을 여기에 구현</span>
-}
-                </div>
-
-                <div class="info-box">
-                    <strong>💡 Worker의 역할</strong><br>
-                    • AbstractUnit의 기본 기능을 그대로 사용<br>
-                    • 향후 작업자 특화 기능 추가 가능<br>
-                    • 간단하고 확장 가능한 구조
-                </div>
-            </div>
-
-            <div class="package-box">
-                <div class="package-title">🤖 WorkerThreeRobot - 고급 로봇</div>
-                
-                <div class="code-block">
-<span class="keyword">public class</span> <span class="class-name">WorkerThreeRobot</span> : <span class="abstract-class">AbstractUnit</span>
-{
-    <span class="comment">// 로봇 부품들</span>
-    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> GameObject headPart;
-    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> GameObject bodyPart;
-    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> GameObject legsPart;
-
-    <span class="comment">// 각 부품별 회전 속도</span>
-    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> <span class="keyword">float</span> headRotationSpeed = 180f;
-    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> <span class="keyword">float</span> bodyRotationSpeed = 90f;
-    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> <span class="keyword">float</span> legsRotationSpeed = 45f;
-
-    <span class="comment">// Nova 1492 스타일 독립 회전</span>
-    <span class="keyword">private void</span> <span class="method-name">RotateParts</span>(Vector3 direction)
-    {
-        headPartScript?.<span class="method-name">RotateTowards</span>(direction);
-        bodyPartScript?.<span class="method-name">RotateTowards</span>(direction);
-        legsPartScript?.<span class="method-name">RotateTowards</span>(direction);
-    }
-}
-                </div>
-
-                <div class="info-box">
-                    <strong>💡 WorkerThreeRobot의 특별한 점</strong><br>
-                    • AbstractUnit의 기본 기능 + 로봇 특화 기능<br>
-                    • 각 부품이 독립적으로 회전 (Nova 1492 스타일)<br>
-                    • 런타임에 부품 교체 가능<br>
-                    • 성능 최적화된 회전 시스템
-                </div>
-            </div>
-
-            <div class="package-box">
-                <div class="package-title">⚙️ RobotPart - 부품 회전 시스템</div>
-                
-                <div class="code-block">
-<span class="keyword">public class</span> <span class="class-name">RobotPart</span> : <span class="keyword">MonoBehaviour</span>
-{
-    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> RobotPartType partType;
-    [<span class="keyword">SerializeField</span>] <span class="keyword">private</span> <span class="keyword">float</span> rotationSpeed = 5f;
-
-    <span class="comment">// 부품별 독립 회전</span>
-    <span class="keyword">public void</span> <span class="method-name">RotateTowards</span>(Vector3 targetDirection)
-    {
-        <span class="keyword">var</span> targetRotation = Quaternion.<span class="method-name">LookRotation</span>(targetDirection);
-        cachedTransform.rotation = Quaternion.<span class="method-name">RotateTowards</span>(
-            cachedTransform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-    }
-}
-                </div>
-
-                <div class="info-box">
-                    <strong>💡 RobotPart의 역할</strong><br>
-                    • 각 로봇 부품의 독립적인 회전 처리<br>
-                    • 부품별 다른 회전 속도 지원<br>
-                    • 성능 최적화된 Transform 캐싱<br>
-                    • 확장 가능한 부품 타입 시스템
-                </div>
-                </div>
-            </div>
-
-        <div class="section">
-            <h2>🎮 Player Input System</h2>
-
-            <div class="package-box">
-                <div class="package-title">🖱️ 다중 유닛 선택 시스템</div>
-                
-                <div class="code-block">
-<span class="comment">// 드래그 선택 처리</span>
-<span class="keyword">private void</span> <span class="method-name">HandleDragSelect</span>()
-{
-    <span class="keyword">if</span> (selectionBox == <span class="keyword">null</span>) { <span class="keyword">return</span>; }
-
-    <span class="keyword">if</span> (Mouse.current.leftButton.wasPressedThisFrame)
-        <span class="method-name">HandleMouseDown</span>();
-    <span class="keyword">else if</span> (Mouse.current.leftButton.isPressed)
-        <span class="method-name">HandleMouseDrag</span>();
-    <span class="keyword">else if</span> (Mouse.current.leftButton.wasReleasedThisFrame)
-        <span class="method-name">HandleMouseUp</span>();
-}
-
-<span class="comment">// Shift 키를 통한 추가 선택</span>
-<span class="keyword">private void</span> <span class="method-name">HandleMouseUp</span>()
-{
-    <span class="keyword">if</span> (!Keyboard.current.shiftKey.isPressed)
-        <span class="method-name">DeselectAllUnits</span>();
-
-    <span class="method-name">HandleLeftClick</span>();  <span class="comment">// 단일 클릭 선택</span>
-    <span class="keyword">foreach</span> (<span class="abstract-class">AbstractUnit</span> unit <span class="keyword">in</span> addedUnits)
-        unit.<span class="method-name">Select</span>();  <span class="comment">// 드래그 선택된 유닛들 추가</span>
-    selectionBox.gameObject.SetActive(<span class="keyword">false</span>);
-}
-
-<span class="comment">// 드래그 중 유닛 감지</span>
-<span class="keyword">private void</span> <span class="method-name">HandleMouseDrag</span>()
-{
-    Bounds selectionBoxBounds = <span class="method-name">ResizeSelectionBox</span>();
-    <span class="keyword">foreach</span> (<span class="abstract-class">AbstractUnit</span> unit <span class="keyword">in</span> aliveUnits)
-    {
-        Vector2 unitPosition = camera.<span class="method-name">WorldToScreenPoint</span>(unit.transform.position);
-        <span class="keyword">if</span> (selectionBoxBounds.<span class="method-name">Contains</span>(unitPosition))
-            addedUnits.<span class="method-name">Add</span>(unit);
-    }
-}
-                </div>
-
-                <div class="info-box">
-                    <strong>💡 다중 선택 시스템의 핵심</strong><br>
-                    • 드래그 선택과 단일 클릭 선택의 통합<br>
-                    • Shift 키를 통한 추가 선택 지원<br>
-                    • HashSet을 활용한 효율적인 유닛 관리<br>
-                    • UI 선택 박스와의 연동<br>
-                    • <strong>성능 최적화</strong>: ToArray()로 컬렉션 수정 중 반복 방지
-                </div>
-            </div>
-
-            <div class="package-box">
-                <div class="package-title">📷 카메라 제어 시스템</div>
-                
-                <div class="code-block">
-<span class="comment">// Cinemachine 기반 카메라 제어</span>
-<span class="keyword">private void</span> <span class="method-name">HandlePanning</span>() 
-{
-    Vector2 moveAmount = <span class="method-name">GetKeyboardMoveAmount</span>();
-    moveAmount += <span class="method-name">GetMouseMoveAmount</span>();
-    cameraTarget.linearVelocity = <span class="keyword">new</span> Vector3(moveAmount.x, 0, moveAmount.y);
-}
-
-<span class="keyword">private void</span> <span class="method-name">HandleZooming</span>() 
-{
-    <span class="keyword">if</span> (<span class="method-name">ShouldSetZoomStartTime</span>())
-        zoomStartTime = Time.time;
-    
-    <span class="keyword">float</span> zoomTime = Mathf.<span class="method-name">Clamp01</span>((Time.time - zoomStartTime) * cameraConfig.ZoomSpeed);
-    <span class="comment">// End 키로 줌 인/아웃</span>
-}
-
-<span class="keyword">private void</span> <span class="method-name">HandleRotation</span>() 
-{
-    <span class="comment">/* 우클릭 드래그로 카메라 회전 */</span>
-}
-                </div>
-
-                <div class="info-box">
-                    <strong>💡 카메라 시스템의 특징</strong><br>
-                    • Cinemachine을 활용한 부드러운 카메라 움직임<br>
-                    • RTS 게임에 최적화된 컨트롤 (키보드 + 마우스)<br>
-                    • 성능 최적화된 입력 처리<br>
-                    • <strong>End 키 줌 기능</strong>: 빠른 줌 인/아웃 지원
-                </div>
-                </div>
-            </div>
-
-        <div class="section">
-            <h2>📊 Data Structures & Performance</h2>
-
-            <div class="package-box">
-                <div class="package-title">⚡ 성능 최적화된 컬렉션 사용</div>
-                
-                <div class="code-block">
-<span class="comment">// 선택된 유닛 관리 - 순서 중요 (UI 표시 순서)</span>
-<span class="keyword">List</span>&lt;<span class="interface-name">ISelectable</span>&gt; <span class="keyword">selectedUnits</span> = <span class="keyword">new</span>(12);
-
-<span class="comment">// 살아있는 유닛 추적 - 중복 없음, 순서 무관, 빠른 검색</span>
-<span class="keyword">HashSet</span>&lt;<span class="abstract-class">AbstractUnit</span>&gt; <span class="keyword">aliveUnits</span> = <span class="keyword">new</span>(100);
-
-<span class="comment">// 드래그 선택 임시 저장 - 중복 없음, 순서 무관</span>
-<span class="keyword">HashSet</span>&lt;<span class="abstract-class">AbstractUnit</span>&gt; <span class="keyword">addedUnits</span> = <span class="keyword">new</span>(24);
-
-<span class="comment">// 성능 최적화: 컬렉션 수정 중 반복 방지</span>
-<span class="keyword">private void</span> <span class="method-name">DeselectAllUnits</span>()
-{
-    <span class="interface-name">ISelectable</span>[] currentlySelectedUnits = selectedUnits.<span class="method-name">ToArray</span>();
-    <span class="keyword">foreach</span>(<span class="interface-name">ISelectable</span> selectable <span class="keyword">in</span> currentlySelectedUnits)
-        selectable.<span class="method-name">Deselect</span>();
-}
-                </div>
-
-                <div class="info-box">
-                    <strong>💡 컬렉션 선택 기준</strong><br>
-                    • <strong>List</strong>: 순서가 중요한 선택된 유닛들 (UI 표시 순서)<br>
-                    • <strong>HashSet</strong>: 중복 제거가 중요한 aliveUnits, addedUnits<br>
-                    • <strong>초기 용량 설정</strong>: 런타임 리사이징 방지로 성능 향상<br>
-                    • <strong>ToArray() 패턴</strong>: 컬렉션 수정 중 반복 시 안전성 확보
-                </div>
-            </div>
-
-            <div class="package-box">
-                <div class="package-title">🔄 이벤트 기반 아키텍처</div>
-                
-                <div class="code-block">
-<span class="comment">// 이벤트 발행자 (AbstractUnit)</span>
-<span class="keyword">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.<span class="method-name">Raise</span>(<span class="keyword">new</span> <span class="class-name">UnitSelectedEvent</span>(<span class="keyword">this</span>));
-
-<span class="comment">// 이벤트 구독자 (PlayerInput)</span>
-<span class="keyword">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.<span class="keyword">OnEvent</span> += <span class="method-name">HandleUnitSelected</span>;
-
-<span class="comment">// 이벤트 처리</span>
-<span class="keyword">private void</span> <span class="method-name">HandleUnitSelected</span>(<span class="class-name">UnitSelectedEvent</span> evt) 
-    => selectedUnits.<span class="method-name">Add</span>(evt.Unit);
-                </div>
-
-                <div class="info-box">
-                    <strong>💡 이벤트 시스템의 장점</strong><br>
-                    • <strong>느슨한 결합</strong>: 컴포넌트 간 직접 참조 없음<br>
-                    • <strong>확장성</strong>: 새로운 이벤트 리스너 쉽게 추가<br>
-                    • <strong>유지보수성</strong>: 이벤트 발행/구독 로직 분리<br>
-                    • <strong>테스트 용이성</strong>: 각 컴포넌트 독립 테스트 가능
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>🎯 Key Design Patterns</h2>
-
-            <div class="package-box">
-                <div class="package-title">🏗️ Template Method Pattern</div>
-                <p><strong>AbstractUnit</strong>에서 공통 기능을 정의하고, 하위 클래스에서 특화 기능을 구현</p>
-                
-                <div class="code-block">
-<span class="abstract-class">AbstractUnit</span>
-├── <span class="method-name">Select()</span>        <span class="comment">// 공통 구현 (이벤트 발행)</span>
-├── <span class="method-name">Deselect()</span>      <span class="comment">// 공통 구현 (이벤트 발행)</span>
-├── <span class="method-name">MoveTo()</span>        <span class="comment">// 공통 구현 (NavMeshAgent)</span>
-├── <span class="method-name">Start()</span>         <span class="comment">// 공통 구현 (스폰 이벤트)</span>
-└── <span class="method-name">Awake()</span>         <span class="comment">// 하위 클래스에서 오버라이드 가능</span>
-
-<span class="class-name">WorkerThreeRobot</span> : <span class="abstract-class">AbstractUnit</span>
-└── <span class="method-name">Awake()</span>         <span class="comment">// 로봇 특화 초기화 (부품 설정)</span>
-                </div>
-            </div>
-
-            <div class="package-box">
-                <div class="package-title">🎭 Strategy Pattern</div>
-                <p><strong>ISelectable, IMoveable</strong> 인터페이스를 통한 다양한 유닛 타입 지원</p>
-                
-                <div class="code-block">
-<span class="interface-name">ISelectable</span>
-├── <span class="method-name">Select()</span>
-└── <span class="method-name">Deselect()</span>
-
-<span class="interface-name">IMoveable</span>
-└── <span class="method-name">MoveTo(Vector3)</span>
-
-<span class="comment">// 모든 유닛이 이 인터페이스들을 구현</span>
-<span class="abstract-class">AbstractUnit</span> : <span class="interface-name">ISelectable</span>, <span class="interface-name">IMoveable</span>
-
-<span class="comment">// 다형성을 통한 유닛 처리</span>
-<span class="keyword">foreach</span>(<span class="interface-name">ISelectable</span> selectable <span class="keyword">in</span> selectedUnits)
-{
-    <span class="keyword">if</span> (selectable <span class="keyword">is</span> <span class="interface-name">IMoveable</span> moveable)
-        moveable.<span class="method-name">MoveTo</span>(hit.point);
-}
-            </div>
-        </div>
-
-            <div class="package-box">
-                <div class="package-title">📢 Observer Pattern</div>
-                <p><strong>Event Bus</strong>를 통한 이벤트 기반 통신</p>
-                
-                <div class="code-block">
-<span class="comment">// Subject (이벤트 발행자)</span>
-<span class="abstract-class">AbstractUnit</span> → <span class="class-name">UnitSelectedEvent</span>
-
-<span class="comment">// Observer (이벤트 구독자)</span>
-<span class="class-name">PlayerInput</span> ← <span class="class-name">UnitSelectedEvent</span>
-
-<span class="comment">// 중재자</span>
-<span class="class-name">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;
-
-<span class="comment">// 느슨한 결합 달성</span>
-<span class="keyword">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.<span class="keyword">OnEvent</span> += <span class="method-name">HandleUnitSelected</span>;
-<span class="keyword">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.<span class="method-name">Raise</span>(<span class="keyword">new</span> <span class="class-name">UnitSelectedEvent</span>(<span class="keyword">this</span>));
-                </div>
-            </div>
-
-            <div class="package-box">
-                <div class="package-title">🎨 Component Pattern</div>
-                <p><strong>RobotPart</strong>를 통한 모듈화된 로봇 부품 시스템</p>
-                
-                <div class="code-block">
-<span class="comment">// 각 부품이 독립적인 컴포넌트</span>
-<span class="class-name">RobotPart</span> (Head, Body, Legs)
-├── <span class="method-name">RotateTowards()</span>   <span class="comment">// 독립 회전</span>
-├── <span class="method-name">SetRotationSpeed()</span> <span class="comment">// 개별 속도 설정</span>
-└── <span class="method-name">GetPartType()</span>     <span class="comment">// 부품 타입 식별</span>
-
-<span class="comment">// 조합을 통한 복잡한 객체 생성</span>
-<span class="class-name">WorkerThreeRobot</span>
-├── HeadPart + <span class="class-name">RobotPart</span>
-├── BodyPart + <span class="class-name">RobotPart</span>
-└── LegsPart + <span class="class-name">RobotPart</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>🚀 Future Extensibility</h2>
-
-            <div class="success">
-                <h3>✅ 확장 가능한 구조</h3>
+            <div class="info-box">
+                <h4>🎮 자원 수집 특징</h4>
                 <ul>
-                    <li><strong>새로운 유닛 타입</strong>: AbstractUnit을 상속받아 쉽게 추가</li>
-                    <li><strong>새로운 이벤트</strong>: IEvent를 구현하여 이벤트 시스템 확장</li>
-                    <li><strong>새로운 입력 방식</strong>: PlayerInput에 새로운 핸들러 추가</li>
-                    <li><strong>새로운 로봇 부품</strong>: RobotPart 시스템 확장</li>
-                    <li><strong>새로운 애니메이션</strong>: AnimationConstants로 파라미터 해시 캐싱</li>
-                </ul>
-            </div>
-
-            <div class="warning">
-                <h3>⚠️ 주의사항</h3>
-                <ul>
-                    <li><strong>이벤트 구독 해제</strong>: OnDestroy에서 반드시 이벤트 구독 해제</li>
-                    <li><strong>컬렉션 수정</strong>: 반복 중 컬렉션 수정 시 ToArray() 사용</li>
-                    <li><strong>성능 고려</strong>: HashSet vs List 선택 시 용도에 맞게 사용</li>
+                    <li><strong>지능적인 수집</strong>: 이미 자원을 가지고 있으면 수집하지 않음</li>
+                    <li><strong>자동 재타겟팅</strong>: 자원이 사용 중이면 다른 자원 찾기</li>
+                    <li><strong>Collider.ClosestPoint</strong>: 정확한 위치 계산</li>
+                    <li><strong>동적 회피</strong>: 수집 시 회피 품질 조정</li>
+                    <li><strong>애니메이션 동기화</strong>: 수집 상태에 따른 애니메이션</li>
                 </ul>
             </div>
         </div>
 
-        <!-- 강의 19: Unit Dancing 문제 해결 -->
+        <!-- 이벤트 시스템 -->
         <div class="section">
-            <h2>🎯 강의 19: Unit Dancing 문제 해결 (수학적 접근)</h2>
+            <h2>📡 이벤트 시스템</h2>
             
-            <div class="subsection">
-                <h3>🤔 Unit Dancing 문제</h3>
-                <div class="code-block">
-<span class="comment">// 문제 상황</span>
-<span class="comment">// 여러 유닛이 같은 목표 지점에 도달하려고 할 때</span>
-<span class="comment">// 유닛들이 서로 밀고 당기며 "춤추는" 현상 발생</span>
-<span class="comment">// NavMesh Avoidance 시스템의 한계로 인한 문제</span>
-
-<span class="comment">// 기존 문제가 있던 코드</span>
-<span class="keyword">foreach</span>(ISelectable selectable <span class="keyword">in</span> selectedUnits)
-{
-    <span class="keyword">if</span> (selectable <span class="keyword">is</span> IMoveable moveable)
-    {
-        moveable.MoveTo(hit.point); <span class="comment">// 모든 유닛이 같은 지점으로!</span>
-    }
-}
-                </div>
-            </div>
-
-            <div class="subsection">
-                <h3>💡 해결 방법: 원형 배치 알고리즘</h3>
-                
-                <h4>1. AgentRadius 프로퍼티 추가</h4>
-                <div class="code-block">
-<span class="comment">// AbstractUnit.cs</span>
-<span class="keyword">public float</span> AgentRadius => agent.radius;
-
-<span class="comment">// 왜 필요한가?</span>
-<span class="comment">// - 원형 배치 알고리즘에서 각 유닛의 크기를 알아야 함</span>
-<span class="comment">// - 유닛 간 충돌 방지를 위한 최소 거리 계산</span>
-<span class="comment">// - 동적 원의 반지름 계산에 필수</span>
-                </div>
-
-                <h4>2. 수학적 접근: Unit Circle 활용</h4>
-                <div class="code-block">
-<span class="comment">// Unit Circle의 핵심</span>
-<span class="comment">// cos(θ): X 좌표 계산</span>
-<span class="comment">// sin(θ): Y 좌표 계산 (Unity에서는 Z)</span>
-<span class="comment">// 360° = 2π radians</span>
-
-<span class="comment">// HandleRightClick 내부의 원형 배치 알고리즘 (실제 구현)</span>
-<span class="keyword">if</span> (Mouse.current.rightButton.wasReleasedThisFrame
-    && Physics.Raycast(cameraRay, <span class="keyword">out</span> RaycastHit hit, <span class="keyword">float</span>.MaxValue, floorLayers))
-{
-    <span class="comment">// 선택된 유닛들 중 AbstractUnit만 필터링</span>
-    List&lt;AbstractUnit&gt; abstractUnits = <span class="keyword">new</span> (selectedUnits.Count);
-    <span class="keyword">foreach</span>(ISelectable selectable <span class="keyword">in</span> selectedUnits)
-    {
-        <span class="keyword">if</span> (selectable <span class="keyword">is</span> AbstractUnit unit)
-            abstractUnits.Add(unit);
-    }
-
-    <span class="comment">// 원형 배치 알고리즘 변수들</span>
-    <span class="keyword">int</span> layer = 0;                    <span class="comment">// 현재 레이어 (원의 반지름)</span>
-    <span class="keyword">int</span> unitsOnLayer = 0;           <span class="comment">// 현재 레이어의 유닛 수</span>
-    <span class="keyword">int</span> maxUnitsOnLayer = 1;        <span class="comment">// 현재 레이어에 배치할 수 있는 최대 유닛 수</span>
-    <span class="keyword">float</span> circleRadius = 0;         <span class="comment">// 현재 원의 반지름</span>
-    <span class="keyword">float</span> radialOffset = 0;         <span class="comment">// 각 유닛 간의 각도 차이</span>
-
-    <span class="keyword">foreach</span>(AbstractUnit unit <span class="keyword">in</span> abstractUnits)
-    {
-        <span class="comment">// 목표 위치 계산 (삼각함수 활용)</span>
-        Vector3 targetPosition = <span class="keyword">new</span>(
-            hit.point.x + circleRadius * Mathf.Cos(radialOffset * unitsOnLayer),
-            hit.point.y,
-            hit.point.z + circleRadius * Mathf.Sin(radialOffset * unitsOnLayer)
-        );
-
-        unit.MoveTo(targetPosition);
-        unitsOnLayer++;
-
-        <span class="comment">// 현재 레이어가 가득 찼는지 확인</span>
-        <span class="keyword">if</span> (unitsOnLayer >= maxUnitsOnLayer)
-        {
-            <span class="comment">// 다음 레이어로 이동</span>
-            layer++;
-            unitsOnLayer = 0;
-            
-            <span class="comment">// 새로운 원의 반지름 계산 (에이전트 반지름의 3.5배씩 증가)</span>
-            circleRadius += unit.AgentRadius * 3.5f;
-            
-            <span class="comment">// 새로운 레이어에 배치할 수 있는 최대 유닛 수 계산</span>
-            <span class="comment">// 원의 둘레 = 2πr, 유닛 직경 = 2 * AgentRadius</span>
-            maxUnitsOnLayer = Mathf.FloorToInt(2 * Mathf.PI * circleRadius / (unit.AgentRadius * 2));
-            
-            <span class="comment">// 각 유닛 간의 각도 차이 계산</span>
-            radialOffset = 2 * Mathf.PI / maxUnitsOnLayer;
-        }
-    }
-}
-                </div>
-            </div>
-
-            <div class="subsection">
-                <h3>🧮 수학 공식</h3>
-                
-                <h4>원의 둘레 계산</h4>
-                <div class="code-block">
-<span class="comment">// 공식: C = 2πr</span>
-<span class="comment">// C: 원의 둘레 (Circumference)</span>
-<span class="comment">// r: 원의 반지름 (Radius)</span>
-<span class="comment">// π: 파이 (3.14159...)</span>
-
-<span class="keyword">float</span> circumference = 2f * Mathf.PI * circleRadius;
-                </div>
-
-                <h4>최대 유닛 수 계산</h4>
-                <div class="code-block">
-<span class="comment">// 공식: maxUnits = floor(둘레 / 유닛직경)</span>
-<span class="comment">// 둘레 = 2π × circleRadius</span>
-<span class="comment">// 유닛직경 = 2 × AgentRadius</span>
-<span class="comment">// floor(): 소수점 버림 (정수로 변환)</span>
-
-<span class="comment">// 실제 구현된 코드</span>
-<span class="keyword">int</span> maxUnitsOnLayer = Mathf.FloorToInt(2 * Mathf.PI * circleRadius / (unit.AgentRadius * 2));
-                </div>
-
-                <h4>각도 차이 계산</h4>
-                <div class="code-block">
-<span class="comment">// 공식: radialOffset = 2π / maxUnitsOnLayer</span>
-<span class="comment">// 전체 원 = 2π radians (360도)</span>
-<span class="comment">// 유닛 수로 나누어 균등 분할</span>
-<span class="comment">// 각 유닛의 위치 = radialOffset × unitsOnLayer</span>
-
-<span class="keyword">float</span> radialOffset = 2f * Mathf.PI / maxUnitsOnLayer;
-                </div>
-
-                <h4>삼각함수 좌표 계산</h4>
-                <div class="code-block">
-<span class="comment">// X 좌표: circleRadius × cos(angle)</span>
-<span class="comment">// Z 좌표: circleRadius × sin(angle)</span>
-<span class="comment">// angle = radialOffset × unitsOnLayer</span>
-<span class="comment">// Unity는 Y축이 위쪽이므로 Z축을 사용</span>
-
-Vector3 targetPosition = <span class="keyword">new</span> Vector3(
-    targetPoint.x + circleRadius * Mathf.Cos(radialOffset * unitsOnLayer),
-    targetPoint.y,
-    targetPoint.z + circleRadius * Mathf.Sin(radialOffset * unitsOnLayer)
-);
-                </div>
-            </div>
-
-            <div class="subsection">
-                <h3>🎓 학습 포인트</h3>
-                
-                <h4>왜 필요한가?</h4>
-                <div class="code-block">
-<span class="comment">// 1. AgentRadius 프로퍼티</span>
-<span class="comment">// - 동적 계산: 각 유닛의 크기에 맞는 배치</span>
-<span class="comment">// - 충돌 방지: 유닛 간 겹침 방지</span>
-<span class="comment">// - 확장성: 다양한 크기의 유닛 지원</span>
-
-<span class="comment">// 2. 원형 배치 알고리즘</span>
-<span class="comment">// - 자연스러운 포메이션: 군집 이동의 현실성</span>
-<span class="comment">// - 수학적 정확성: 삼각함수로 정확한 위치 계산</span>
-<span class="comment">// - 확장 가능성: 무제한 유닛 수 지원</span>
-
-<span class="comment">// 3. 레이어 시스템</span>
-<span class="comment">// - 효율적 공간 활용: 원형으로 최대한 많은 유닛 배치</span>
-<span class="comment">// - 동적 확장: 유닛 수에 따라 자동으로 레이어 추가</span>
-<span class="comment">// - 균등 분배: 각 레이어에 최적의 유닛 수 배치</span>
-                </div>
-
-                <h4>성능 최적화</h4>
-                <div class="code-block">
-<span class="comment">// 최적화 포인트:</span>
-<span class="comment">// - List 초기 용량: selectedUnits.Count로 리사이징 방지</span>
-<span class="comment">// - Mathf.FloorToInt: 정수 변환으로 메모리 효율성</span>
-<span class="comment">// - 삼각함수 캐싱: 동일한 각도에 대한 중복 계산 방지</span>
-
-List&lt;AbstractUnit&gt; abstractUnits = <span class="keyword">new</span> List&lt;AbstractUnit&gt;(selectedUnits.Count);
-                </div>
-            </div>
-
-            <div class="subsection">
-                <h3>🎮 노바1492 적용 포인트</h3>
-                
-                <h4>로봇 부품 시스템과의 연동</h4>
-                <div class="code-block">
-<span class="comment">// WorkerThreeRobot 특화:</span>
-<span class="comment">// - 부품별 크기 고려: 각 로봇의 실제 크기에 맞는 배치</span>
-<span class="comment">// - 회전 시스템 연동: 이동 시 부품 회전과 포메이션 조화</span>
-<span class="comment">// - 부품 교체 시 대응: 런타임 부품 변경에 따른 크기 조정</span>
-
-<span class="comment">// 전술적 포메이션</span>
-<span class="comment">// - 군집 이동: 다수의 로봇이 자연스럽게 이동</span>
-<span class="comment">// - 전투 포메이션: 적과의 거리에 따른 배치 조정</span>
-<span class="comment">// - 작업 효율성: 리소스 수집 시 최적 배치</span>
-                </div>
-            </div>
-
-            <div class="subsection">
-                <h3>📌 주요 변경 사항</h3>
-                <ul>
-                    <li><strong>AbstractUnit.cs</strong>: AgentRadius 프로퍼티 추가 (현재는 제거됨)</li>
-                    <li><strong>PlayerInput.cs</strong>: MoveUnitsInFormation 메서드 구현 (현재는 제거됨)</li>
-                    <li><strong>HandleRightClick</strong>: 원형 배치 로직으로 교체 (현재는 원래대로 복구됨)</li>
+            <div class="tech-stack">
+                <h4>🎯 Event Bus 시스템</h4>
+                <ul class="content-list">
+                    <li><strong>SupplyEvent</strong>: 자원 수집 이벤트</li>
+                    <li><strong>UnitSelectedEvent</strong>: 유닛 선택 이벤트</li>
+                    <li><strong>UnitDeselectedEvent</strong>: 유닛 선택 해제 이벤트</li>
+                    <li><strong>UnitSpawnEvent</strong>: 유닛 생성 이벤트</li>
                 </ul>
             </div>
 
-            <div class="subsection">
-                <h3>🚀 향후 구현 방향</h3>
-                <ul>
-                    <li>다양한 포메이션 패턴 구현 (사각형, 삼각형 등)</li>
-                    <li>적과의 거리에 따른 동적 포메이션 조정</li>
-                    <li>유닛 타입별 특화 배치 시스템</li>
-                    <li>성능 최적화를 위한 포메이션 캐싱</li>
+            <div class="tech-stack">
+                <h4>🎮 Behavior Events</h4>
+                <ul class="content-list">
+                    <li><strong>GatherSuppliesEventChannel</strong>: Behavior Tree 이벤트 채널</li>
+                    <li><strong>EventChannelBase</strong>: 이벤트 채널 기본 클래스</li>
+                    <li><strong>델리게이트 시스템</strong>: Behavior Tree와 게임 코드 간 통신</li>
                 </ul>
+            </div>
+
+            <div class="info-box">
+                <h4>🔄 이벤트 흐름</h4>
+                <ol>
+                    <li><strong>Behavior Tree</strong>: GatherSuppliesEventChannel 이벤트 발생</li>
+                    <li><strong>Worker</strong>: 이벤트 수신 및 SupplyEvent 생성</li>
+                    <li><strong>Event Bus</strong>: SupplyEvent 전송</li>
+                    <li><strong>Supplies</strong>: 이벤트 수신 및 UI 업데이트</li>
+                </ol>
             </div>
         </div>
 
-        <!-- 강의 23: ScriptableObjects as Configuration (설정을 위한 스크립터블 오브젝트) -->
+        <!-- 확장 가능한 구조 -->
         <div class="section">
-            <h2>강의 23: ScriptableObjects as Configuration (설정을 위한 스크립터블 오브젝트)</h2>
+            <h2>🚀 확장 가능한 구조</h2>
             
-            <div class="subsection">
-                <h3>📋 새로운 클래스 추가</h3>
-                <div class="code-block">// UnitSO.cs - ScriptableObject 클래스
-using UnityEngine;
-
-namespace GameDevTV.RTS.Units
-{
-    [CreateAssetMenu(fileName = "Unit", menuName = "Units/Unit")]
-    public class UnitSO : ScriptableObject
-    {
-        [field: SerializeField] public int Health { get; private set; } = 100;
-        [field: SerializeField] public GameObject Prefab { get; private set; }
-        [field: SerializeField] public float BuildTime { get; private set; } = 5;
-    }
-}</div>
-            </div>
-
-            <div class="subsection">
-                <h3>🔄 AbstractCommandable 수정</h3>
-                <div class="code-block">// AbstractCommandable.cs - 설정 데이터 통합
-public abstract class AbstractCommandable : MonoBehaviour, ISelectable
-{
-    [field: SerializeField] public int CurrentHealth { get; private set; }
-    [field: SerializeField] public int MaxHealth { get; private set; }
-    [SerializeField] private DecalProjector decalProjector;
-    [SerializeField] private UnitSO UnitSO;
-
-    protected virtual void Start()
-    {
-        CurrentHealth = UnitSO.Health;
-        MaxHealth = UnitSO.Health;
-    }
-}</div>
-            </div>
-
-            <div class="subsection">
-                <h3>🏗️ 상속 구조 처리</h3>
-                <div class="code-block">// AbstractUnit.cs - Start() 오버라이드
-public abstract class AbstractUnit : AbstractCommandable, IMoveable
-{
-    protected override void Start()
-    {
-        base.Start(); // 부모 클래스의 Start() 호출
-        Bus<UnitSpawnEvent>.Raise(new UnitSpawnEvent(this));
-    }
-}</div>
-            </div>
-
-            <div class="subsection">
-                <h3>📊 ScriptableObject 에셋 생성</h3>
-                <ul>
-                    <li><strong>Supply Hut.asset</strong>: Health 100</li>
-                    <li><strong>Worker.asset</strong>: Health 50</li>
-                    <li><strong>Air Transport.asset</strong>: Health 200</li>
+            <div class="tech-stack">
+                <h4>🎯 새로운 유닛 추가</h4>
+                <ul class="content-list">
+                    <li><strong>AbstractUnit 상속</strong>: 기본 유닛 기능 상속</li>
+                    <li><strong>UnitSO 설정</strong>: ScriptableObject로 유닛 정의</li>
+                    <li><strong>Behavior Tree 생성</strong>: 유닛별 Behavior Tree 설계</li>
+                    <li><strong>커스텀 액션 노드</strong>: 필요시 새로운 액션 노드 생성</li>
                 </ul>
             </div>
 
-            <div class="subsection">
-                <h3>❓ 왜 필요한가?</h3>
-                <ul>
-                    <li><strong>설정 데이터 분리</strong>: 코드와 데이터를 명확히 분리</li>
-                    <li><strong>디자이너 친화적</strong>: 프로그래머 없이도 설정 변경 가능</li>
-                    <li><strong>재사용성</strong>: 하나의 설정으로 여러 Prefab에 적용</li>
-                    <li><strong>버전 관리</strong>: 설정 변경사항을 Git으로 추적 가능</li>
+            <div class="tech-stack">
+                <h4>🎮 새로운 명령 추가</h4>
+                <ul class="content-list">
+                    <li><strong>UnitCommands 확장</strong>: 열거형에 새 명령 추가</li>
+                    <li><strong>ActionBase 상속</strong>: 새 명령 ScriptableObject 생성</li>
+                    <li><strong>Behavior Tree 업데이트</strong>: Switch 노드에 새 케이스 추가</li>
+                    <li><strong>커스텀 액션 노드</strong>: 필요시 새로운 액션 노드 생성</li>
                 </ul>
             </div>
 
-            <div class="subsection">
-                <h3>⚠️ 주의사항</h3>
-                <ul>
-                    <li><strong>빌드 시점 데이터</strong>: 런타임에 변경된 데이터는 저장되지 않음</li>
-                    <li><strong>에디터 vs 플레이어</strong>: 에디터에서는 변경사항이 유지되지만 플레이어에서는 초기화</li>
-                    <li><strong>상속 처리</strong>: Start() 메서드 오버라이드 시 base.Start() 호출 필수</li>
-                </ul>
-            </div>
-
-            <div class="subsection">
-                <h3>🎮 노바1492 적용 포인트</h3>
-                <ul>
-                    <li><strong>로봇 타입별 설정</strong>: 각 로봇의 체력, 공격력, 방어력을 ScriptableObject로 관리</li>
-                    <li><strong>건물별 설정</strong>: 생산 속도, 비용, 업그레이드 정보를 ScriptableObject로 관리</li>
-                    <li><strong>무기 시스템</strong>: 각 무기의 데미지, 사거리, 발사 속도를 ScriptableObject로 관리</li>
-                    <li><strong>리소스 설정</strong>: 각 리소스의 수집량, 재생 속도를 ScriptableObject로 관리</li>
+            <div class="tech-stack">
+                <h4>🔧 새로운 자원 타입</h4>
+                <ul class="content-list">
+                    <li><strong>SupplySO 생성</strong>: 새 자원 타입 정의</li>
+                    <li><strong>GatherableSupply 설정</strong>: 자원 GameObject 설정</li>
+                    <li><strong>Supplies 클래스 확장</strong>: 새 자원 타입 처리</li>
+                    <li><strong>UI 업데이트</strong>: 새 자원 표시 UI 추가</li>
                 </ul>
             </div>
         </div>
 
-        <!-- 강의 22: Unifying Interactions with Buildings & Units (건물과 유닛 상호작용 통합) -->
+        <!-- 성능 최적화 -->
         <div class="section">
-            <h2>강의 22: Unifying Interactions with Buildings & Units (건물과 유닛 상호작용 통합)</h2>
+            <h2>⚡ 성능 최적화</h2>
             
-            <div class="subsection">
-                <h3>📋 새로운 클래스 추가</h3>
-                <div class="code-block">// AbstractCommandable.cs - 공통 기반 클래스
-public abstract class AbstractCommandable : MonoBehaviour, ISelectable
-{
-    [SerializeField] private DecalProjector decalProjector;
-    [field: SerializeField] public int Health { get; private set; }
-
-    public void Select()
-    {
-        if (decalProjector != null)
-        {
-            decalProjector.gameObject.SetActive(true);
-        }
-        Bus<UnitSelectedEvent>.Raise(new UnitSelectedEvent(this));
-    }
-
-    public void Deselect()
-    {
-        if (decalProjector != null)
-        {
-            decalProjector.gameObject.SetActive(false);
-        }
-        Bus<UnitDeselectedEvent>.Raise(new UnitDeselectedEvent(this));
-    }
-}</div>
-            </div>
-
-            <div class="subsection">
-                <h3>🔄 상속 계층 구조 변경</h3>
-                <div class="code-block">// 기존 구조:
-// AbstractUnit : MonoBehaviour, ISelectable, IMoveable
-// SupplyHut : MonoBehaviour, ISelectable
-
-// 새로운 구조:
-// AbstractCommandable : MonoBehaviour, ISelectable
-//   ├── AbstractUnit : AbstractCommandable, IMoveable
-//   └── SupplyHut : AbstractCommandable</div>
-            </div>
-
-            <div class="subsection">
-                <h3>🏗️ 리팩토링 결과</h3>
+            <div class="info-box">
+                <h4>🎯 최적화 기법</h4>
                 <ul>
-                    <li><strong>AbstractUnit</strong>: AbstractCommandable 상속, NavMeshAgent 기능 유지</li>
-                    <li><strong>SupplyHut</strong>: AbstractCommandable 상속, 중복 코드 제거</li>
-                    <li><strong>공통 기능</strong>: DecalProjector, Health, Select/Deselect 로직</li>
-                    <li><strong>코드 중복 제거</strong>: DRY 원칙 적용</li>
+                    <li><strong>AnimationConstants</strong>: Animator.StringToHash로 파라미터 해시 캐싱</li>
+                    <li><strong>Update Loop Removal</strong>: MonoBehaviour의 Update 메서드 제거</li>
+                    <li><strong>LINQ 최적화</strong>: 효율적인 컬렉션 처리</li>
+                    <li><strong>정적 변수 활용</strong>: 전역 접근 가능한 자원 관리</li>
+                    <li><strong>이벤트 기반 통신</strong>: 직접 참조 대신 이벤트 사용</li>
+                    <li><strong>Behavior Tree 최적화</strong>: 조건부 분기로 불필요한 실행 방지</li>
                 </ul>
             </div>
 
-            <div class="subsection">
-                <h3>❓ 왜 필요한가?</h3>
-                <ul>
-                    <li><strong>코드 중복 제거</strong>: 같은 코드를 여러 곳에 작성하지 않음</li>
-                    <li><strong>유지보수성 향상</strong>: 한 곳에서 수정하면 모든 곳에 적용</li>
-                    <li><strong>확장성 향상</strong>: 새로운 건물/유닛 타입 추가가 쉬워짐</li>
-                    <li><strong>일관성 보장</strong>: 동일한 동작이 모든 클래스에서 보장</li>
-                </ul>
-            </div>
-
-            <div class="subsection">
-                <h3>🎮 노바1492 적용 포인트</h3>
-                <ul>
-                    <li><strong>로봇 생산 건물</strong>: AbstractCommandable 상속으로 일관된 선택 시스템</li>
-                    <li><strong>다양한 로봇 타입</strong>: AbstractUnit 상속으로 공통 이동 시스템</li>
-                    <li><strong>방어 건물</strong>: AbstractCommandable 상속으로 공통 방어 시스템</li>
-                    <li><strong>연구 건물</strong>: AbstractCommandable 상속으로 공통 연구 시스템</li>
+            <div class="tech-stack">
+                <h4>🔧 메모리 관리</h4>
+                <ul class="content-list">
+                    <li><strong>이벤트 구독 해제</strong>: OnDestroy에서 이벤트 해제</li>
+                    <li><strong>null 체크</strong>: Guardian Pattern으로 안전한 접근</li>
+                    <li><strong>자원 해제</strong>: AbortGather로 자원 상태 관리</li>
+                    <li><strong>구조체 활용</strong>: ClosestColliderComparer로 메모리 효율성</li>
                 </ul>
             </div>
         </div>
 
-        <!-- 강의 21: Our First Building - The Supply Hut (첫 번째 건물 - 공급소) -->
+        <!-- 개발 가이드 -->
         <div class="section">
-            <h2>강의 21: Our First Building - The Supply Hut (첫 번째 건물 - 공급소)</h2>
+            <h2>📚 개발 가이드</h2>
             
-            <div class="subsection">
-                <h3>📋 새로운 클래스 추가</h3>
-                <div class="code-block">// SupplyHut.cs - 첫 번째 건물 클래스
-public class SupplyHut : MonoBehaviour, ISelectable
-{
-    [SerializeField] private DecalProjector decalProjector;
-    [field: SerializeField] public int Health { get; private set; }
-
-    public void Select()
-    {
-        if (decalProjector != null)
-        {
-            decalProjector.gameObject.SetActive(true);
-        }
-        Bus<UnitSelectedEvent>.Raise(new UnitSelectedEvent(this));
-    }
-
-    public void Deselect()
-    {
-        if (decalProjector != null)
-        {
-            decalProjector.gameObject.SetActive(false);
-        }
-        Bus<UnitDeselectedEvent>.Raise(new UnitDeselectedEvent(this));
-    }
-}</div>
+            <div class="info-box">
+                <h4>🎯 새로운 기능 추가 시 체크리스트</h4>
+                <ol>
+                    <li><strong>Behavior Tree 설계</strong>: 필요한 노드와 흐름 설계</li>
+                    <li><strong>커스텀 액션 노드</strong>: 필요시 새로운 액션 노드 생성</li>
+                    <li><strong>이벤트 시스템</strong>: Behavior Tree와 게임 코드 간 통신</li>
+                    <li><strong>애니메이션 동기화</strong>: Behavior Tree 액션과 애니메이션 연결</li>
+                    <li><strong>성능 최적화</strong>: Update 루프 제거 및 효율적인 처리</li>
+                    <li><strong>에러 처리</strong>: null 체크 및 예외 상황 처리</li>
+                </ol>
             </div>
 
-            <div class="subsection">
-                <h3>🏗️ 건물 시스템의 특징</h3>
-                <ul>
-                    <li><strong>ISelectable 구현</strong>: 유닛과 동일한 선택 시스템 사용</li>
-                    <li><strong>Property Fields</strong>: Health를 안전하게 관리하는 프로퍼티</li>
-                    <li><strong>DecalProjector</strong>: 선택 시 시각적 피드백 제공</li>
-                    <li><strong>Event Bus 통합</strong>: UnitSelectedEvent/UnitDeselectedEvent 발생</li>
-                </ul>
-            </div>
-
-            <div class="subsection">
-                <h3>🚧 NavMesh Obstacle 설정</h3>
-                <ul>
-                    <li><strong>통과 방지</strong>: 유닛이 건물을 통과하지 못하도록 차단</li>
-                    <li><strong>크기 조정</strong>: 건물 모델에 맞게 Obstacle 크기 설정</li>
-                    <li><strong>높이 조정</strong>: Air Units에 영향을 주지 않도록 Y축 위치 조정</li>
-                    <li><strong>Carve 활성화</strong>: NavMesh에서 해당 영역을 제거</li>
-                </ul>
-            </div>
-
-            <div class="subsection">
-                <h3>❓ 왜 필요한가?</h3>
-                <ul>
-                    <li><strong>RTS 게임의 핵심</strong>: 유닛뿐만 아니라 건물도 선택하고 관리</li>
-                    <li><strong>전략적 깊이</strong>: 건물 배치와 관리가 게임의 중요한 요소</li>
-                    <li><strong>확장성</strong>: 다양한 건물 타입을 추가할 수 있는 기반 구조</li>
-                    <li><strong>현실성</strong>: 건물이 실제 장애물 역할을 하도록 구현</li>
-                </ul>
-            </div>
-
-            <div class="subsection">
-                <h3>🎮 노바1492 적용 포인트</h3>
-                <ul>
-                    <li><strong>로봇 생산 건물</strong>: 다양한 로봇을 생산하는 공장 시스템</li>
-                    <li><strong>리소스 건물</strong>: 에너지와 부품을 생산하는 발전소</li>
-                    <li><strong>방어 건물</strong>: 적의 공격을 막는 방어 시설</li>
-                    <li><strong>연구 건물</strong>: 새로운 기술을 개발하는 연구소</li>
+            <div class="tech-stack">
+                <h4>🎮 디버깅 팁</h4>
+                <ul class="content-list">
+                    <li><strong>Behavior Tree 에디터</strong>: 시각적 디버깅 활용</li>
+                    <li><strong>Blackboard 모니터링</strong>: 변수 상태 확인</li>
+                    <li><strong>이벤트 로깅</strong>: Event Bus 이벤트 추적</li>
+                    <li><strong>Unity Profiler</strong>: 성능 프로파일링</li>
                 </ul>
             </div>
         </div>
-
-        <!-- 강의 20: Multiple NavMeshes (다중 네비메시) -->
-        <div class="section">
-            <h2>강의 20: Multiple NavMeshes (다중 네비메시)</h2>
-            
-            <div class="subsection">
-                <h3>🎯 핵심 개념</h3>
-                <p>같은 씬에서 여러 개의 독립적인 NavMesh를 사용하여 다양한 유닛 타입을 지원하는 시스템입니다.</p>
-                
-                <div class="code-block">
-<span class="comment">// 다중 NavMesh 시스템</span>
-<span class="comment">// 1. Ground Units: 기존 NavMesh (Floor 레이어)</span>
-<span class="comment">// 2. Air Units: 새로운 NavMesh (TransparentFX 레이어)</span>
-<span class="comment">// 3. 높이 분리: Y축으로 NavMesh 격리</span>
-<span class="comment">// 4. Agent Type 분리: Humanoid vs Air Units</span>
-                </div>
-        </div>
-
-            <div class="subsection">
-                <h3>🏗️ 시스템 구조</h3>
-                
-                <h4>NavMesh Surface 구성</h4>
-                <div class="code-block">
-<span class="comment">// Floor GameObject</span>
-<span class="comment">// ├── NavMesh Surface (Humanoid) - 기존</span>
-<span class="comment">// │   ├── Agent Type: Humanoid</span>
-<span class="comment">// │   ├── Layer Mask: Floor, Water</span>
-<span class="comment">// │   └── Y Position: 0 (지면)</span>
-<span class="comment">// └── NavMesh Surface (Air Units) - 새로 추가</span>
-<span class="comment">//     ├── Agent Type: Air Units</span>
-<span class="comment">//     ├── Layer Mask: TransparentFX</span>
-<span class="comment">//     └── Y Position: 1.26 (장애물 위)</span>
-                </div>
-
-                <h4>Air Unit Floor 설정</h4>
-                <div class="code-block">
-<span class="comment">// Air Unit Floor GameObject</span>
-<span class="comment">// ├── Transform: Y = 1.26 (높은 위치)</span>
-<span class="comment">// ├── Box Collider: Size(96, 1, 128)</span>
-<span class="comment">// ├── Layer: TransparentFX</span>
-<span class="comment">// └── Physics: 모든 레이어와 충돌 비활성화</span>
-                </div>
-            </div>
-
-            <div class="subsection">
-                <h3>⚙️ Unity 설정 변경사항</h3>
-                
-                <h4>Agent Types</h4>
-                <ul>
-                    <li><strong>Humanoid</strong>: 기존 지상 유닛용 (Worker, WorkerThreeRobot)</li>
-                    <li><strong>Air Units</strong>: 새로 추가된 공중 유닛용 (Air Transport)</li>
-            </ul>
-
-                <h4>Layer Collision Matrix</h4>
-                <div class="code-block">
-<span class="comment">// TransparentFX 레이어 설정</span>
-<span class="comment">// - 모든 레이어와의 충돌 비활성화</span>
-<span class="comment">// - NavMesh Bake에만 사용</span>
-<span class="comment">// - 물리 시뮬레이션에 영향 없음</span>
-                </div>
-
-                <h4>NavMeshAgent 설정</h4>
-                <div class="code-block">
-<span class="comment">// Air Transport NavMeshAgent</span>
-<span class="comment">// ├── Agent Type: Air Units</span>
-<span class="comment">// ├── Obstacle Avoidance: No Obstacle Avoidance</span>
-<span class="comment">// ├── Height: 2</span>
-<span class="comment">// └── Radius: 0.5</span>
-                </div>
-        </div>
-
-            <div class="subsection">
-                <h3>❓ 왜 필요한가?</h3>
-                
-                <h4>NavMesh Obstacle의 한계</h4>
-                <div class="code-block">
-<span class="comment">// 문제점:</span>
-<span class="comment">// - NavMesh Obstacle은 모든 NavMesh를 자동으로 carve</span>
-<span class="comment">// - 특정 Agent Type만 영향받게 할 수 없음</span>
-<span class="comment">// - 런타임에 동적으로 제어 불가능</span>
-
-<span class="comment">// 해결책:</span>
-<span class="comment">// - Multiple NavMesh Surface 사용</span>
-<span class="comment">// - Agent Type별 독립적인 네비게이션</span>
-<span class="comment">// - 높이와 레이어로 완전 분리</span>
-                </div>
-
-                <h4>Air Unit의 특수 요구사항</h4>
-                <div class="code-block">
-<span class="comment">// Air Unit이 필요한 기능:</span>
-<span class="comment">// - 물 위를 자유롭게 비행</span>
-<span class="comment">// - 미네랄과 가스 위를 통과</span>
-<span class="comment">// - 건물 위를 날아다님</span>
-<span class="comment">// - 지상 유닛과 독립적인 이동</span>
-                </div>
-            </div>
-
-            <div class="subsection">
-                <h3>🎮 노바1492 적용 포인트</h3>
-                
-                <h4>다양한 로봇 타입 지원</h4>
-                <ul>
-                    <li><strong>지상형 로봇</strong>: 기존 NavMesh 사용, 장애물 회피</li>
-                    <li><strong>공중형 로봇</strong>: Air Units NavMesh 사용, 자유로운 비행</li>
-                    <li><strong>수중형 로봇</strong>: 향후 세 번째 NavMesh 추가 가능</li>
-                </ul>
-
-                <h4>전략적 깊이</h4>
-                <div class="code-block">
-<span class="comment">// 전술적 활용:</span>
-<span class="comment">// - 공중 유닛의 우위: 장애물 무시하고 직접 공격</span>
-<span class="comment">// - 지상 유닛의 제약: 장애물을 돌아서 이동</span>
-<span class="comment">// - 입체적 전투: 높이 차이를 활용한 전략</span>
-<span class="comment">// - 리소스 관리: 각 타입별 최적화된 경로</span>
-                </div>
-            </div>
-
-            <div class="subsection">
-                <h3>🚀 향후 확장 방향</h3>
-                <ul>
-                    <li>수중 유닛을 위한 세 번째 NavMesh Surface</li>
-                    <li>Agent Type별 특화된 이동 속도와 회전 속도</li>
-                    <li>다층 NavMesh 간의 경로 찾기 최적화</li>
-                    <li>동적 NavMesh 생성 시스템</li>
-                    <li>유닛 타입별 특화된 포메이션 시스템</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- 강의 24: Command Post Setup (커맨드 포스트 설정) -->
-        <div class="section">
-            <h2>🏢 강의 24: Command Post Setup (커맨드 포스트 설정)</h2>
-            
-            <div class="subsection">
-                <h3>📋 주요 변경사항</h3>
-                
-                <div class="code-block">
-<span class="comment">// 1. BaseBuilding 클래스 생성</span>
-<span class="keyword">namespace</span> GameDevTV.RTS.Units
-{
-    <span class="keyword">public class</span> <span class="class-name">BaseBuilding</span> : <span class="class-name">AbstractCommandable</span>
-    {
-        <span class="comment">// 모든 건물의 공통 기능을 AbstractCommandable에서 상속</span>
-        <span class="comment">// - Select/Deselect 기능</span>
-        <span class="comment">// - Health 관리</span>
-        <span class="comment">// - DecalProjector 시각화</span>
-        <span class="comment">// - UnitSO 설정</span>
-    }
-}
-
-<span class="comment">// 2. SupplyHut.cs 삭제</span>
-<span class="comment">// - 기존 SupplyHut 클래스는 BaseBuilding으로 대체</span>
-<span class="comment">// - Supply Hut prefab에서 BaseBuilding 스크립트 사용</span>
-
-<span class="comment">// 3. Command Post 설정</span>
-<span class="comment">// - Command Post.asset 생성 (Health: 400)</span>
-<span class="comment">// - DecalProjector 설정 (크기: 4x4)</span>
-<span class="comment">// - NavMeshObstacle 설정 (크기: 2x0.25x2)</span>
-<span class="comment">// - Layer를 Buildings로 변경</span>
-            </div>
-
-                <div class="info-box">
-                    <h4>💡 왜 BaseBuilding이 필요한가?</h4>
-                    <ul>
-                        <li><strong>코드 중복 제거</strong>: SupplyHut과 Command Post가 동일한 기능을 가지고 있어서 공통 클래스로 통합</li>
-                        <li><strong>일관성 유지</strong>: 모든 건물이 동일한 선택/해제 시스템을 사용</li>
-                        <li><strong>확장성</strong>: 새로운 건물 추가 시 BaseBuilding을 상속받아 쉽게 구현</li>
-                        <li><strong>유지보수성</strong>: 건물 관련 공통 기능 수정 시 한 곳에서만 변경</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="subsection">
-                <h3>🏗️ 건물 시스템 아키텍처</h3>
-                
-                <div class="code-block">
-<span class="comment">// 건물 상속 구조</span>
-<span class="class-name">AbstractCommandable</span> (기본 선택/해제 기능)
-    ↓
-<span class="class-name">BaseBuilding</span> (모든 건물의 공통 기능)
-    ↓
-<span class="comment">// 향후 확장 가능:</span>
-<span class="comment">// - SupplyHut : BaseBuilding</span>
-<span class="comment">// - CommandPost : BaseBuilding</span>
-<span class="comment">// - Barracks : BaseBuilding (유닛 생산)</span>
-<span class="comment">// - Factory : BaseBuilding (기계 생산)</span>
-                </div>
-
-                <div class="info-box">
-                    <h4>💡 왜 이런 구조를 사용하는가?</h4>
-                    <ul>
-                        <li><strong>Template Method Pattern</strong>: 공통 기능은 부모 클래스에서, 특별한 기능은 자식 클래스에서 구현</li>
-                        <li><strong>DRY 원칙</strong>: Don't Repeat Yourself - 중복 코드 제거</li>
-                        <li><strong>확장성</strong>: 새로운 건물 타입 추가 시 BaseBuilding만 상속받으면 됨</li>
-                        <li><strong>일관성</strong>: 모든 건물이 동일한 인터페이스를 제공</li>
-                </ul>
-            </div>
-        </div>
-
-            <div class="subsection">
-                <h3>🎮 게임플레이 개선</h3>
-                
-                <div class="code-block">
-<span class="comment">// Command Post의 역할 (향후 확장 예정)</span>
-<span class="comment">// 1. 유닛 생산: Worker, Soldier 등 생산</span>
-<span class="comment">// 2. 자원 수집: Worker들이 수집한 자원을 저장</span>
-<span class="comment">// 3. 업그레이드: 건물과 유닛의 능력 향상</span>
-<span class="comment">// 4. 연구: 새로운 기술 개발</span>
-
-<span class="comment">// 현재 구현된 기능</span>
-<span class="comment">// - 선택/해제 (ISelectable)</span>
-<span class="comment">// - 체력 관리 (Health: 400)</span>
-<span class="comment">// - 시각적 피드백 (DecalProjector)</span>
-<span class="comment">// - NavMesh 장애물 (NavMeshObstacle)</span>
-                </div>
-            </div>
-
-            <div class="subsection">
-                <h3>🚀 Nova 1492 적용 포인트</h3>
-                <ul>
-                    <li><strong>모듈화된 건물 시스템</strong>: BaseBuilding을 기반으로 한 확장 가능한 건물 구조</li>
-                    <li><strong>설정 기반 밸런싱</strong>: UnitSO를 통한 체력 관리로 게임 밸런스 조정</li>
-                    <li><strong>시각적 피드백</strong>: DecalProjector를 통한 명확한 선택 표시</li>
-                    <li><strong>전략적 깊이</strong>: 다양한 건물 타입으로 게임의 전략성 향상</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- 문제 해결 가이드 -->
-        <div class="section">
-            <h2>🔧 문제 해결 가이드</h2>
-            
-            <div class="subsection">
-                <h3>❌ WorkerThreeRobot 다중드래그 선택 문제</h3>
-                <div class="code-block">
-<span class="comment">// 문제: WorkerThreeRobot이 드래그 선택에 포함되지 않음</span>
-<span class="comment">// 원인: UnitSO 설정이 누락되어 AbstractCommandable 초기화 실패</span>
-
-<span class="comment">// 해결 방법:</span>
-<span class="comment">// 1. Unity에서 WorkerThreeRobot.prefab 선택</span>
-<span class="comment">// 2. Inspector에서 WorkerThreeRobot 스크립트 찾기</span>
-<span class="comment">// 3. UnitSO 필드에 Worker.asset 할당</span>
-<span class="comment">// 4. Apply 버튼 클릭</span>
-
-<span class="comment">// 결과: 다중드래그 선택 시 데칼(선택 표시)이 정상적으로 나타남</span>
-        </div>
-                
-                <div class="info-box">
-                    <h4>💡 왜 필요한가?</h4>
-                    <ul>
-                        <li><strong>AbstractCommandable 초기화</strong>: UnitSO가 없으면 Start() 메서드에서 Health 초기화 실패</li>
-                        <li><strong>이벤트 시스템 연동</strong>: UnitSpawnEvent가 제대로 발생하지 않아 aliveUnits에 추가되지 않음</li>
-                        <li><strong>선택 시스템 통합</strong>: 모든 유닛이 동일한 선택 시스템을 사용해야 일관성 유지</li>
-                        <li><strong>설정 데이터 관리</strong>: ScriptableObject를 통한 체계적인 설정 관리</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="subsection">
-                <h3>🔍 디버깅 체크리스트</h3>
-                <div class="code-block">
-<span class="comment">// 다중드래그 선택이 안 될 때 확인사항:</span>
-<span class="comment">// 1. UnitSO가 할당되어 있는가?</span>
-<span class="comment">// 2. DecalProjector가 설정되어 있는가?</span>
-<span class="comment">// 3. Layer가 selectableUnitsLayers에 포함되어 있는가?</span>
-<span class="comment">// 4. UnitSpawnEvent가 정상적으로 발생하는가?</span>
-<span class="comment">// 5. aliveUnits HashSet에 유닛이 추가되는가?</span>
-
-<span class="comment">// Console에서 확인할 수 있는 로그:</span>
-<span class="comment">// - "Unit Spawn Event raised"</span>
-<span class="comment">// - "Unit added to aliveUnits"</span>
-<span class="comment">// - "Unit selected"</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>🔄 시스템 동작 순서</h2>
-            
-            <div class="subsection">
-                <h3>📋 유닛 선택 및 이동 플로우</h3>
-                
-                <div class="code-block">
-<span class="comment">// 1. 유닛 스폰 시</span>
-<span class="class-name">AbstractUnit</span>.<span class="method-name">Start</span>() 
-    → <span class="class-name">Bus</span>&lt;<span class="class-name">UnitSpawnEvent</span>&gt;.<span class="method-name">Raise</span>()
-    → <span class="class-name">PlayerInput</span>.<span class="method-name">HandleUnitSpawn</span>()
-    → <span class="property-name">aliveUnits</span>.<span class="method-name">Add</span>(unit)
-
-<span class="comment">// 2. 유닛 선택 시</span>
-<span class="class-name">PlayerInput</span>.<span class="method-name">HandleDragSelect</span>()
-    → <span class="class-name">PlayerInput</span>.<span class="method-name">HandleMouseDown</span>() <span class="comment">// 드래그 시작</span>
-    → <span class="class-name">PlayerInput</span>.<span class="method-name">HandleMouseDrag</span>() <span class="comment">// 드래그 중</span>
-    → <span class="class-name">PlayerInput</span>.<span class="method-name">HandleMouseUp</span>() <span class="comment">// 드래그 종료</span>
-    → <span class="class-name">PlayerInput</span>.<span class="method-name">DeselectAllUnits</span>()
-    → <span class="class-name">PlayerInput</span>.<span class="method-name">HandleLeftClick</span>()
-    → <span class="property-name">selectedUnits</span>.<span class="method-name">Add</span>(unit)
-    → <span class="class-name">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.<span class="method-name">Raise</span>()
-    → <span class="class-name">ActionsUI</span>.<span class="method-name">HandleUnitSelected</span>()
-    → <span class="class-name">ActionsUI</span>.<span class="method-name">RefreshButtons</span>()
-    → <span class="class-name">UIActionButton</span>.<span class="method-name">SetIcon</span>(action.<span class="property-name">Icon</span>)
-
-<span class="comment">// 3. UI 버튼 클릭으로 명령 활성화</span>
-<span class="class-name">UIActionButton</span>.<span class="method-name">EnableFor</span>()
-    → <span class="class-name">Button</span>.<span class="property-name">onClick</span>.<span class="method-name">AddListener</span>()
-    → <span class="class-name">ActionsUI</span>.<span class="method-name">HandleClick</span>()
-    → <span class="class-name">Bus</span>&lt;<span class="class-name">ActionSelectedEvent</span>&gt;.<span class="method-name">Raise</span>()
-    → <span class="class-name">PlayerInput</span>.<span class="method-name">HandleActionSelected</span>()
-    → <span class="property-name">activeAction</span> = evt.<span class="property-name">Action</span>
-
-<span class="comment">// 4. 월드 클릭으로 명령 실행</span>
-<span class="class-name">PlayerInput</span>.<span class="method-name">HandleLeftClick</span>()
-    → <span class="class-name">EventSystem</span>.<span class="method-name">IsPointerOverGameObject</span>() <span class="comment">// UI 클릭 확인</span>
-    → <span class="class-name">Physics</span>.<span class="method-name">Raycast</span>() <span class="comment">// 월드 클릭 지점 감지</span>
-    → <span class="keyword">if</span> (activeAction != null)
-        → <span class="class-name">List</span>&lt;<span class="class-name">AbstractUnit</span>&gt; = selectedUnits.<span class="method-name">Where</span>().<span class="method-name">Cast</span>().<span class="method-name">ToList</span>()
-        → <span class="keyword">for</span> (각 선택된 유닛)
-            → <span class="class-name">CommandContext</span> <span class="keyword">new</span>(unit, hit, unitIndex)
-            → activeAction.<span class="method-name">Handle</span>(context)
-                → <span class="comment">// Radial Placement 계산</span>
-                → unit.<span class="method-name">MoveTo</span>(targetPosition)
-        → activeAction = null
-
-<span class="comment">// 5. 우클릭으로 직접 명령 실행 (기존 방식)</span>
-<span class="class-name">PlayerInput</span>.<span class="method-name">HandleRightClick</span>()
-    → <span class="class-name">Physics</span>.<span class="method-name">Raycast</span>() <span class="comment">// 클릭 지점 감지</span>
-    → <span class="keyword">for</span> (각 선택된 유닛)
-        → <span class="class-name">CommandContext</span> <span class="keyword">new</span>(unit, hit, unitIndex)
-        → <span class="keyword">foreach</span> (유닛의 AvailableCommands)
-            → <span class="class-name">MoveCommand</span>.<span class="method-name">CanHandle</span>(context)
-            → <span class="class-name">MoveCommand</span>.<span class="method-name">Handle</span>(context)
-                → <span class="comment">// Radial Placement 계산</span>
-                → unit.<span class="method-name">MoveTo</span>(targetPosition)
-                </div>
-            </div>
-
-            <div class="subsection">
-                <h3>🎯 Command Pattern 실행 흐름</h3>
-                
-                <div class="code-block">
-<span class="comment">// Command Pattern 실행 순서</span>
-<span class="number">1.</span> <span class="class-name">PlayerInput</span> → 사용자 입력 감지
-<span class="number">2.</span> <span class="class-name">CommandContext</span> → 명령 컨텍스트 생성 (유닛, 클릭정보, 인덱스)
-<span class="number">3.</span> <span class="class-name">AbstractCommandable</span>.<span class="property-name">AvailableCommands</span> → 사용 가능한 명령들 조회
-<span class="number">4.</span> <span class="class-name">ICommand</span>.<span class="method-name">CanHandle</span>(context) → 명령 실행 가능 여부 확인
-<span class="number">5.</span> <span class="class-name">ICommand</span>.<span class="method-name">Handle</span>(context) → 실제 명령 실행
-<span class="number">6.</span> <span class="class-name">AbstractUnit</span>.<span class="method-name">MoveTo</span>() → 유닛 이동 실행
-                </div>
-            </div>
-
-            <div class="subsection">
-                <h3>🎮 게임플레이 시스템</h3>
-                
-                <div class="info-box">
-                    <h4>📊 현재 구현된 기능</h4>
-                    <ul>
-                        <li><strong>다중 유닛 선택</strong>: 드래그로 여러 유닛 선택</li>
-                        <li><strong>Shift 키 추가 선택</strong>: 기존 선택에 유닛 추가</li>
-                        <li><strong>원형 배치 이동</strong>: 유닛들이 원형으로 자연스럽게 배치</li>
-                        <li><strong>이벤트 기반 시스템</strong>: 유닛 선택/해제/스폰 이벤트</li>
-                        <li><strong>Command Pattern</strong>: 확장 가능한 명령 시스템</li>
-                        <li><strong>ScriptableObject 설정</strong>: Inspector에서 실시간 조정</li>
-                        <li><strong>UI 명령 표시</strong>: 선택된 유닛의 사용 가능한 명령을 아이콘으로 표시</li>
-                        <li><strong>일관된 UI 배치</strong>: 같은 명령은 항상 같은 슬롯에 표시</li>
-                        <li><strong>UI 버튼 클릭 명령</strong>: UI 버튼 클릭으로 명령 활성화 후 월드 클릭으로 실행</li>
-                        <li><strong>UI/월드 클릭 구분</strong>: UI 클릭과 월드 클릭을 명확히 구분하여 처리</li>
-                        <li><strong>건물 기반 유닛 생산</strong>: Command Post에서 Worker 생산 가능</li>
-                        <li><strong>시간 기반 생산 시스템</strong>: 코루틴을 사용한 현실적인 빌드 타임</li>
-                        <li><strong>즉시 실행 명령</strong>: RequiresClickToActivate로 다양한 명령 타입 지원</li>
-                        <li><strong>Building Queue 시스템</strong>: 최대 5개까지 유닛 생산 대기열</li>
-                        <li><strong>FIFO 큐 처리</strong>: 먼저 주문한 유닛부터 순서대로 생산</li>
-                        <li><strong>UI 클릭 선택 해제 방지</strong>: 빌드 버튼 클릭 시 유닛 선택 유지</li>
-                        <li><strong>UI System Refactoring</strong>: 확장 가능한 UI 아키텍처</li>
-                        <li><strong>IUIElement 인터페이스</strong>: 일관된 UI 관리 패턴</li>
-                        <li><strong>RuntimeUI</strong>: 중앙집중식 UI 관리</li>
-                        <li><strong>단방향 데이터 흐름</strong>: 상태 관리의 단순화</li>
-                        <li><strong>폴더 구조 정리</strong>: Containers와 Components 분리</li>
-                        <li><strong>네임스페이스 정리</strong>: 코드 조직화 개선</li>
-                        <li><strong>Progress Bar Component</strong>: 재사용 가능한 프로그레스 바 컴포넌트</li>
-                        <li><strong>UI Mask 활용</strong>: RectTransform offset 조작으로 진행도 표시</li>
-                        <li><strong>패딩 계산</strong>: 정확한 위치 계산을 위한 수학적 알고리즘</li>
-                        <li><strong>Building Progress Display</strong>: 건물 빌드 진행도 실시간 표시</li>
-                        <li><strong>이벤트 기반 큐 업데이트</strong>: 효율적인 UI 업데이트 시스템</li>
-                        <li><strong>시간 기반 진행도 계산</strong>: Time.time을 활용한 정확한 진행도</li>
-                        <li><strong>BuildingBuildingUI 완성</strong>: 실제 빌드 진행도 표시 UI</li>
-                        <li><strong>Cancel Queue Items</strong>: 빌드 큐에서 특정 유닛 취소 기능</li>
-                        <li><strong>데이터 구조 최적화</strong>: Queue에서 List로 변경</li>
-                        <li><strong>UIBuildQueueButton</strong>: 취소 버튼 컴포넌트</li>
-                        <li><strong>코루틴 관리</strong>: 안전한 중지 및 재시작</li>
-                        <li><strong>More Buildings & Units</strong>: 다양한 건물과 유닛 추가</li>
-                        <li><strong>ScriptableObject 확장</strong>: 코드 없이 콘텐츠 추가</li>
-                        <li><strong>시스템 검증</strong>: 실제 게임에서 사용 가능한 완전한 시스템</li>
-                        <li><strong>Unity Behavior Tree</strong>: Unity 6의 공식 AI 시스템 도입</li>
-                        <li><strong>코드와 로직 분리</strong>: 비헤이비어 로직을 시각적 그래프로 분리</li>
-                        <li><strong>Blackboard 시스템</strong>: 데이터 중심의 유연한 통신</li>
-                        <li><strong>Custom Behavior Nodes</strong>: Unity Behavior Tree 커스텀 노드 생성</li>
-                        <li><strong>NavMeshAgent 보호</strong>: 런타임 설정 덮어쓰기 방지</li>
-                        <li><strong>Status 시스템</strong>: Running, Success, Failure 상태 관리</li>
-                        <li><strong>자원 수집 시스템</strong>: Gatherable Supplies 구현</li>
-                        <li><strong>SupplySO</strong>: 자원 타입별 설정 관리</li>
-                        <li><strong>IGatherable</strong>: 수집 가능한 객체 인터페이스</li>
-                        <li><strong>Busy 상태 관리</strong>: 동시 수집 방지 시스템</li>
-                        <li><strong>Unit Commands</strong>: Behavior Tree에서 유닛 명령 체계</li>
-                        <li><strong>Switch 노드</strong>: 명령에 따른 분기 처리</li>
-                        <li><strong>Abort 시스템</strong>: 명령 변경 시 즉시 반응</li>
-                        <li><strong>StopAgentAction</strong>: 유닛 정지 커스텀 노드</li>
-                        <li><strong>GatherCommand</strong>: 자원 수집 명령 액션 베이스</li>
-                        <li><strong>GatherSuppliesAction</strong>: 자원 수집 커스텀 노드</li>
-                        <li><strong>Worker.Gather()</strong>: Worker의 자원 수집 메서드</li>
-                        <li><strong>Supplies 레이어</strong>: 자원 전용 레이어 시스템</li>
-                        <li><strong>FindClosestCommandPostAction</strong>: 가장 가까운 Command Post 찾기</li>
-                        <li><strong>MoveToTargetGameObjectAction</strong>: GameObject로 이동하는 노드</li>
-                        <li><strong>Physics.OverlapSphere</strong>: 구체 영역에서 건물 탐색</li>
-                        <li><strong>SetAgentAvoidanceAction</strong>: NavMesh Agent의 Obstacle Avoidance 설정</li>
-                        <li><strong>동적 Avoidance 설정</strong>: 상황에 따른 회피 품질 조정</li>
-                        <li><strong>자원 수집 최적화</strong>: No Obstacle Avoidance로 부드러운 이동</li>
-                        <li><strong>상황별 이동 모드</strong>: 수집/일반 이동 시 다른 설정 적용</li>
-                        <li><strong>Collider.ClosestPoint</strong>: Collider에서 가장 가까운 지점 계산</li>
-                        <li><strong>최적화된 위치 선택</strong>: Worker 위치를 고려한 최단 경로</li>
-                        <li><strong>TargetGameObject 활용</strong>: GameObject 기반의 정확한 위치 계산</li>
-                        <li><strong>폴백 로직</strong>: Collider가 없는 경우 기존 방식 사용</li>
-                        <li><strong>Smart Gathering System</strong>: 바쁘지 않은 자원을 자동으로 찾는 지능적 시스템</li>
-                        <li><strong>MoveToGatherableSupplyAction</strong>: 지능적인 자원 수집을 위한 커스텀 노드</li>
-                        <li><strong>LINQ Integration</strong>: Where()와 ToArray()를 활용한 효율적인 필터링</li>
-                        <li><strong>ClosestColliderComparer</strong>: 거리 기준으로 Collider들을 정렬하는 커스텀 비교자</li>
-                        <li><strong>동적 자원 선택</strong>: 사용 불가능한 자원 대신 주변의 사용 가능한 자원으로 자동 전환</li>
-                        <li><strong>자동 분산 시스템</strong>: 여러 Worker가 같은 자원을 타겟팅해도 자동으로 분산</li>
-                        <li><strong>Animation Synchronization</strong>: Behavior Tree 액션과 애니메이션 동기화</li>
-                        <li><strong>AnimationConstants</strong>: 애니메이션 파라미터 해시 캐싱으로 성능 최적화</li>
-                        <li><strong>Behavior Tree Integration</strong>: 애니메이션 로직을 Behavior Tree 액션에 통합</li>
-                        <li><strong>Update Loop Removal</strong>: MonoBehaviour Update 없이 액션 기반 애니메이션 제어</li>
-                        <li><strong>Speed-based Animation</strong>: NavMesh Agent 속도에 따른 걷기/뛰기 전환</li>
-                        <li><strong>State-based Animation</strong>: 수집 상태에 따른 애니메이션 제어</li>
-                        <li><strong>Safe State Management</strong>: OnEnd에서 애니메이션 상태 안전하게 리셋</li>
-                        <li><strong>Behavior Events</strong>: Behavior Tree와 게임 시스템 간의 이벤트 통신</li>
-                        <li><strong>GatherSuppliesEventChannel</strong>: 자원 수집 이벤트를 전송하는 델리게이트 시스템</li>
-                        <li><strong>SupplyEvent</strong>: Event Bus를 통해 전송되는 자원 수집 이벤트</li>
-                        <li><strong>Event Bridge</strong>: Behavior Tree와 Event Bus 간의 브리지 역할</li>
-                        <li><strong>Decoupled Communication</strong>: Behavior Tree와 게임 로직의 완전한 분리</li>
-                    </ul>
-                </div>
-
-                <div class="info-box">
-                    <h4>🚀 향후 확장 가능한 기능</h4>
-                    <ul>
-                        <li><strong>AttackCommand</strong>: 적 유닛/건물 공격</li>
-                        <li><strong>BuildCommand</strong>: 건물 건설</li>
-                        <li><strong>StopCommand</strong>: 현재 행동 중단</li>
-                        <li><strong>HoldPositionCommand</strong>: 위치 고수</li>
-                        <li><strong>PatrolCommand</strong>: 순찰</li>
-                        <li><strong>FollowCommand</strong>: 다른 유닛 따라가기</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 40px; border-radius: 15px;">
-            <h2>🎉 URTS Architecture Master!</h2>
-            <p style="font-size: 1.2rem; margin-top: 10px;">이제 확장 가능하고 유지보수하기 쉬운 RTS 시스템을 구축할 수 있습니다!</p>
-        </div>
-
     </div>
 </body>
 </html>

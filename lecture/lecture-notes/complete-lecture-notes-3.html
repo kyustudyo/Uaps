@@ -3312,6 +3312,330 @@ protected override Status OnStart()
                 </div>
             </div>
         </div>
+        
+        <!-- Lecture 48: Player Supplies -->
+        <div class="lecture-section">
+            <h2 id="lecture-48">강의 48: Player Supplies - 플레이어 자원 시스템</h2>
+            
+            <div class="lecture-content">
+                <h3>🎯 왜 필요한가?</h3>
+                <p>Worker가 자원을 수집해도 플레이어가 실제로 얼마나 가지고 있는지 알 수 없었습니다. UI에 자원 수량을 표시하고, 게임의 다른 부분에서도 쉽게 접근할 수 있는 자원 관리 시스템이 필요합니다.</p>
+                
+                <h3>🧠 초딩도 이해하기 쉬운 설명</h3>
+                <p>마치 지갑에 돈이 얼마나 있는지 확인하는 것과 같아요! Worker가 자원을 수집하면 "지갑(Supplies)"에 자원이 쌓이고, 화면 위쪽에 "미네랄: 50개, 가스: 30개"처럼 보여줍니다. 그리고 게임의 다른 부분에서도 "미네랄이 충분한가?"를 쉽게 확인할 수 있어요!</p>
+                
+                <h3>🔧 핵심 구현</h3>
+                
+                <h4>1. Supplies 클래스</h4>
+                <p>플레이어의 자원을 관리하고 UI를 업데이트하는 MonoBehaviour:</p>
+                
+                <div class="code-block">
+<span class="comment">// Supplies.cs - 플레이어 자원 관리 시스템</span>
+<span class="comment">// 자원 수량 관리 및 UI 업데이트</span>
+
+<span class="keyword">using</span> System;
+<span class="keyword">using</span> GameDevTV.RTS.Environment;
+<span class="keyword">using</span> GameDevTV.RTS.EventBus;
+<span class="keyword">using</span> GameDevTV.RTS.Events;
+<span class="keyword">using</span> TMPro;
+<span class="keyword">using</span> UnityEngine;
+
+<span class="keyword">namespace</span> GameDevTV.RTS.Player
+{
+    <span class="comment">// Supplies: 플레이어의 자원을 관리하는 MonoBehaviour</span>
+    <span class="comment">// MonoBehaviour: Unity의 기본 컴포넌트 클래스</span>
+    <span class="keyword">public class</span> <span class="class-name">Supplies</span> : <span class="class-name">MonoBehaviour</span>
+    {
+        <span class="comment">// UI 텍스트 컴포넌트들</span>
+        <span class="comment">// [SerializeField]: Unity Inspector에서 설정 가능</span>
+        <span class="comment">// private: 클래스 내부에서만 접근 가능</span>
+        <span class="comment">// TextMeshProUGUI: TextMeshPro UI 텍스트 컴포넌트</span>
+        [SerializeField] <span class="keyword">private</span> <span class="class-name">TextMeshProUGUI</span> mineralsText;
+        [SerializeField] <span class="keyword">private</span> <span class="class-name">TextMeshProUGUI</span> gasText;
+        [SerializeField] <span class="keyword">private</span> <span class="class-name">TextMeshProUGUI</span> populationText;
+
+        <span class="comment">// 자원 타입 ScriptableObject 참조</span>
+        <span class="comment">// SupplySO: 자원 타입을 정의하는 ScriptableObject</span>
+        [SerializeField] <span class="keyword">private</span> <span class="class-name">SupplySO</span> mineralsSO;
+        [SerializeField] <span class="keyword">private</span> <span class="class-name">SupplySO</span> gasSO;
+
+        <span class="comment">// 정적 자원 변수들</span>
+        <span class="comment">// public static: 어디서든 접근 가능한 정적 변수</span>
+        <span class="comment">// { get; private set; }: 외부에서는 읽기만 가능, 내부에서만 수정 가능</span>
+        <span class="comment">// int: 정수형 (자원의 개수)</span>
+        <span class="keyword">public static int</span> <span class="property-name">Minerals</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+        <span class="keyword">public static int</span> <span class="property-name">Gas</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+        <span class="keyword">public static int</span> <span class="property-name">Population</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+        <span class="keyword">public static int</span> <span class="property-name">PopulationLimit</span> { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+
+        <span class="comment">// Awake: Unity 생명주기 메서드 (게임 시작 시 한 번 호출)</span>
+        <span class="comment">// private: 클래스 내부에서만 호출 가능</span>
+        <span class="comment">// void: 반환값 없음</span>
+        <span class="keyword">private void</span> Awake()
+        {
+            <span class="comment">// Bus<SupplyEvent>.OnEvent: Event Bus의 SupplyEvent 이벤트</span>
+            <span class="comment">// +=: 이벤트에 핸들러 등록</span>
+            <span class="comment">// HandleSupplyEvent: 이벤트 발생 시 호출될 메서드</span>
+            <span class="class-name">Bus</span>&lt;<span class="class-name">SupplyEvent</span>&gt;.OnEvent += HandleSupplyEvent;
+        }
+
+        <span class="comment">// OnDestroy: Unity 생명주기 메서드 (객체 파괴 시 호출)</span>
+        <span class="keyword">private void</span> OnDestroy()
+        {
+            <span class="comment">// -=: 이벤트에서 핸들러 해제 (메모리 누수 방지)</span>
+            <span class="class-name">Bus</span>&lt;<span class="class-name">SupplyEvent</span>&gt;.OnEvent -= HandleSupplyEvent;
+        }
+
+        <span class="comment">// HandleSupplyEvent: 자원 수집 이벤트 핸들러</span>
+        <span class="comment">// SupplyEvent evt: 수집된 자원 정보</span>
+        <span class="keyword">private void</span> HandleSupplyEvent(<span class="class-name">SupplyEvent</span> evt)
+        {
+            <span class="comment">// evt.Supply.Equals(mineralsSO): 수집된 자원이 미네랄인지 확인</span>
+            <span class="comment">// Equals: 객체 비교 메서드</span>
+            <span class="keyword">if</span> (evt.Supply.Equals(mineralsSO))
+            {
+                <span class="comment">// Minerals += evt.Amount: 미네랄 수량 증가</span>
+                <span class="comment">// +=: 복합 할당 연산자 (Minerals = Minerals + evt.Amount)</span>
+                Minerals += evt.Amount;
+                
+                <span class="comment">// mineralsText.SetText: UI 텍스트 업데이트</span>
+                <span class="comment">// Minerals.ToString(): 정수를 문자열로 변환</span>
+                mineralsText.SetText(Minerals.ToString());
+            }
+            <span class="comment">// else if: 첫 번째 조건이 거짓일 때만 확인</span>
+            <span class="keyword">else if</span> (evt.Supply.Equals(gasSO))
+            {
+                <span class="comment">// Gas += evt.Amount: 가스 수량 증가</span>
+                Gas += evt.Amount;
+                
+                <span class="comment">// gasText.SetText: 가스 UI 텍스트 업데이트</span>
+                gasText.SetText(Gas.ToString());
+            }
+        }
+    }
+}</div>
+                
+                <h3>🔄 동작 과정</h3>
+                <ol>
+                    <li><strong>자원 수집</strong>: Worker가 자원을 수집하여 `SupplyEvent` 발생</li>
+                    <li><strong>이벤트 수신</strong>: `Supplies` 클래스가 Event Bus에서 이벤트 수신</li>
+                    <li><strong>자원 타입 확인</strong>: 수집된 자원이 미네랄인지 가스인지 확인</li>
+                    <li><strong>수량 증가</strong>: 해당 자원의 정적 변수에 수집량 추가</li>
+                    <li><strong>UI 업데이트</strong>: TextMeshPro UI에 새로운 수량 표시</li>
+                </ol>
+                
+                <h3>🎮 게임에서의 효과</h3>
+                <ul>
+                    <li><strong>실시간 자원 표시</strong>: 화면 상단에 현재 보유 자원 수량 표시</li>
+                    <li><strong>전역 접근</strong>: 게임의 어느 곳에서나 `Supplies.Minerals`로 자원 확인 가능</li>
+                    <li><strong>UI 동기화</strong>: 자원 수집과 UI 업데이트가 자동으로 동기화</li>
+                    <li><strong>확장성</strong>: 새로운 자원 타입을 쉽게 추가 가능</li>
+                </ul>
+                
+                <h3>🔧 기술적 특징</h3>
+                <ul>
+                    <li><strong>정적 변수</strong>: `static` 키워드로 전역 접근 가능</li>
+                    <li><strong>캡슐화</strong>: `{ get; private set; }`로 외부에서 수정 방지</li>
+                    <li><strong>Event Bus 연동</strong>: Behavior Tree 이벤트와 자동 연결</li>
+                    <li><strong>메모리 관리</strong>: `OnDestroy`에서 이벤트 구독 해제</li>
+                    <li><strong>타입 안전성</strong>: `SupplySO`로 자원 타입 구분</li>
+                </ul>
+                
+                <h3>📊 시스템 구조</h3>
+                <div class="info-box">
+                    <h4>🔄 자원 흐름도</h4>
+                    <ol>
+                        <li><strong>Worker 수집</strong>: 자원 수집 완료</li>
+                        <li><strong>SupplyEvent</strong>: Event Bus로 이벤트 전송</li>
+                        <li><strong>Supplies 수신</strong>: 이벤트 핸들러에서 수신</li>
+                        <li><strong>자원 타입 확인</strong>: 미네랄/가스 구분</li>
+                        <li><strong>정적 변수 업데이트</strong>: Minerals/Gas 증가</li>
+                        <li><strong>UI 텍스트 업데이트</strong>: 화면에 새로운 수량 표시</li>
+                    </ol>
+                </div>
+                
+                <h3>🎯 사용 예시</h3>
+                <div class="code-block">
+<span class="comment">// 다른 스크립트에서 자원 확인 예시</span>
+
+<span class="comment">// 건물 건설 시 자원 확인</span>
+<span class="keyword">if</span> (<span class="class-name">Supplies</span>.Minerals >= <span class="number">100</span>)
+{
+    <span class="comment">// 건물 건설 가능</span>
+    BuildBuilding();
+}
+
+<span class="comment">// 유닛 생산 시 자원 확인</span>
+<span class="keyword">if</span> (<span class="class-name">Supplies</span>.Minerals >= <span class="number">50</span> && <span class="class-name">Supplies</span>.Gas >= <span class="number">25</span>)
+{
+    <span class="comment">// 유닛 생산 가능</span>
+    ProduceUnit();
+}</div>
+            </div>
+        </div>
+        
+        <!-- Lecture 49: Conditional Branches -->
+        <div class="lecture-section">
+            <h2 id="lecture-49">강의 49: Conditional Branches - 조건부 분기</h2>
+            
+            <div class="lecture-content">
+                <h3>🎯 왜 필요한가?</h3>
+                <p>현재 Worker는 자원을 수집하라는 명령을 받으면 무조건 수집을 시도합니다. 하지만 StarCraft 2처럼 이미 자원을 가지고 있는 Worker는 더 이상 수집하지 않고 바로 Command Post로 돌아가야 합니다. 이를 위해 조건부 분기가 필요합니다.</p>
+                
+                <h3>🧠 초딩도 이해하기 쉬운 설명</h3>
+                <p>마치 가방에 이미 과자가 있는데 또 과자를 사러 가는 것과 같아요! 똑똑한 사람은 "어? 이미 과자가 있네?"라고 생각하고 바로 집으로 돌아가죠. Worker도 마찬가지로 이미 자원을 가지고 있으면 더 수집하지 않고 바로 Command Post로 돌아가야 해요!</p>
+                
+                <h3>🔧 핵심 구현</h3>
+                
+                <h4>1. Behavior Tree 구조 개선</h4>
+                <p>기존의 단순한 수집 시퀀스를 조건부 분기로 개선:</p>
+                
+                <div class="info-box">
+                    <h4>🔄 기존 구조 (문제점)</h4>
+                    <ol>
+                        <li><strong>SetAgentAvoidance</strong>: 회피 품질 설정</li>
+                        <li><strong>MoveToGatherableSupply</strong>: 자원으로 이동</li>
+                        <li><strong>GatherSupplies</strong>: 자원 수집</li>
+                        <li><strong>FindClosestCommandPost</strong>: Command Post 찾기</li>
+                        <li><strong>MoveToTargetGameObject</strong>: Command Post로 이동</li>
+                        <li><strong>RaiseEvent</strong>: 이벤트 발생</li>
+                    </ol>
+                    <p><strong>문제</strong>: 이미 자원을 가지고 있어도 무조건 수집 시도</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4>✅ 개선된 구조 (조건부 분기)</h4>
+                    <ol>
+                        <li><strong>SetAgentAvoidance</strong>: 회피 품질 설정</li>
+                        <li><strong>MoveToGatherableSupply</strong>: 자원으로 이동</li>
+                        <li><strong>Conditional Branch</strong>: 조건부 분기</li>
+                        <ul>
+                            <li><strong>True (자원 없음)</strong>: 수집 시퀀스 실행</li>
+                            <li><strong>False (자원 있음)</strong>: 바로 Command Post로 이동</li>
+                        </ul>
+                        <li><strong>Wait For Any</strong>: 두 경로 합치기</li>
+                        <li><strong>FindClosestCommandPost</strong>: Command Post 찾기</li>
+                        <li><strong>MoveToTargetGameObject</strong>: Command Post로 이동</li>
+                        <li><strong>RaiseEvent</strong>: 이벤트 발생</li>
+                    </ol>
+                </div>
+                
+                <h4>2. Conditional Branch 설정</h4>
+                <p>Behavior Tree의 새로운 노드들을 활용한 조건부 분기:</p>
+                
+                <div class="code-block">
+<span class="comment">// Conditional Branch 설정</span>
+<span class="comment">// Inspector에서 조건 설정</span>
+
+<span class="comment">// Variable Condition: 변수 조건</span>
+<span class="comment">// Variable: SupplyAmountHeld (Blackboard 변수)</span>
+<span class="comment">// Comparison: Equal To</span>
+<span class="comment">// Value: 0</span>
+
+<span class="comment">// 결과:</span>
+<span class="comment">// - True: SupplyAmountHeld == 0 (자원이 없음) → 수집 시퀀스 실행</span>
+<span class="comment">// - False: SupplyAmountHeld != 0 (자원이 있음) → 바로 Command Post로 이동</span></div>
+                
+                <h4>3. Flow Control 노드들</h4>
+                <p>Behavior Tree의 새로운 흐름 제어 노드들:</p>
+                
+                <div class="code-block">
+<span class="comment">// Flow Control 노드들</span>
+
+<span class="comment">// 1. Conditional Branch</span>
+<span class="comment">// - 조건에 따라 True/False 경로로 분기</span>
+<span class="comment">// - Variable Condition으로 Blackboard 변수 확인</span>
+
+<span class="comment">// 2. Wait For All</span>
+<span class="comment">// - 모든 부모 노드가 시작되면 자식 실행</span>
+<span class="comment">// - 병렬 실행에 적합</span>
+
+<span class="comment">// 3. Wait For Any</span>
+<span class="comment">// - 하나의 부모 노드라도 시작되면 자식 실행</span>
+<span class="comment">// - 조건부 분기 후 경로 합치기에 적합</span></div>
+                
+                <h3>🔄 동작 과정</h3>
+                <ol>
+                    <li><strong>자원 수집 명령</strong>: Worker가 Gather 명령을 받음</li>
+                    <li><strong>회피 설정</strong>: SetAgentAvoidance로 이동 품질 설정</li>
+                    <li><strong>자원으로 이동</strong>: MoveToGatherableSupply로 자원 위치로 이동</li>
+                    <li><strong>조건 확인</strong>: Conditional Branch에서 SupplyAmountHeld 확인</li>
+                    <li><strong>분기 실행</strong>:
+                        <ul>
+                            <li><strong>자원 없음 (True)</strong>: GatherSupplies로 자원 수집</li>
+                            <li><strong>자원 있음 (False)</strong>: 수집 없이 바로 다음 단계로</li>
+                        </ul>
+                    </li>
+                    <li><strong>경로 합치기</strong>: Wait For Any로 두 경로 합치기</li>
+                    <li><strong>Command Post로 이동</strong>: FindClosestCommandPost → MoveToTargetGameObject</li>
+                    <li><strong>이벤트 발생</strong>: RaiseEvent로 수집 완료 알림</li>
+                </ol>
+                
+                <h3>🎮 게임에서의 효과</h3>
+                <ul>
+                    <li><strong>지능적인 Worker</strong>: 이미 자원을 가지고 있으면 수집하지 않음</li>
+                    <li><strong>효율적인 이동</strong>: 불필요한 수집 과정 생략</li>
+                    <li><strong>StarCraft 2와 유사한 동작</strong>: 실제 RTS 게임과 같은 행동 패턴</li>
+                    <li><strong>자원 관리 최적화</strong>: Worker의 자원 운반 효율성 향상</li>
+                </ul>
+                
+                <h3>🔧 기술적 특징</h3>
+                <ul>
+                    <li><strong>조건부 분기</strong>: Conditional Branch로 상황에 따른 분기</li>
+                    <li><strong>Variable Condition</strong>: Blackboard 변수 기반 조건 확인</li>
+                    <li><strong>Flow Control</strong>: Wait For Any로 경로 합치기</li>
+                    <li><strong>코드 변경 없음</strong>: Behavior Tree 에디터만으로 구현</li>
+                    <li><strong>확장성</strong>: 다른 조건들도 쉽게 추가 가능</li>
+                </ul>
+                
+                <h3>📊 시스템 구조</h3>
+                <div class="info-box">
+                    <h4>🔄 조건부 분기 흐름도</h4>
+                    <ol>
+                        <li><strong>Gather 명령</strong>: Worker가 수집 명령 수신</li>
+                        <li><strong>SetAgentAvoidance</strong>: 이동 품질 설정</li>
+                        <li><strong>MoveToGatherableSupply</strong>: 자원으로 이동</li>
+                        <li><strong>Conditional Branch</strong>: SupplyAmountHeld 확인</li>
+                        <li><strong>True 경로</strong>: 자원 없음 → 수집 시퀀스</li>
+                        <li><strong>False 경로</strong>: 자원 있음 → 수집 생략</li>
+                        <li><strong>Wait For Any</strong>: 두 경로 합치기</li>
+                        <li><strong>Command Post 이동</strong>: 자원 반환</li>
+                    </ol>
+                </div>
+                
+                <h3>🎯 Behavior Tree 노드 활용</h3>
+                <div class="code-block">
+<span class="comment">// Behavior Tree 노드 활용법</span>
+
+<span class="comment">// 1. Conditional Branch</span>
+<span class="comment">// - 조건: Variable Condition</span>
+<span class="comment">// - 변수: SupplyAmountHeld</span>
+<span class="comment">// - 비교: Equal To 0</span>
+
+<span class="comment">// 2. Wait For Any</span>
+<span class="comment">// - 용도: 조건부 분기 후 경로 합치기</span>
+<span class="comment">// - 동작: 하나의 부모라도 완료되면 실행</span>
+
+<span class="comment">// 3. Sequence (True 경로)</span>
+<span class="comment">// - GatherSupplies: 자원 수집</span>
+<span class="comment">// - 수집 후 SupplyAmountHeld 증가</span>
+
+<span class="comment">// 4. Single Node (False 경로)</span>
+<span class="comment">// - 수집 없이 바로 다음 단계로</span>
+<span class="comment">// - 이미 가지고 있는 자원 활용</span></div>
+                
+                <h3>🔍 StarCraft 2 참고</h3>
+                <div class="info-box">
+                    <h4>🎮 StarCraft 2의 Worker 동작</h4>
+                    <ul>
+                        <li><strong>드론(Drone)</strong>: Zerg의 Worker 유닛</li>
+                        <li><strong>지능적인 수집</strong>: 이미 자원을 가지고 있으면 수집하지 않음</li>
+                        <li><strong>즉시 반환</strong>: 자원을 가지고 있으면 바로 Hatchery로 돌아감</li>
+                        <li><strong>효율성</strong>: 불필요한 수집 과정 생략</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>
