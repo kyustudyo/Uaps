@@ -3198,6 +3198,17 @@ protected override Status OnStart()
 <span class="keyword">using</span> Unity.Behavior;
 <span class="keyword">using</span> UnityEngine;
 
+                <div class="code-block">
+<span class="comment">// Worker.cs - Behavior Tree 이벤트 처리</span>
+<span class="comment">// Behavior Tree와 Event Bus 간의 브리지 역할</span>
+
+<span class="keyword">using</span> GameDevTV.RTS.Behavior;
+<span class="keyword">using</span> GameDevTV.RTS.Environment;
+<span class="keyword">using</span> GameDevTV.RTS.EventBus;
+<span class="keyword">using</span> GameDevTV.RTS.Events;
+<span class="keyword">using</span> Unity.Behavior;
+<span class="keyword">using</span> UnityEngine;
+
 <span class="keyword">namespace</span> GameDevTV.RTS.Units
 {
     <span class="comment">// Worker: AbstractUnit을 상속하고 IGatherer 인터페이스를 구현</span>
