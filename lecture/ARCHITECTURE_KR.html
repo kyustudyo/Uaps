@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Unity RTS 게임 - 아키텍처 문서</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #0084ff;
+            --secondary-color: #00c9a7;
+            --danger-color: #ff5252;
+            --warning-color: #ffab00;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --text-muted: #6c757d;
+            --border-color: #dee2e6;
+            --code-bg: #f4f4f4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+            line-height: 1.8;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3, h4 {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-size: 2em;
+            color: var(--secondary-color);
+            border-left: 4px solid var(--secondary-color);
+            padding-left: 15px;
+        }
+
+        h3 {
+            font-size: 1.5em;
+            color: var(--primary-color);
+        }
+
+        h4 {
+            font-size: 1.2em;
+            color: var(--text-color);
+        }
+
+        p {
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        .tldr {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 1.1em;
+            font-weight: 500;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .summary-box {
+            background: var(--bg-color);
+            border-left: 4px solid var(--primary-color);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .icon {
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .folder-tree {
+            background: var(--code-bg);
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        .diagram-container {
+            margin: 30px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .diagram-explanation {
+            background: #fff8e1;
+            border-left: 4px solid var(--warning-color);
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+            font-style: italic;
+        }
+
+        .diagram-explanation::before {
+            content: "🧒 쉽게 말하면: ";
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: var(--bg-color);
+        }
+
+        code {
+            background-color: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+        }
+
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            line-height: 1.8;
+        }
+
+        .warning-box {
+            background-color: #fff3cd;
+            border: 1px solid var(--warning-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .danger-box {
+            background-color: #f8d7da;
+            border: 1px solid var(--danger-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .success-box {
+            background-color: #d4edda;
+            border: 1px solid var(--secondary-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        details {
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: 600;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            margin: -15px -15px 15px -15px;
+            transition: all 0.3s ease;
+        }
+
+        summary:hover {
+            background: var(--bg-color);
+        }
+
+        .toc {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            color: white;
+        }
+
+        .toc a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 8px 0;
+            transition: all 0.3s ease;
+        }
+
+        .toc a:hover {
+            padding-left: 10px;
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .badge-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .badge-success {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .badge-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .badge-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .glossary-term {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            h2 {
+                font-size: 1.6em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Unity RTS 게임 아키텍처 문서</h1>
+
+        <div class="tldr">
+            ✨ 이 게임은 레고처럼 만들어졌어요. 각 부품(플레이어 입력, 로봇, 버튼)이 연결되어 게임 전체가 움직입니다. 화면을 클릭하면 이벤트가 날아다니며 모두에게 무슨 일이 일어났는지 알려줘요!
+        </div>
+
+        <!-- 목차 -->
+        <div class="toc" id="toc">
+            <h2 style="color: white; border: none; padding: 0; margin-bottom: 20px;">📚 목차</h2>
+            <a href="#project-overview">1. 프로젝트 개요</a>
+            <a href="#project-structure">2. 프로젝트 구조</a>
+            <a href="#architecture-overview">3. 아키텍처 개요</a>
+            <a href="#boot-sequence">4. 부팅 시퀀스 & 게임 흐름</a>
+            <a href="#major-systems">5. 주요 시스템</a>
+            <a href="#scenes-prefabs">6. 씬 & 프리팹</a>
+            <a href="#data-config">7. 데이터 & 설정</a>
+            <a href="#performance">8. 성능 노트</a>
+            <a href="#testing-tooling">9. 테스트 & 도구</a>
+            <a href="#risks-debt">10. 리스크 & 기술 부채</a>
+            <a href="#glossary">11. 용어 사전</a>
+        </div>
+
+        <!-- 프로젝트 개요 -->
+        <h2 id="project-overview">1. 🎯 프로젝트 개요</h2>
+
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> 로봇을 조종하고 기지를 건설하며 군대를 지휘하는 실시간 전략 게임(RTS) - 스타크래프트처럼, 하지만 더 단순하게!</p>
+        </div>
+
+        <h3>📋 기본 정보</h3>
+        <table>
+            <tr>
+                <th>항목</th>
+                <th>값</th>
+            </tr>
+            <tr>
+                <td>Unity 버전</td>
+                <td><code>6000.0.12f1</code> (Unity 6)</td>
+            </tr>
+            <tr>
+                <td>프로젝트 이름</td>
+                <td>unity-rts-course-recording</td>
+            </tr>
+            <tr>
+                <td>렌더 파이프라인</td>
+                <td>Universal Render Pipeline (URP) 17.0.3</td>
+            </tr>
+            <tr>
+                <td>아키텍처 패턴</td>
+                <td>이벤트 기반 + 커맨드 패턴 + ScriptableObject 데이터</td>
+            </tr>
+            <tr>
+                <td>AI 시스템</td>
+                <td>Unity Behavior Graph + NavMesh 네비게이션</td>
+            </tr>
+            <tr>
+                <td>입력 시스템</td>
+                <td>New Input System (1.9.0)</td>
+            </tr>
+        </table>
+
+        <!-- 프로젝트 구조 -->
+        <h2 id="project-structure">2. 📁 프로젝트 구조 개요</h2>
+
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> 파일들이 책상 서랍처럼 정리되어 있어요. 스크립트는 한 서랍에, 3D 모델은 다른 서랍에, 설정은 또 다른 서랍에 있습니다.</p>
+        </div>
+
+        <h3>🗂️ 폴더 구조</h3>
+        <div class="folder-tree">
+Assets/
+├── 📜 Scripts/              # 모든 C# 코드가 여기에
+│   ├── Commands/            # 유닛이 하는 일들 (이동, 공격, 건설)
+│   ├── EventBus/            # 메시지 시스템 (무전기처럼)
+│   ├── Events/              # 이벤트 메시지 (유닛선택됨, 유닛생성됨)
+│   ├── Player/              # 카메라와 플레이어 컨트롤
+│   ├── UI/                  # 버튼, 체력바, 메뉴
+│   │   ├── Components/      # 개별 UI 조각들
+│   │   └── Containers/      # UI 조각 그룹
+│   └── Units/               # 모든 유닛 & 건물 코드
+│
+├── 🎨 Scenes/               # 게임 레벨
+│   ├── Game.unity           # 메인 게임플레이 씬
+│   └── SampleScene.unity    # 테스트/샘플 씬
+│
+├── 🎭 Units/                # 유닛 & 건물
+│   ├── Worker/              # 일꾼 유닛 (자원 채취)
+│   ├── Rifleman/            # 보병 유닛
+│   ├── Grenadier/           # 폭발물 유닛
+│   ├── Air Transport/       # 비행 유닛
+│   └── Buildings/           # 모든 건물
+│       ├── Barracks/        # 병영 (병사 생산)
+│       ├── UapCenter/       # 본진
+│       ├── Command Post/    # 지휘소
+│       ├── Airport/         # 공항
+│       └── Infantry School/ # 보병학교
+│
+├── 🖼️ UI/                   # 유저 인터페이스 에셋
+│   ├── Prefabs/             # 재사용 가능한 UI 조각
+│   └── Fonts & Materials/   # 폰트와 재질
+│
+├── 🎨 Models/               # 3D 로봇 부품
+│   ├── marine_center/       # 마린 로봇 몸통
+│   ├── marine_leg/          # 마린 로봇 다리
+│   ├── marine_top/          # 마린 로봇 상체
+│   ├── sniper_center/       # 스나이퍼 로봇 부품
+│   ├── sniper_leg/
+│   ├── sniper_top/
+│   └── devil_*/             # 데빌 로봇 부품
+│
+├── ⚙️ Settings/             # 그래픽 & 렌더 설정
+│   ├── PC_RPAsset.asset     # PC 그래픽 품질
+│   ├── Mobile_RPAsset.asset # 모바일 그래픽 품질
+│   └── PC_Renderer.asset    # 렌더링 방식
+│
+├── 🌍 Terrain/              # 지형과 땅
+├── 📦 Materials/            # 색상과 텍스처
+├── 🖼️ Textures/             # 이미지 파일
+└── 🧪 Editor/               # Unity 에디터 도구
+        </div>
+
+        <h3>🔑 핵심 파일과 역할</h3>
+        <table>
+            <tr>
+                <th>파일</th>
+                <th>하는 일</th>
+                <th>왜 중요한가</th>
+            </tr>
+            <tr>
+                <td><code>Scripts/EventBus/Bus.cs</code></td>
+                <td>중앙 메시지 시스템</td>
+                <td>게임의 각 부분이 서로 몰라도 대화할 수 있게 해줌</td>
+            </tr>
+            <tr>
+                <td><code>Scripts/Player/PlayerInput.cs</code></td>
+                <td>마우스 & 키보드 처리</td>
+                <td>플레이어가 게임을 조종하는 방법</td>
+            </tr>
+            <tr>
+                <td><code>Scripts/Units/AbstractUnit.cs</code></td>
+                <td>모든 유닛의 기본 클래스</td>
+                <td>모든 로봇이 이것을 상속받음</td>
+            </tr>
+            <tr>
+                <td><code>Scripts/Units/BaseBuilding.cs</code></td>
+                <td>큐가 있는 건물 로직</td>
+                <td>유닛 생산 처리 (공장처럼)</td>
+            </tr>
+            <tr>
+                <td><code>Scripts/Commands/ICommand.cs</code></td>
+                <td>커맨드 인터페이스</td>
+                <td>명령(이동, 공격, 건설)이 어떻게 작동하는지 정의</td>
+            </tr>
+            <tr>
+                <td><code>Scripts/UI/RuntimeUI.cs</code></td>
+                <td>메인 UI 컨트롤러</td>
+                <td>선택에 따라 버튼 표시/숨김</td>
+            </tr>
+            <tr>
+                <td><code>Scenes/Game.unity</code></td>
+                <td>메인 게임 씬</td>
+                <td>실제 게임이 일어나는 곳</td>
+            </tr>
+        </table>
+
+        <!-- 아키텍처 개요 -->
+        <h2 id="architecture-overview">3. 🏗️ 아키텍처 개요</h2>
+
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> 이 게임은 세 가지 주요 패턴을 사용해요: <strong>이벤트 버스</strong>(메시징용), <strong>커맨드 패턴</strong>(액션용), <strong>ScriptableObject</strong>(데이터 저장용).</p>
+        </div>
+
+        <h3>🎨 아키텍처 패턴</h3>
+        <p>게임은 <strong>이벤트 기반 아키텍처</strong>와 <strong>커맨드 패턴</strong>을 결합해 사용합니다. 이렇게 생각해보세요:</p>
+
+        <ul>
+            <li><span class="icon">📢</span> <strong>이벤트 버스:</strong> 듣는 사람 누구에게나 메시지를 방송하는 라디오 방송국</li>
+            <li><span class="icon">🎯</span> <strong>커맨드 패턴:</strong> 유닛이 따라야 할 할 일 목록</li>
+            <li><span class="icon">📦</span> <strong>ScriptableObject:</strong> 데이터 컨테이너 (유닛을 만드는 레시피 카드처럼)</li>
+        </ul>
+
+        <h3>📊 상위 레벨 아키텍처 다이어그램</h3>
+        <div class="diagram-container">
+            <div class="mermaid">
+graph TB
+    Player[👤 플레이어 입력<br/>마우스 & 키보드]
+    EventBus[📢 이벤트 버스<br/>중앙 메시징]
+    UI[🖼️ UI 시스템<br/>버튼 & 화면]
+    Units[🤖 유닛<br/>일꾼, 병사]
+    Buildings[🏭 건물<br/>병영, 본진]
+    Commands[🎯 커맨드<br/>이동, 공격, 건설]
+    AI[🧠 AI 시스템<br/>행동 그래프]
+    NavMesh[🗺️ NavMesh<br/>경로 찾기]
+    Data[📦 ScriptableObject<br/>유닛 데이터]
+
+    Player --> EventBus
+    Player --> Commands
+    EventBus --> UI
+    EventBus --> Units
+    EventBus --> Buildings
+    Commands --> Units
+    Commands --> Buildings
+    UI --> EventBus
+    Units --> AI
+    AI --> NavMesh
+    Buildings -.사용.-> Data
+    Units -.사용.-> Data
+
+    style EventBus fill:#667eea,color:#fff
+    style Player fill:#00c9a7,color:#fff
+    style Commands fill:#ffab00,color:#fff
+    style Data fill:#ff5252,color:#fff
+            </div>
+            <div class="diagram-explanation">
+                마우스를 클릭하면 PlayerInput이 이벤트 버스에 "이봐, 뭔가 일어났어!"라고 말해요. 이벤트 버스는 학교 종처럼 - 모두가 동시에 들어요. 그러면 UI, 유닛, 건물이 모두 그 소식에 반응합니다!
+            </div>
+        </div>
+
+        <h3>🔗 모듈 의존성 다이어그램</h3>
+        <div class="diagram-container">
+            <div class="mermaid">
+graph LR
+    EventBus[이벤트버스<br/>핵심 시스템]
+    Events[이벤트<br/>메시지 타입]
+    Player[플레이어<br/>입력 핸들러]
+    Units[유닛<br/>모든 유닛]
+    Commands[커맨드<br/>액션]
+    UI[UI<br/>인터페이스]
+
+    Events --> EventBus
+    Player --> Events
+    Player --> Commands
+    Units --> Events
+    Units --> Commands
+    UI --> Events
+    Commands -.사용.-> Units
+
+    style EventBus fill:#667eea,color:#fff,stroke:#333,stroke-width:3px
+    style Events fill:#00c9a7,color:#fff
+            </div>
+            <div class="diagram-explanation">
+                이벤트 버스가 보스예요! 모든 것이 여기에 연결돼요. 이벤트는 메시지고, 모두(플레이어, 유닛, UI)가 이벤트 버스를 통해 메시지를 보내요. 학교에서 쪽지 돌리는 것 같지만, 선생님(이벤트 버스)이 즉시 전달해줘요!
+            </div>
+        </div>
+
+        <h3>🧩 핵심 클래스 다이어그램</h3>
+        <div class="diagram-container">
+            <div class="mermaid">
+classDiagram
+    class IEvent {
+        <<interface>>
+    }
+
+    class Bus~T~ {
+        +OnEvent : Event~T~
+        +Raise(T evt)
+    }
+
+    class ISelectable {
+        <<interface>>
+        +Select()
+        +Deselect()
+    }
+
+    class ICommand {
+        <<interface>>
+        +CanHandle(context)
+        +Handle(context)
+    }
+
+    class AbstractCommandable {
+        +CurrentHealth : int
+        +MaxHealth : int
+        +AvailableCommands : ActionBase[]
+        +Select()
+        +Deselect()
+    }
+
+    class AbstractUnit {
+        +AgentRadius : float
+        +MoveTo(position)
+    }
+
+    class BaseBuilding {
+        +QueueSize : int
+        +BuildUnit(unit)
+        +CancelBuildingUnit(index)
+    }
+
+    class ActionBase {
+        +Icon : Sprite
+        +Slot : int
+        +RequiresClickToActivate : bool
+        +CanHandle(context)*
+        +Handle(context)*
+    }
+
+    ISelectable <|.. AbstractCommandable
+    AbstractCommandable <|-- AbstractUnit
+    AbstractCommandable <|-- BaseBuilding
+    ICommand <|.. ActionBase
+    IEvent <.. Bus
+            </div>
+            <div class="diagram-explanation">
+                가족 족보처럼 생각해보세요! AbstractCommandable이 부모고, AbstractUnit(로봇)과 BaseBuilding(건물)이 자식이에요. 모두 공통 능력(선택/선택해제)을 공유하지만, 각자 특별한 능력도 있어요!
+            </div>
+        </div>
+
+        <!-- 부팅 시퀀스 -->
+        <h2 id="boot-sequence">4. 🚀 부팅 시퀀스 & 게임 흐름</h2>
+
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> Play를 누르면 Unity가 씬을 깨우고, 모든 오브젝트를 만들고, 클릭을 기다리기 시작해요!</p>
+        </div>
+
+        <h3>📋 부팅 시퀀스 다이어그램</h3>
+        <div class="diagram-container">
+            <div class="mermaid">
+sequenceDiagram
+    participant Unity as 🎮 Unity 엔진
+    participant Scene as 🎨 Game 씬
+    participant Player as 👤 PlayerInput
+    participant UI as 🖼️ RuntimeUI
+    participant EventBus as 📢 이벤트 버스
+    participant Units as 🤖 유닛들
+
+    Unity->>Scene: Game.unity 로드
+    Scene->>Player: Awake()
+    Scene->>UI: Awake()
+    Player->>EventBus: 이벤트 구독
+    UI->>EventBus: 이벤트 구독
+    Scene->>Units: Start()
+    Units->>EventBus: UnitSpawnEvent 발생
+    Player->>Player: 입력 대기...
+    UI->>UI: UI 업데이트...
+    Note over Player,Units: 게임 준비 완료! 🎉
+            </div>
+            <div class="diagram-explanation">
+                먼저 Unity가 깨어나서 Game 씬을 열어요(책 펼치는 것처럼). 그러면 PlayerInput과 RuntimeUI가 깨어나서 이벤트 버스에 "이봐, 우리 듣고 있어!"라고 말해요. 유닛이 나타나면 이벤트 버스를 통해 "나 여기 있어!"라고 외쳐요. 이제 모두가 무슨 일이 일어나는지 알아요!
+            </div>
+        </div>
+
+        <h3>🎮 핵심 게임플레이 루프</h3>
+        <div class="diagram-container">
+            <div class="mermaid">
+graph TD
+    Start([게임 실행 중])
+    Input[플레이어가 마우스 클릭]
+    Raycast{무엇을<br/>클릭했나?}
+    Unit[유닛 클릭]
+    Ground[땅 클릭]
+    Building[건물 클릭]
+    SelectUnit[유닛 선택<br/>UI 버튼 표시]
+    MoveUnit[선택된 유닛 이동]
+    ShowBuildQueue[건설 큐 표시]
+    EventBus[이벤트 방송]
+    UpdateUI[UI 업데이트]
+
+    Start --> Input
+    Input --> Raycast
+    Raycast -->|유닛| Unit
+    Raycast -->|땅| Ground
+    Raycast -->|건물| Building
+    Unit --> SelectUnit
+    SelectUnit --> EventBus
+    Ground --> MoveUnit
+    MoveUnit --> EventBus
+    Building --> ShowBuildQueue
+    ShowBuildQueue --> EventBus
+    EventBus --> UpdateUI
+    UpdateUI --> Input
+
+    style Start fill:#00c9a7,color:#fff
+    style EventBus fill:#667eea,color:#fff
+    style UpdateUI fill:#ffab00,color:#fff
+            </div>
+            <div class="diagram-explanation">
+                게임은 항상 돌고 도는 루프예요! 클릭 → 게임이 뭘 클릭했는지 확인 → 뭔가 일어남 → 이벤트 버스가 모두에게 알림 → UI 업데이트 → 반복! 멈추지 않는 회전목마 같아요!
+            </div>
+        </div>
+
+        <h3>🎯 커맨드 실행 흐름</h3>
+        <div class="diagram-container">
+            <div class="mermaid">
+sequenceDiagram
+    participant P as 👤 플레이어
+    participant Input as PlayerInput
+    participant Cmd as 🎯 커맨드
+    participant Unit as 🤖 유닛
+    participant AI as 🧠 BehaviorGraph
+
+    P->>Input: 땅에 우클릭
+    Input->>Input: CommandContext 생성
+    loop 선택된 각 유닛마다
+        Input->>Cmd: CanHandle(context)?
+        Cmd-->>Input: 예/아니오
+        alt 커맨드가 처리 가능
+            Input->>Cmd: Handle(context)
+            Cmd->>Unit: MoveTo(position)
+            Unit->>AI: TargetLocation 설정
+            AI->>AI: 이동 실행
+        end
+    end
+            </div>
+            <div class="diagram-explanation">
+                유닛을 이동시키려고 우클릭하면, PlayerInput이 각 커맨드에게 "이거 할 수 있어?"라고 물어봐요. MoveCommand가 "응!"하고 대답하며 유닛에게 어디로 갈지 알려줘요. 유닛의 뇌(BehaviorGraph)가 어떻게 갈지 알아내요. 친구한테 길 알려주는 것 같아요!
+            </div>
+        </div>
+
+        <!-- 주요 시스템 -->
+        <h2 id="major-systems">5. ⚙️ 주요 시스템</h2>
+
+        <h3 id="system-eventbus">📢 이벤트 버스 시스템</h3>
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> 게임의 어떤 부분이든 서로 알지 못해도 대화할 수 있게 해주는 제네릭 메시징 시스템입니다.</p>
+        </div>
+
+        <h4>작동 방식</h4>
+        <p>이벤트 버스는 C# 제네릭을 사용해 타입 안전한 메시징 채널을 만들어요:</p>
+
+        <pre><code class="language-csharp">// 메시지 보내기
+Bus&lt;UnitSelectedEvent&gt;.Raise(new UnitSelectedEvent(unit));
+
+// 메시지 듣기
+Bus&lt;UnitSelectedEvent&gt;.OnEvent += HandleUnitSelected;
+
+// 듣기 중지
+Bus&lt;UnitSelectedEvent&gt;.OnEvent -= HandleUnitSelected;</code></pre>
+
+        <h4>주요 이벤트</h4>
+        <table>
+            <tr>
+                <th>이벤트</th>
+                <th>발생 시점</th>
+                <th>누가 듣나</th>
+            </tr>
+            <tr>
+                <td><code>UnitSelectedEvent</code></td>
+                <td>플레이어가 유닛 클릭</td>
+                <td>RuntimeUI, PlayerInput</td>
+            </tr>
+            <tr>
+                <td><code>UnitDeselectedEvent</code></td>
+                <td>유닛 선택 해제</td>
+                <td>RuntimeUI, PlayerInput</td>
+            </tr>
+            <tr>
+                <td><code>UnitSpawnEvent</code></td>
+                <td>유닛이 월드에 생성</td>
+                <td>PlayerInput (모든 유닛 추적)</td>
+            </tr>
+            <tr>
+                <td><code>ActionSelectedEvent</code></td>
+                <td>플레이어가 UI 버튼 클릭</td>
+                <td>PlayerInput (액션 실행)</td>
+            </tr>
+        </table>
+
+        <div class="success-box">
+            <strong>✅ 왜 좋은가:</strong> 느슨한 결합! UI가 유닛에 대해 알 필요 없고, 유닛도 UI를 알 필요 없어요. 그냥 이벤트 버스를 통해 대화해요. 새로운 리스너를 추가하고 싶으면 이벤트를 구독하기만 하면 돼요!
+        </div>
+
+        <h4>쉽게 설명하면</h4>
+        <p class="diagram-explanation">
+            방이 많은 큰 집에 있다고 상상해보세요. 각 방에 가서 소식을 전하는 대신, 인터콤(이벤트 버스)을 사용해요. 버튼을 눌러 "유닛 선택됨!"이라고 말하면 모든 방에 있는 모두가 동시에 들어요!
+        </p>
+
+        <h3 id="system-input">🕹️ 입력 시스템</h3>
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> 모든 플레이어 컨트롤을 처리합니다 - 유닛 클릭, 카메라 이동, 드래그 박스 선택, 우클릭 명령.</p>
+        </div>
+
+        <h4>기능</h4>
+        <ul>
+            <li><span class="icon">🖱️</span> <strong>좌클릭:</strong> 유닛 선택 또는 액션 활성화</li>
+            <li><span class="icon">🖱️</span> <strong>우클릭:</strong> 유닛 이동 또는 커맨드 실행</li>
+            <li><span class="icon">📦</span> <strong>드래그 선택:</strong> 박스를 그려 여러 유닛 선택</li>
+            <li><span class="icon">📷</span> <strong>카메라 컨트롤:</strong> 화살표 키로 팬, End 키로 줌, PageUp/Down으로 회전</li>
+            <li><span class="icon">⇧</span> <strong>Shift 클릭:</strong> 선택에 유닛 추가</li>
+        </ul>
+
+        <div class="diagram-container">
+            <div class="mermaid">
+graph TD
+    MouseClick[마우스 클릭]
+    Raycast[카메라에서 레이캐스트]
+    HitCheck{무엇을<br/>맞췄나?}
+    Unit[유닛 레이어]
+    Ground[땅 레이어]
+    UI[UI 요소]
+    SelectUnit[유닛 선택]
+    ExecuteCommand[커맨드 실행]
+    IgnoreClick[클릭 무시]
+    EventBus[이벤트 버스]
+
+    MouseClick --> Raycast
+    Raycast --> HitCheck
+    HitCheck -->|선택가능| Unit
+    HitCheck -->|바닥| Ground
+    HitCheck -->|UI| UI
+    Unit --> SelectUnit
+    Ground --> ExecuteCommand
+    UI --> IgnoreClick
+    SelectUnit --> EventBus
+    ExecuteCommand --> EventBus
+
+    style HitCheck fill:#ffab00,color:#fff
+    style EventBus fill:#667eea,color:#fff
+            </div>
+            <div class="diagram-explanation">
+                클릭하면 게임이 카메라에서 보이지 않는 레이저(레이캐스트)를 쏴요. 레이저가 로봇을 맞추면 선택돼요. 땅을 맞추면 유닛이 거기로 이동해요. 버튼을 맞추면 아무 일도 안 일어나요 (UI를 클릭했으니까)!
+            </div>
+        </div>
+
+        <h4>쉽게 설명하면</h4>
+        <p class="diagram-explanation">
+            PlayerInput은 게임의 눈과 귀 같아요. 마우스와 키보드로 하는 모든 것을 지켜보다가 게임에 "이봐, 플레이어가 이걸 하고 싶어 해!"라고 알려줘요. 사람과 게임 세계 사이의 중개인이에요!
+        </p>
+
+        <h3 id="system-camera">📷 카메라 시스템</h3>
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> Cinemachine을 사용해 타겟을 부드럽게 따라가며 플레이어가 팬, 줌, 회전할 수 있게 해줍니다.</p>
+        </div>
+
+        <h4>작동 방식</h4>
+        <ul>
+            <li><code>CinemachineCamera</code>를 <code>CinemachineFollow</code>와 함께 사용</li>
+            <li><code>Rigidbody</code> 타겟을 따라감 (물리 기반 부드러운 움직임)</li>
+            <li>팬은 카메라가 아닌 타겟을 이동시킴</li>
+            <li>줌과 회전은 카메라의 <code>FollowOffset</code>을 조정</li>
+            <li>부드러운 보간을 위해 <code>Vector3.Slerp</code> 사용</li>
+        </ul>
+
+        <div class="success-box">
+            <strong>✅ 왜 Cinemachine을 쓰나:</strong> 어려운 수학을 다 해줘요! 부드러운 따라가기, 댐핑, 프레임레이트 독립적 움직임이 모두 공짜로 딸려와요. 이게 없으면 수백 줄의 카메라 코드를 짜야 해요!
+        </div>
+
+        <h4>쉽게 설명하면</h4>
+        <p class="diagram-explanation">
+            카메라는 당신을 따라다니는 드론 같아요. 화살표 키를 누르면 드론의 타겟이 움직이고, 드론이 부드럽게 따라가요. End를 누르면 드론이 가까이 날아와요. PageUp/Down은 주위를 빙 돌게 해요!
+        </p>
+
+        <h3 id="system-ui">🖼️ UI 시스템</h3>
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> 선택한 것에 따라 액션 버튼과 건설 큐를 보여주고, 버튼을 클릭하면 이벤트를 보냅니다.</p>
+        </div>
+
+        <h4>컴포넌트</h4>
+        <table>
+            <tr>
+                <th>컴포넌트</th>
+                <th>목적</th>
+                <th>표시 시점</th>
+            </tr>
+            <tr>
+                <td><code>RuntimeUI</code></td>
+                <td>메인 UI 컨트롤러</td>
+                <td>항상 활성 (다른 것들 관리)</td>
+            </tr>
+            <tr>
+                <td><code>ActionsUI</code></td>
+                <td>액션 버튼 표시</td>
+                <td>유닛이 선택되었을 때</td>
+            </tr>
+            <tr>
+                <td><code>BuildingBuildingUI</code></td>
+                <td>건설 큐 표시</td>
+                <td>건물 하나가 선택되었을 때</td>
+            </tr>
+            <tr>
+                <td><code>UIActionButton</code></td>
+                <td>개별 액션 버튼</td>
+                <td>유닛이 그 커맨드를 가질 때</td>
+            </tr>
+            <tr>
+                <td><code>UIBuildQueueButton</code></td>
+                <td>건설 큐의 유닛</td>
+                <td>건물이 생산 중일 때</td>
+            </tr>
+            <tr>
+                <td><code>ProgressBar</code></td>
+                <td>건설 진행도 표시</td>
+                <td>유닛이 건설 중일 때</td>
+            </tr>
+        </table>
+
+        <h4>UI 흐름</h4>
+        <div class="diagram-container">
+            <div class="mermaid">
+sequenceDiagram
+    participant P as 👤 플레이어
+    participant U as 🤖 유닛
+    participant EB as 📢 이벤트버스
+    participant UI as 🖼️ RuntimeUI
+    participant ActUI as ActionsUI
+    participant BldUI as BuildingBuildingUI
+
+    P->>U: 유닛 클릭
+    U->>EB: UnitSelectedEvent 발생
+    EB->>UI: 이벤트 전달
+    UI->>UI: selectedUnits에 추가
+    alt 유닛이 AbstractCommandable
+        UI->>ActUI: EnableFor(selectedUnits)
+        ActUI->>ActUI: 액션 버튼 표시
+    end
+    alt 유닛이 BaseBuilding
+        UI->>BldUI: EnableFor(building)
+        BldUI->>BldUI: 건설 큐 표시
+    end
+            </div>
+            <div class="diagram-explanation">
+                유닛을 클릭하면 이벤트 버스를 통해 메시지를 보내요. RuntimeUI가 메시지를 듣고 "좋아, 올바른 버튼을 보여줄게!"라고 해요. 건물이면 뭘 만들고 있는지도 보여줘요. 일꾼을 선택하면 일꾼 액션을 보여줘요!
+            </div>
+        </div>
+
+        <h4>쉽게 설명하면</h4>
+        <p class="diagram-explanation">
+            UI는 정확히 뭘 보여줄지 아는 똑똑한 비서 같아요. 병사를 클릭하면 공격/이동 버튼을 보여줘요. 건물을 클릭하면 뭘 만들고 있는지 보여줘요. 빈 공간을 클릭하면 모든 게 사라져요. 보는 것에 따라 변하는 카멜레온 같아요!
+        </p>
+
+        <h3 id="system-units">🤖 유닛 시스템</h3>
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> 선택, 명령, 조종할 수 있는 모든 이동 가능한 캐릭터(일꾼, 소총병, 척탄병)입니다.</p>
+        </div>
+
+        <h4>유닛 계층 구조</h4>
+        <div class="diagram-container">
+            <div class="mermaid">
+graph TD
+    Mono[MonoBehaviour]
+    ISelectable[ISelectable 인터페이스]
+    IMoveable[IMoveable 인터페이스]
+    AbstractCommandable[AbstractCommandable<br/>체력, 선택, 커맨드]
+    AbstractUnit[AbstractUnit<br/>NavMesh, 이동, AI]
+    Worker[Worker]
+    WorkerThree[WorkerThreeRobot]
+    MarineThree[MarineThreeRobot]
+
+    Mono --> AbstractCommandable
+    ISelectable --> AbstractCommandable
+    AbstractCommandable --> AbstractUnit
+    IMoveable --> AbstractUnit
+    AbstractUnit --> Worker
+    AbstractUnit --> WorkerThree
+    AbstractUnit --> MarineThree
+
+    style AbstractCommandable fill:#00c9a7,color:#fff
+    style AbstractUnit fill:#667eea,color:#fff
+            </div>
+            <div class="diagram-explanation">
+                AbstractCommandable은 선택 가능한 모든 것의 할아버지예요. AbstractUnit은 이동 능력을 추가해요. Worker, WorkerThreeRobot, MarineThreeRobot은 손자들 - 부모에게서 모든 능력을 물려받아요!
+            </div>
+        </div>
+
+        <h4>유닛 기능</h4>
+        <ul>
+            <li><span class="icon">💚</span> <strong>체력:</strong> <code>CurrentHealth</code>와 <code>MaxHealth</code>로 추적</li>
+            <li><span class="icon">🎯</span> <strong>커맨드:</strong> 각 유닛은 <code>AvailableCommands[]</code> 배열 보유</li>
+            <li><span class="icon">✨</span> <strong>선택:</strong> 땅에 데칼 프로젝터 표시/숨김</li>
+            <li><span class="icon">🚶</span> <strong>이동:</strong> 경로 찾기에 <code>NavMeshAgent</code> 사용</li>
+            <li><span class="icon">🧠</span> <strong>AI:</strong> 의사 결정에 <code>BehaviorGraphAgent</code> 사용</li>
+            <li><span class="icon">📦</span> <strong>데이터:</strong> <code>UnitSO</code> ScriptableObject에서 초기 값 읽기</li>
+        </ul>
+
+        <h4>쉽게 설명하면</h4>
+        <p class="diagram-explanation">
+            유닛은 조종하는 작은 로봇 같아요. 각 로봇은 체력(다칠 수 있음), 커맨드(할 수 있는 것들), 뇌(BehaviorGraph)가 있어 걸어다녀요. 로봇을 선택하면 땅에 빛나는 원이 보여서 선택됐다는 걸 알 수 있어요!
+        </p>
+
+        <h3 id="system-buildings">🏭 건물 시스템</h3>
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> 선택할 수 있고 큐를 사용해 시간이 지나면서 유닛을 생산하는 고정 구조물(병영, UapCenter, 공항)입니다.</p>
+        </div>
+
+        <h4>건물 기능</h4>
+        <ul>
+            <li><span class="icon">🏭</span> <strong>유닛 생산:</strong> <code>BuildUnit(UnitSO)</code>로 유닛을 큐에 넣음</li>
+            <li><span class="icon">⏱️</span> <strong>건설 시간:</strong> 각 유닛은 <code>UnitSO.BuildTime</code> 초 소요</li>
+            <li><span class="icon">📋</span> <strong>큐 시스템:</strong> 큐에 최대 5개 유닛 (FIFO)</li>
+            <li><span class="icon">❌</span> <strong>취소:</strong> <code>CancelBuildingUnit(index)</code>로 큐의 모든 유닛 취소 가능</li>
+            <li><span class="icon">📢</span> <strong>이벤트:</strong> 큐가 변경될 때 <code>OnQueueUpdated</code> 이벤트 발생</li>
+            <li><span class="icon">🔄</span> <strong>코루틴:</strong> 큐를 처리하는 <code>DoBuildUnits()</code> 코루틴 사용</li>
+        </ul>
+
+        <h4>건설 큐 흐름</h4>
+        <div class="diagram-container">
+            <div class="mermaid">
+graph LR
+    Click[건설 버튼 클릭]
+    Add[큐에 추가]
+    Check{큐의 첫번째?}
+    StartCoro[코루틴 시작]
+    Wait[BuildTime 대기]
+    Spawn[유닛 생성]
+    Remove[큐에서 제거]
+    CheckEmpty{큐가 비었나?}
+    Continue[루프 계속]
+    Done[완료]
+
+    Click --> Add
+    Add --> Check
+    Check -->|예| StartCoro
+    Check -->|아니오| Done
+    StartCoro --> Wait
+    Wait --> Spawn
+    Spawn --> Remove
+    Remove --> CheckEmpty
+    CheckEmpty -->|아니오| Continue
+    CheckEmpty -->|예| Done
+    Continue --> Wait
+
+    style StartCoro fill:#00c9a7,color:#fff
+    style Spawn fill:#667eea,color:#fff
+            </div>
+            <div class="diagram-explanation">
+                "일꾼 건설"을 클릭하면 큐에 들어가요 (가게 줄처럼). 건물이 첫 번째 것 작업을 시작하고, BuildTime을 기다린 다음 뿅 - 새 유닛이 나타나요! 큐에 더 있으면 다음 것을 시작해요. 쿠키 공장 같아요!
+            </div>
+        </div>
+
+        <h4>쉽게 설명하면</h4>
+        <p class="diagram-explanation">
+            건물은 로봇을 만드는 공장 같아요. 건물에 "일꾼 3명 만들어"라고 하면 대기열(큐)에 들어가요. 공장은 한 번에 하나씩 작업해요. 다 되면 로봇이 튀어나오고 공장은 다음 것을 시작해요. 마음이 바뀌면 취소할 수도 있어요!
+        </p>
+
+        <h3 id="system-commands">🎯 커맨드 시스템</h3>
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> 모든 유닛 액션(이동, 공격, 건설)을 유연하고 확장 가능한 방식으로 처리하는 커맨드 패턴을 구현합니다.</p>
+        </div>
+
+        <h4>커맨드 패턴</h4>
+        <p>모든 커맨드는 <code>ICommand</code> 인터페이스를 구현해요:</p>
+        <pre><code class="language-csharp">public interface ICommand
+{
+    bool CanHandle(CommandContext context);
+    void Handle(CommandContext context);
+}</code></pre>
+
+        <h4>사용 가능한 커맨드</h4>
+        <table>
+            <tr>
+                <th>커맨드</th>
+                <th>하는 일</th>
+                <th>처리 가능 대상</th>
+            </tr>
+            <tr>
+                <td><code>MoveCommand</code></td>
+                <td>유닛을 위치로 이동</td>
+                <td>모든 AbstractUnit</td>
+            </tr>
+            <tr>
+                <td><code>BuildUnitCommand</code></td>
+                <td>유닛을 생산 큐에 추가</td>
+                <td>BaseBuilding만</td>
+            </tr>
+        </table>
+
+        <h4>커맨드 컨텍스트</h4>
+        <p><code>CommandContext</code>는 커맨드를 실행하는 데 필요한 모든 정보를 담아요:</p>
+        <ul>
+            <li><code>Commandable</code> - 커맨드를 실행하는 유닛/건물</li>
+            <li><code>Hit</code> - 위치와 노멀이 있는 RaycastHit</li>
+            <li><code>UnitIndex</code> - 포메이션 로직용 (여러 유닛)</li>
+        </ul>
+
+        <h4>이동 커맨드 포메이션</h4>
+        <p><code>MoveCommand</code>는 유닛을 원형 포메이션으로 배치해요:</p>
+        <ul>
+            <li>첫 번째 유닛은 정확한 클릭 위치로</li>
+            <li>다른 유닛들은 주위에 동심원 형성</li>
+            <li>간격 계산에 <code>AgentRadius</code> 사용</li>
+            <li>유닛이 겹치는 것 방지</li>
+        </ul>
+
+        <div class="success-box">
+            <strong>✅ 왜 커맨드 패턴:</strong> 새로운 커맨드 추가가 쉬워요! <code>ICommand</code>를 구현하는 새 클래스만 만들면 돼요. 기존 코드를 수정할 필요 없어요. AttackCommand가 필요하면 그냥 추가해요! 이것은 개방-폐쇄 원칙(확장에는 열려있고, 수정에는 닫혀있음)을 따라요.
+        </div>
+
+        <h4>쉽게 설명하면</h4>
+        <p class="diagram-explanation">
+            커맨드는 지시 카드 같아요. 우클릭하면 게임이 모든 지시 카드를 확인하며 "이거 할 수 있어?"라고 물어봐요. MoveCommand 카드가 "응!"하고 유닛에게 어디로 갈지 알려줘요. BuildUnitCommand 카드는 건물에만 작동해요. 새로운 액션(공격 같은)을 추가하고 싶으면 새 지시 카드만 만들면 돼요!
+        </p>
+
+        <h3 id="system-ai">🧠 AI 시스템</h3>
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> Unity의 Behavior Tree 시스템을 사용해 유닛 AI를 제어합니다 (타겟으로 이동, 장애물 회피).</p>
+        </div>
+
+        <h4>작동 방식</h4>
+        <ul>
+            <li>각 유닛은 <code>BehaviorGraphAgent</code> 컴포넌트 보유</li>
+            <li>비헤이비어 그래프는 비주얼 스크립트 (순서도처럼)</li>
+            <li>유닛이 <code>TargetLocation</code> 같은 변수에 반응</li>
+            <li>실제 경로 찾기에 <code>NavMeshAgent</code> 사용</li>
+        </ul>
+
+        <div class="warning-box">
+            <strong>⚠️ 참고:</strong> 비헤이비어 그래프는 Unity 에디터에서 만들어져요. 코드에서는 보이지 않으므로 유닛 AI 로직을 보려면 인스펙터를 확인해야 해요!
+        </div>
+
+        <h4>쉽게 설명하면</h4>
+        <p class="diagram-explanation">
+            AI는 로봇의 뇌 같아요. "여기로 가!"라고 하면 어떻게 걸어가고, 벽을 피하고, 다른 로봇과 부딪히지 않을지 알아내요. 로봇을 위한 GPS 같아요 - 목적지를 설정하면 경로를 찾아요!
+        </p>
+
+        <h3 id="system-nav">🗺️ 네비게이션 시스템</h3>
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> Unity의 NavMesh를 사용해 장애물과 지형을 돌아가는 경로를 계산합니다.</p>
+        </div>
+
+        <h4>기능</h4>
+        <ul>
+            <li><span class="icon">🗺️</span> <strong>NavMesh 베이킹:</strong> 걸을 수 있는 영역 미리 계산</li>
+            <li><span class="icon">🚶</span> <strong>NavMeshAgent:</strong> 각 유닛이 경로 찾기용으로 하나씩 보유</li>
+            <li><span class="icon">⚙️</span> <strong>에이전트 설정:</strong> 반경, 높이, 경사도, 등반 거리</li>
+            <li><span class="icon">🚧</span> <strong>장애물 회피:</strong> 유닛이 벽이나 서로를 통과해 걷지 않음</li>
+        </ul>
+
+        <h4>쉽게 설명하면</h4>
+        <p class="diagram-explanation">
+            NavMesh는 로봇이 어디를 걸을 수 있는지 보여주려고 바닥에 페인트칠하는 것 같아요. 파란 영역은 걸을 수 있고, 하얀 영역은 벽이에요. 각 로봇은 파란 페인트를 따라가 목적지에 도달하며, 절대 하얀색을 밟지 않아요!
+        </p>
+
+        <!-- 씬 & 프리팹 -->
+        <h2 id="scenes-prefabs">6. 🎨 씬 & 프리팹</h2>
+
+        <h3>🎬 씬</h3>
+        <table>
+            <tr>
+                <th>씬</th>
+                <th>목적</th>
+                <th>내용물</th>
+            </tr>
+            <tr>
+                <td><code>Game.unity</code></td>
+                <td>메인 게임플레이 씬</td>
+                <td>
+                    • 지형 & 환경<br>
+                    • 카메라 시스템<br>
+                    • 플레이어 입력<br>
+                    • UI 캔버스<br>
+                    • 초기 유닛 & 건물<br>
+                    • 라이팅
+                </td>
+            </tr>
+            <tr>
+                <td><code>SampleScene.unity</code></td>
+                <td>예제/테스트 씬</td>
+                <td>URP 템플릿의 기본 설정</td>
+            </tr>
+        </table>
+
+        <h3>🎭 주요 프리팹</h3>
+        <h4>유닛</h4>
+        <ul>
+            <li><code>Worker.prefab</code> - 기본 일꾼 유닛 (자원 채취)</li>
+            <li><code>WorkerThreeRobot.prefab</code> - 커스텀 3부분 로봇 일꾼</li>
+            <li><code>MarineThreeRobot.prefab</code> - 커스텀 3부분 마린 병사</li>
+            <li><code>Rifleman.prefab</code> - 소총을 든 병사</li>
+            <li><code>Grenadier.prefab</code> - 폭발물 유닛</li>
+            <li><code>AirTransportThreeRobot.prefab</code> - 비행 수송기</li>
+        </ul>
+
+        <h4>건물</h4>
+        <ul>
+            <li><code>Barracks.prefab</code> - 병영 (병사 유닛 생산)</li>
+            <li><code>UapCenter.prefab</code> - 본진</li>
+            <li><code>Airport.prefab</code> - 공항 (공중 유닛 생산)</li>
+            <li><code>Command Post.prefab</code> - 부 건물</li>
+            <li><code>Infantry School.prefab</code> - 훈련 건물</li>
+            <li><code>Supply Hut.prefab</code> - 자원 건물</li>
+        </ul>
+
+        <h4>UI 프리팹</h4>
+        <ul>
+            <li><code>Action Button.prefab</code> - 개별 액션 버튼</li>
+            <li><code>Building Queue Button Variant.prefab</code> - 큐의 유닛 표시</li>
+            <li><code>Progress Bar.prefab</code> - 건설 진행도 표시</li>
+        </ul>
+
+        <h4>프리팹 구조</h4>
+        <p>대부분의 유닛/건물 프리팹은 이 패턴을 따라요:</p>
+        <div class="folder-tree">
+프리팹 루트 (예: "Barracks")
+├── 스크립트 (AbstractCommandable, BaseBuilding 등)
+├── BoxCollider (선택용)
+├── Decal Projector (선택 표시) - 자식 오브젝트
+└── 3D 모델 (비주얼) - 자식 오브젝트
+        </div>
+
+        <h4>쉽게 설명하면</h4>
+        <p class="diagram-explanation">
+            프리팹은 쿠키 틀 같아요! 완벽한 로봇이나 건물 하나를 만들어 프리팹으로 저장하면, 게임 어디든 복사본을 찍어낼 수 있어요. 프리팹 하나를 바꾸면 모든 복사본이 자동으로 업데이트돼요. 마법 같죠!
+        </p>
+
+        <!-- 데이터 & 설정 -->
+        <h2 id="data-config">7. 📦 데이터 & 설정</h2>
+
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> 모든 유닛 스탯과 설정이 ScriptableObject 파일(.asset)에 들어있어요. 유닛의 모든 재료가 적힌 레시피 카드처럼 생각하면 돼요!</p>
+        </div>
+
+        <h3>📄 ScriptableObject 데이터</h3>
+        <h4>UnitSO 구조</h4>
+        <pre><code class="language-csharp">public class UnitSO : ScriptableObject
+{
+    public int Health { get; private set; } = 100;
+    public GameObject Prefab { get; private set; }
+    public float BuildTime { get; private set; } = 5;
+    public Sprite Icon { get; private set; }
+}</code></pre>
+
+        <h4>유닛 데이터 파일</h4>
+        <table>
+            <tr>
+                <th>에셋</th>
+                <th>체력</th>
+                <th>건설 시간</th>
+                <th>목적</th>
+            </tr>
+            <tr>
+                <td><code>Worker.asset</code></td>
+                <td>100</td>
+                <td>5초</td>
+                <td>채취 유닛</td>
+            </tr>
+            <tr>
+                <td><code>WorkerThreeRobot.asset</code></td>
+                <td>100</td>
+                <td>5초</td>
+                <td>커스텀 일꾼</td>
+            </tr>
+            <tr>
+                <td><code>Rifleman.asset</code></td>
+                <td>100</td>
+                <td>5초</td>
+                <td>병사 유닛</td>
+            </tr>
+            <tr>
+                <td><code>Grenadier.asset</code></td>
+                <td>100</td>
+                <td>5초</td>
+                <td>폭발물 유닛</td>
+            </tr>
+            <tr>
+                <td><code>Barracks.asset</code></td>
+                <td>100</td>
+                <td>5초</td>
+                <td>건물</td>
+            </tr>
+            <tr>
+                <td><code>UapCenter.asset</code></td>
+                <td>100</td>
+                <td>5초</td>
+                <td>본진</td>
+            </tr>
+        </table>
+
+        <h4>커맨드 데이터 파일</h4>
+        <p>커맨드도 ScriptableObject예요:</p>
+        <ul>
+            <li><code>Move Action.asset</code> - 이동 커맨드</li>
+            <li><code>Build Worker.asset</code> - 일꾼 건설 커맨드</li>
+            <li><code>Build Rifleman.asset</code> - 소총병 건설 커맨드</li>
+            <li><code>Build Grenadier.asset</code> - 척탄병 건설 커맨드</li>
+            <li><code>Build Spider.asset</code> - 스파이더 로봇 건설 커맨드</li>
+        </ul>
+
+        <h3>⚙️ 그래픽 설정</h3>
+        <h4>품질 프리셋</h4>
+        <table>
+            <tr>
+                <th>설정</th>
+                <th>모바일</th>
+                <th>PC</th>
+            </tr>
+            <tr>
+                <td>안티 앨리어싱</td>
+                <td>끔</td>
+                <td>8x MSAA</td>
+            </tr>
+            <tr>
+                <td>그림자 해상도</td>
+                <td>낮음</td>
+                <td>2048</td>
+            </tr>
+            <tr>
+                <td>그림자 거리</td>
+                <td>30m</td>
+                <td>50m</td>
+            </tr>
+            <tr>
+                <td>그림자 캐스케이드</td>
+                <td>2</td>
+                <td>4</td>
+            </tr>
+        </table>
+
+        <h4>URP 렌더러 기능</h4>
+        <ul>
+            <li><strong>MSAA:</strong> 부드러운 모서리를 위한 8x 멀티샘플링</li>
+            <li><strong>HDR:</strong> 더 나은 라이팅을 위해 활성화</li>
+            <li><strong>Depth Texture:</strong> 이펙트에 필요</li>
+            <li><strong>Opaque Texture:</strong> 투명 오브젝트용</li>
+            <li><strong>SRP Batcher:</strong> 성능을 위해 활성화</li>
+        </ul>
+
+        <div class="success-box">
+            <strong>✅ 왜 ScriptableObject:</strong> 프로젝트에 에셋으로 저장되어서 디자이너가 코드 건드리지 않고 유닛 스탯을 조정할 수 있어요! 게다가 메모리 효율적이에요 - Worker.asset 파일 하나를 100개 일꾼 인스턴스가 사용할 수 있어요!
+        </div>
+
+        <h4>쉽게 설명하면</h4>
+        <p class="diagram-explanation">
+            ScriptableObject는 빵집의 레시피 카드 같아요. 일꾼 로봇을 어떻게 만드는지 알고 싶으세요? Worker.asset 카드를 확인하세요! "체력 100, 건설 5초, Worker 프리팹 사용"이라고 나와있어요. 일꾼을 더 강하게 하고 싶으면 레시피 카드만 바꾸면 돼요!
+        </p>
+
+        <!-- 성능 -->
+        <h2 id="performance">8. ⚡ 성능 노트</h2>
+
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> 소규모 군대에서는 게임이 부드럽게 돌아가지만, 대규모 전투(100개 이상 유닛)는 느려질 수 있어요. 레이캐스트와 AI 계산이 너무 많으면 조심하세요!</p>
+        </div>
+
+        <h3>🐌 잠재적 병목 현상</h3>
+        <table>
+            <tr>
+                <th>시스템</th>
+                <th>이슈</th>
+                <th>영향</th>
+                <th>해결책</th>
+            </tr>
+            <tr>
+                <td>PlayerInput</td>
+                <td>드래그 선택이 매 프레임마다 모든 유닛 확인</td>
+                <td>유닛 많으면 = 랙</td>
+                <td>공간 분할(쿼드트리) 사용</td>
+            </tr>
+            <tr>
+                <td>EventBus</td>
+                <td>모든 리스너에게 방송</td>
+                <td>리스너 많으면 = 느림</td>
+                <td>현재는 괜찮지만 구독자 수 주시</td>
+            </tr>
+            <tr>
+                <td>NavMesh</td>
+                <td>100개 이상 유닛의 경로 찾기</td>
+                <td>모든 유닛이 이동하면 CPU 스파이크</td>
+                <td>프레임에 걸쳐 경로 찾기 분산</td>
+            </tr>
+            <tr>
+                <td>UI 업데이트</td>
+                <td>매 프레임 UI 재구성</td>
+                <td>가비지 컬렉션 스파이크</td>
+                <td>버튼용 오브젝트 풀링</td>
+            </tr>
+            <tr>
+                <td>레이캐스트</td>
+                <td>프레임당 여러 레이캐스트 (마우스, 선택)</td>
+                <td>CPU 오버헤드</td>
+                <td>결과 캐싱, 레이어 마스크 사용</td>
+            </tr>
+        </table>
+
+        <h3>✅ 이미 사용 중인 좋은 관행</h3>
+        <ul>
+            <li><span class="icon">✅</span> <strong>SRP Batcher:</strong> 드로우 콜 배칭 활성화</li>
+            <li><span class="icon">✅</span> <strong>유닛용 HashSet:</strong> 빠른 조회/추가/제거</li>
+            <li><span class="icon">✅</span> <strong>레이어 마스크:</strong> 레이캐스트가 관련 레이어만 확인</li>
+            <li><span class="icon">✅</span> <strong>이벤트 구독 해제:</strong> <code>OnDestroy()</code>에서 제대로 정리</li>
+            <li><span class="icon">✅</span> <strong>코루틴:</strong> 비동기 건설이 메인 스레드 블록 안 함</li>
+        </ul>
+
+        <h3>⚠️ 주의사항</h3>
+        <div class="warning-box">
+            <strong>메모리 누수:</strong> <code>OnDestroy()</code>에서 이벤트 구독 해제를 잊으면 파괴된 오브젝트가 메모리에 남아요!
+        </div>
+
+        <div class="warning-box">
+            <strong>너무 많은 유닛:</strong> 각 유닛이 NavMeshAgent + BehaviorGraphAgent를 가져요. 200개 이상 유닛 = 프레임 드롭 가능성.
+        </div>
+
+        <h4>쉽게 설명하면</h4>
+        <p class="diagram-explanation">
+            게임을 레스토랑 주방으로 생각해보세요. 주문(유닛) 몇 개? 문제없어요! 하지만 한 번에 100개 주문? 요리사들(CPU)이 압도당해요! 요령은 작업을 분산시키거나(경로 찾기 분산) 요리사를 더 고용하는(코드 최적화) 거예요!
+        </p>
+
+        <!-- 테스트 & 도구 -->
+        <h2 id="testing-tooling">9. 🧪 테스트 & 도구</h2>
+
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> 프로젝트에 Unity Test Framework가 설정되어 있고, 로봇을 생성하는 에디터 도구와 외부 도구를 위한 MCP 통합이 있어요.</p>
+        </div>
+
+        <h3>🔧 에디터 도구</h3>
+        <h4>커스텀 스크립트</h4>
+        <ul>
+            <li><code>SpawnWorkerThreeRobots.cs</code> - 테스트 로봇을 빠르게 생성하는 에디터 도구</li>
+            <li><code>ThreePartRobotBuilder.cs</code> - 3부분 로봇(상체, 몸통, 다리)을 조립하는 도구</li>
+            <li><code>SetupAvailableCommands.cs</code> - 유닛의 커맨드 배열을 자동으로 설정</li>
+        </ul>
+
+        <h4>개발용 패키지</h4>
+        <table>
+            <tr>
+                <th>패키지</th>
+                <th>목적</th>
+            </tr>
+            <tr>
+                <td><code>com.unity.test-framework</code></td>
+                <td>유닛 & 통합 테스트</td>
+            </tr>
+            <tr>
+                <td><code>com.coplaydev.unity-mcp</code></td>
+                <td>MCP 통합 (외부 도구)</td>
+            </tr>
+            <tr>
+                <td><code>com.unity.ide.rider</code></td>
+                <td>JetBrains Rider 통합</td>
+            </tr>
+            <tr>
+                <td><code>com.unity.ide.visualstudio</code></td>
+                <td>Visual Studio 통합</td>
+            </tr>
+        </table>
+
+        <h3>🧪 테스트</h3>
+        <p>Unity Test Framework가 설정되어 있지만 아직 작성된 테스트가 없어요.</p>
+
+        <div class="warning-box">
+            <strong>⚠️ 누락된 테스트:</strong> 자동화된 테스트가 아직 없어요! 이는 리팩터링을 위험하게 만들어요. 다음을 위한 테스트 추가를 고려하세요:
+            <ul>
+                <li>이벤트버스 메시지 전달</li>
+                <li>커맨드 실행 로직</li>
+                <li>건설 큐 작업</li>
+                <li>유닛 선택/선택해제</li>
+            </ul>
+        </div>
+
+        <h4>쉽게 설명하면</h4>
+        <p class="diagram-explanation">
+            에디터 도구는 개발자를 위한 치트 코드 같아요! 뭔가를 테스트하려고 게임을 플레이하는 대신, 버튼을 누르면 뿅 - 로봇 10개가 나타나요! 테스트를 빠르게 해주는 마법 지팡이를 가진 것 같아요!
+        </p>
+
+        <!-- 리스크 & 기술 부채 -->
+        <h2 id="risks-debt">10. ⚠️ 리스크 & 기술 부채</h2>
+
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> 프로젝트는 잘 구조화되어 있지만, 나중에 문제를 일으킬 수 있는 몇 가지 영역이 있어요.</p>
+        </div>
+
+        <h3>🚨 높은 우선순위 리스크</h3>
+        <table>
+            <tr>
+                <th>리스크</th>
+                <th>영향</th>
+                <th>왜 나쁜가</th>
+                <th>해결 방법</th>
+            </tr>
+            <tr>
+                <td class="badge-danger" style="color: white;">자동화 테스트 없음</td>
+                <td>높음</td>
+                <td>리팩터링이 조용히 망가질 수 있음</td>
+                <td>핵심 시스템에 PlayMode 테스트 추가</td>
+            </tr>
+            <tr>
+                <td class="badge-danger" style="color: white;">드래그 선택 성능</td>
+                <td>높음</td>
+                <td>드래그 중 매 프레임 모든 유닛 확인</td>
+                <td>공간 해시나 옥트리 사용</td>
+            </tr>
+            <tr>
+                <td class="badge-warning" style="color: white;">아직 공격 시스템 없음</td>
+                <td>중간</td>
+                <td>핵심 RTS 기능 누락</td>
+                <td>AttackCommand + 전투 로직 구현</td>
+            </tr>
+            <tr>
+                <td class="badge-warning" style="color: white;">메모리 누수 위험</td>
+                <td>중간</td>
+                <td>이벤트 구독 해제를 잊으면</td>
+                <td>코드 리뷰 체크리스트 + 테스트</td>
+            </tr>
+        </table>
+
+        <h3>🧹 기술 부채</h3>
+        <div class="danger-box">
+            <h4>⚠️ 정리가 필요한 영역</h4>
+            <ul>
+                <li><strong>PlayerInput이 너무 커요:</strong> 390줄 이상! InputHandler, CameraController, SelectionManager로 분리해야 함</li>
+                <li><strong>하드코딩된 값:</strong> <code>radiusMultiplier = 3.5f</code> 같은 매직 넘버는 ScriptableObject에 있어야 함</li>
+                <li><strong>문서 누락:</strong> 많은 클래스에 XML 주석이 없음</li>
+                <li><strong>자원 시스템 없음:</strong> Minerals/Gas 프리팹은 존재하지만 아직 사용되지 않음</li>
+                <li><strong>유닛 스탯이 동일:</strong> 모든 유닛이 체력 100, 건설 시간 5초 - 밸런싱 필요</li>
+            </ul>
+        </div>
+
+        <h3>💡 빠른 성과</h3>
+        <div class="success-box">
+            <h4>✅ 오늘 바로 할 수 있는 쉬운 개선</h4>
+            <ul>
+                <li>공개 메서드에 XML 주석 추가 (<code>/// &lt;summary&gt;</code>)</li>
+                <li>카메라 컨트롤을 별도 <code>CameraController</code> 클래스로 추출</li>
+                <li>매직 넘버를 위한 <code>GameplayConfig</code> ScriptableObject 만들기</li>
+                <li>이벤트버스를 위한 간단한 PlayMode 테스트 추가</li>
+                <li>UI 버튼용 오브젝트 풀링 구현</li>
+            </ul>
+        </div>
+
+        <h4>쉽게 설명하면</h4>
+        <p class="diagram-explanation">
+            기술 부채는 방 청소를 안 하는 것 같아요. 처음에는 괜찮지만, 결국 아무것도 못 찾게 돼요! PlayerInput 클래스는 서랍장 같아요 - 작동하지만 지저분하고 정리가 필요해요. 더 나빠지기 전에 고치세요!
+        </p>
+
+        <!-- 용어 사전 -->
+        <h2 id="glossary">11. 📖 용어 사전</h2>
+
+        <div class="summary-box">
+            <p><strong>한 줄 요약:</strong> 이 문서에서 사용된 모든 기술 용어에 대한 간단한 정의입니다.</p>
+        </div>
+
+        <h3>🔤 기술 용어 설명</h3>
+        <table>
+            <tr>
+                <th>용어</th>
+                <th>쉬운 설명</th>
+                <th>예시</th>
+            </tr>
+            <tr>
+                <td class="glossary-term">ScriptableObject</td>
+                <td>파일로 저장되는 데이터 컨테이너. 레시피 카드처럼!</td>
+                <td><code>Worker.asset</code>은 일꾼 스탯을 저장</td>
+            </tr>
+            <tr>
+                <td class="glossary-term">이벤트 버스</td>
+                <td>누구나 말하고 들을 수 있는 메시징 시스템</td>
+                <td>유닛이 "선택됐어!"하면 UI가 들음</td>
+            </tr>
+            <tr>
+                <td class="glossary-term">프리팹 (Prefab)</td>
+                <td>GameObject의 재사용 가능한 템플릿. 쿠키 틀처럼!</td>
+                <td><code>Worker.prefab</code>은 일꾼 템플릿</td>
+            </tr>
+            <tr>
+                <td class="glossary-term">NavMesh</td>
+                <td>유닛이 어디를 걸을 수 있는지 보여주는 지도</td>
+                <td>파란 영역 = 걸을 수 있음, 하얀 = 벽</td>
+            </tr>
+            <tr>
+                <td class="glossary-term">코루틴 (Coroutine)</td>
+                <td>차단하지 않고 여러 프레임에 걸쳐 실행되는 코드</td>
+                <td>건물이 5초 기다린 후 유닛 생성</td>
+            </tr>
+            <tr>
+                <td class="glossary-term">레이캐스트 (Raycast)</td>
+                <td>클릭한 것을 확인하기 위해 카메라에서 쏘는 보이지 않는 레이저</td>
+                <td>화면 클릭 → 레이캐스트 → 유닛 맞춤 → 선택</td>
+            </tr>
+            <tr>
+                <td class="glossary-term">커맨드 패턴</td>
+                <td>액션을 전달할 수 있는 객체로 만드는 디자인</td>
+                <td><code>MoveCommand</code>는 유닛을 이동시키는 객체</td>
+            </tr>
+            <tr>
+                <td class="glossary-term">인터페이스 (Interface)</td>
+                <td>"이런 메서드를 가져야 해"라고 말하는 계약</td>
+                <td><code>ISelectable</code>은 <code>Select()</code>와 <code>Deselect()</code> 필요</td>
+            </tr>
+            <tr>
+                <td class="glossary-term">제네릭 타입</td>
+                <td>모든 타입과 작동하는 템플릿</td>
+                <td><code>Bus&lt;T&gt;</code>는 모든 이벤트 타입과 작동</td>
+            </tr>
+            <tr>
+                <td class="glossary-term">델리게이트 (Delegate)</td>
+                <td>함수를 담는 변수</td>
+                <td><code>OnQueueUpdated</code>는 델리게이트</td>
+            </tr>
+            <tr>
+                <td class="glossary-term">URP (Universal Render Pipeline)</td>
+                <td>Unity의 현대적 그래픽 시스템</td>
+                <td>게임을 예쁘게 만들어줘요!</td>
+            </tr>
+            <tr>
+                <td class="glossary-term">MSAA (Multi-Sample Anti-Aliasing)</td>
+                <td>그래픽의 들쭉날쭉한 모서리를 부드럽게</td>
+                <td>8x MSAA = 매우 부드러운 모서리</td>
+            </tr>
+            <tr>
+                <td class="glossary-term">HashSet</td>
+                <td>중복 없이 매우 빠른 조회를 제공하는 컬렉션</td>
+                <td>선택된 유닛 저장</td>
+            </tr>
+            <tr>
+                <td class="glossary-term">데칼 프로젝터</td>
+                <td>땅에 이미지를 투사</td>
+                <td>선택된 유닛 아래의 빛나는 원</td>
+            </tr>
+            <tr>
+                <td class="glossary-term">Cinemachine</td>
+                <td>Unity의 카메라 컨트롤 시스템</td>
+                <td>카메라가 부드럽게 따라가도록 해줌</td>
+            </tr>
+        </table>
+
+        <h3>📍 코드 위치 인덱스</h3>
+        <h4>핵심 코드 찾는 곳</h4>
+        <ul>
+            <li><strong>이벤트버스:</strong> <code>Assets/Scripts/EventBus/Bus.cs</code></li>
+            <li><strong>플레이어 입력:</strong> <code>Assets/Scripts/Player/PlayerInput.cs</code></li>
+            <li><strong>유닛 기본 클래스:</strong> <code>Assets/Scripts/Units/AbstractUnit.cs</code></li>
+            <li><strong>건물 기본 클래스:</strong> <code>Assets/Scripts/Units/BaseBuilding.cs</code></li>
+            <li><strong>이동 커맨드:</strong> <code>Assets/Scripts/Commands/MoveCommand.cs</code></li>
+            <li><strong>UI 컨트롤러:</strong> <code>Assets/Scripts/UI/RuntimeUI.cs</code></li>
+            <li><strong>유닛 데이터:</strong> <code>Assets/Scripts/Units/UnitSO.cs</code></li>
+            <li><strong>커맨드 인터페이스:</strong> <code>Assets/Scripts/Commands/ICommand.cs</code></li>
+        </ul>
+
+        <!-- 푸터 -->
+        <hr style="margin: 50px 0; border: none; border-top: 2px solid var(--border-color);">
+        <p style="text-align: center; color: var(--text-muted); font-size: 0.9em;">
+            📄 문서 생성일: <span id="date"></span><br>
+            🎮 Unity RTS 게임 아키텍처 v1.0<br>
+            Claude Code로 만든 문서 ❤️
+        </p>
+    </div>
+
+    <script>
+        // Mermaid 초기화
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#667eea',
+                primaryTextColor: '#fff',
+                primaryBorderColor: '#5568d3',
+                lineColor: '#333',
+                secondaryColor: '#00c9a7',
+                tertiaryColor: '#ffab00',
+            }
+        });
+
+        // 날짜 설정
+        document.getElementById('date').textContent = new Date().toLocaleDateString('ko-KR');
+
+        // 부드러운 스크롤
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+<!--
+===================================
+JSON 요약
+===================================
+-->
+<script type="application/json" id="architecture-summary">
+{
+  "unity_version": "6000.0.12f1 (Unity 6)",
+  "entry_scene": "Assets/Scenes/Game.unity",
+  "boot_sequence": [
+    "Unity가 Game.unity 로드",
+    "PlayerInput.Awake() - 이벤트 구독",
+    "RuntimeUI.Awake() - 이벤트 구독",
+    "유닛이 Start() 호출 - UnitSpawnEvent 발생",
+    "PlayerInput이 생성된 모든 유닛 추적",
+    "게임 루프 시작 - 플레이어 입력 대기"
+  ],
+  "modules": [
+    {
+      "name": "EventBus",
+      "key_classes": ["Bus<T>", "IEvent"],
+      "depends_on": [],
+      "purpose": "느슨한 결합을 위한 중앙 메시징 시스템"
+    },
+    {
+      "name": "Player",
+      "key_classes": ["PlayerInput", "CameraConfig"],
+      "depends_on": ["EventBus", "Events", "Commands"],
+      "purpose": "모든 플레이어 입력 처리 (마우스, 키보드, 카메라)"
+    },
+    {
+      "name": "Units",
+      "key_classes": ["AbstractUnit", "AbstractCommandable", "ISelectable", "IMoveable"],
+      "depends_on": ["EventBus", "Events", "Commands"],
+      "purpose": "모든 조종 가능한 유닛의 기본 클래스"
+    },
+    {
+      "name": "Buildings",
+      "key_classes": ["BaseBuilding"],
+      "depends_on": ["Units", "EventBus"],
+      "purpose": "큐 시스템으로 유닛을 생산하는 구조물"
+    },
+    {
+      "name": "Commands",
+      "key_classes": ["ICommand", "ActionBase", "MoveCommand", "BuildUnitCommand", "CommandContext"],
+      "depends_on": ["Units"],
+      "purpose": "모든 유닛 액션에 커맨드 패턴 구현"
+    },
+    {
+      "name": "UI",
+      "key_classes": ["RuntimeUI", "ActionsUI", "BuildingBuildingUI", "UIActionButton"],
+      "depends_on": ["EventBus", "Events", "Units"],
+      "purpose": "선택에 따른 상황별 UI 표시"
+    },
+    {
+      "name": "Events",
+      "key_classes": ["UnitSelectedEvent", "UnitDeselectedEvent", "UnitSpawnEvent", "ActionSelectedEvent"],
+      "depends_on": ["EventBus"],
+      "purpose": "모든 이벤트 메시지 타입 정의"
+    }
+  ],
+  "packages": [
+    { "name": "com.unity.render-pipelines.universal", "version": "17.0.3", "purpose": "그래픽 렌더링 (URP)" },
+    { "name": "com.unity.cinemachine", "version": "3.1.1", "purpose": "카메라 컨트롤 시스템" },
+    { "name": "com.unity.inputsystem", "version": "1.9.0", "purpose": "새 입력 시스템 (마우스, 키보드)" },
+    { "name": "com.unity.ai.navigation", "version": "2.0.0", "purpose": "NavMesh 경로 찾기" },
+    { "name": "com.unity.behavior", "version": "1.0.0", "purpose": "AI용 행동 트리" },
+    { "name": "com.unity.test-framework", "version": "1.4.4", "purpose": "유닛 & 통합 테스트" },
+    { "name": "com.coplaydev.unity-mcp", "version": "git", "purpose": "외부 도구용 MCP 통합" }
+  ],
+  "architecture_patterns": [
+    "이벤트 기반 아키텍처",
+    "커맨드 패턴",
+    "ScriptableObject 데이터 패턴",
+    "인터페이스 분리 (ISelectable, IMoveable, ICommand)",
+    "옵저버 패턴 (EventBus)",
+    "템플릿 메서드 (AbstractUnit, AbstractCommandable)"
+  ],
+  "risks": [
+    "자동화 테스트 없음 - 리팩터링 위험",
+    "드래그 선택이 매 프레임 모든 유닛 확인 - 100개 이상 유닛에서 성능 이슈",
+    "PlayerInput 클래스가 너무 큼 (390줄 이상) - 리팩터링 필요",
+    "아직 공격/전투 시스템 미구현",
+    "이벤트 구독 해제를 잊으면 메모리 누수 위험",
+    "하드코딩된 매직 넘버는 ScriptableObject에 있어야 함",
+    "자원 시스템 (Minerals/Gas) 존재하지만 미구현",
+    "모든 유닛이 동일한 스탯 - 밸런싱 필요"
+  ],
+  "quick_wins": [
+    "공개 API에 XML 문서 주석 추가",
+    "PlayerInput을 InputHandler, CameraController, SelectionManager로 분리",
+    "매직 넘버용 GameplayConfig ScriptableObject 생성",
+    "EventBus용 간단한 PlayMode 테스트 구현",
+    "가비지 컬렉션 줄이기 위해 UI 버튼에 오브젝트 풀링 추가",
+    "유닛 스탯 밸런싱 (체력, 건설 시간, 속도)",
+    "전투용 AttackCommand 구현",
+    "선택 성능을 위한 공간 분할 (쿼드트리) 추가"
+  ],
+  "performance_notes": {
+    "bottlenecks": [
+      "드래그 선택이 매 프레임 모든 유닛 순회",
+      "프레임당 여러 레이캐스트 (마우스, 선택)",
+      "100개 이상 유닛의 동시 NavMesh 경로 찾기",
+      "선택이 변경될 때 매 프레임 UI 재구성"
+    ],
+    "optimizations_in_place": [
+      "SRP Batcher 활성화",
+      "빠른 유닛 조회를 위한 HashSet",
+      "대상 레이캐스트를 위한 레이어 마스크",
+      "OnDestroy에서 이벤트 구독 해제",
+      "비동기 건설을 위한 코루틴"
+    ]
+  },
+  "missing_features": [
+    "전투/공격 시스템",
+    "자원 채취 시스템",
+    "전쟁의 안개",
+    "멀티플레이어/네트워킹",
+    "저장/로드 시스템",
+    "AI 상대",
+    "유닛 능력/특수 파워",
+    "기술 트리/업그레이드",
+    "미니맵"
+  ]
+}
+</script>
