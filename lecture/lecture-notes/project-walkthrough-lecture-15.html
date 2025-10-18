@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unity RTS 프로젝트 완벽 가이드 (Lecture 15 시점) | 길 가면서 읽기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            line-height: 1.8;
+            color: #191F28;
+            background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            padding: 60px;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 800;
+            color: #0064FF;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #191F28;
+            margin: 60px 0 24px;
+            padding-bottom: 16px;
+            border-bottom: 3px solid #0064FF;
+        }
+
+        h3 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #333D4B;
+            margin: 40px 0 16px;
+        }
+
+        h4 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #4E5968;
+            margin: 24px 0 12px;
+        }
+
+        p {
+            font-size: 17px;
+            color: #4E5968;
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: #6B7684;
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 16px;
+            margin: 32px 0;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25);
+        }
+
+        .highlight-box h3 {
+            color: white;
+            margin-top: 0;
+        }
+
+        .info-box {
+            background: #F7F8FA;
+            border-left: 4px solid #0064FF;
+            padding: 24px;
+            border-radius: 12px;
+            margin: 24px 0;
+        }
+
+        .warning-box {
+            background: #FFF4E5;
+            border-left: 4px solid #FF9500;
+            padding: 24px;
+            border-radius: 12px;
+            margin: 24px 0;
+        }
+
+        .success-box {
+            background: #E8F5E9;
+            border-left: 4px solid #34C759;
+            padding: 24px;
+            border-radius: 12px;
+            margin: 24px 0;
+        }
+
+        code {
+            background: #F7F8FA;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 15px;
+            color: #E91E63;
+        }
+
+        pre {
+            background: #1E1E1E;
+            color: #D4D4D4;
+            padding: 24px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 24px 0;
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        .folder-structure {
+            background: #F7F8FA;
+            padding: 24px;
+            border-radius: 12px;
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.8;
+            margin: 24px 0;
+        }
+
+        .file-path {
+            background: #0064FF;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-family: 'SF Mono', monospace;
+            font-size: 14px;
+            margin: 16px 0;
+            display: inline-block;
+        }
+
+        ul {
+            margin: 16px 0 16px 24px;
+        }
+
+        li {
+            margin: 12px 0;
+            color: #4E5968;
+            font-size: 17px;
+        }
+
+        strong {
+            color: #191F28;
+            font-weight: 600;
+        }
+
+        .emoji {
+            font-size: 24px;
+            margin-right: 8px;
+        }
+
+        .comment {
+            color: #6A9955;
+        }
+
+        .keyword {
+            color: #569CD6;
+        }
+
+        .class-name {
+            color: #4EC9B0;
+        }
+
+        .method-name {
+            color: #DCDCAA;
+        }
+
+        .string {
+            color: #CE9178;
+        }
+
+        .number {
+            color: #B5CEA8;
+        }
+
+        .reading-path {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 16px;
+            margin: 32px 0;
+        }
+
+        .reading-path ol {
+            margin-left: 24px;
+        }
+
+        .reading-path li {
+            color: white;
+            font-size: 18px;
+            margin: 16px 0;
+        }
+
+        .toc {
+            background: #F7F8FA;
+            padding: 32px;
+            border-radius: 16px;
+            margin: 32px 0;
+        }
+
+        .toc ul {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .toc li {
+            margin: 12px 0;
+        }
+
+        .toc a {
+            color: #0064FF;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .toc a:hover {
+            color: #004FC4;
+            text-decoration: underline;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #0064FF;
+            color: white;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            margin: 0 4px;
+        }
+
+        .badge.new {
+            background: #34C759;
+        }
+
+        .badge.important {
+            background: #FF3B30;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+
+            h2 {
+                font-size: 28px;
+            }
+
+            h3 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Unity RTS 프로젝트 완벽 가이드</h1>
+        <p class="subtitle">Lecture 15: Returning Supplies 시점 (커밋: 4a4845e) | 길 가면서 읽기 📚</p>
+
+        <div class="highlight-box">
+            <h3>🌟 이 문서의 목적</h3>
+            <p style="color: white; margin: 0;">Unity와 C#을 잘 모르는 사람도 길 가면서 편하게 읽을 수 있도록, 프로젝트 구조와 코드를 쉽게 설명합니다. 각 파일의 코드가 무슨 의미인지, 왜 필요한지를 초등학생도 이해할 수 있게 작성했습니다.</p>
+        </div>
+
+        <div class="toc">
+            <h3>📋 목차</h3>
+            <ul>
+                <li><a href="#overview">1. 프로젝트 개요</a></li>
+                <li><a href="#structure">2. 폴더 구조</a></li>
+                <li><a href="#eventbus">3. Event Bus 시스템 (핵심!)</a></li>
+                <li><a href="#units">4. 유닛 시스템</a></li>
+                <li><a href="#commands">5. Commands 시스템</a></li>
+                <li><a href="#player">6. 플레이어 입력 & 자원</a></li>
+                <li><a href="#behavior">7. Behavior Tree 시스템</a></li>
+                <li><a href="#path">8. 학습 경로 추천</a></li>
+            </ul>
+        </div>
+
+        <!-- 1. 프로젝트 개요 -->
+        <h2 id="overview">📖 1. 프로젝트 개요</h2>
+
+        <p>이 프로젝트는 <strong>Unity Behavior Tree</strong>를 사용한 RTS (Real-Time Strategy) 게임입니다. StarCraft처럼 유닛을 선택하고, 자원을 채취하고, 건물을 짓는 게임을 만들고 있습니다.</p>
+
+        <div class="info-box">
+            <h4>✨ 현재까지 완성된 기능 (Lecture 15까지)</h4>
+            <ul>
+                <li><strong>유닛 선택</strong>: 마우스로 유닛을 클릭하거나 드래그로 여러 유닛 선택</li>
+                <li><strong>이동 명령</strong>: 우클릭으로 유닛을 이동시킴</li>
+                <li><strong>자원 채취</strong>: Worker 유닛이 크리스탈을 채취</li>
+                <li><strong>자원 반납</strong>: Worker가 채취한 자원을 Command Post에 반납</li>
+                <li><strong>UI 시스템</strong>: 자원 표시, 유닛 생산 버튼</li>
+                <li><strong>Event Bus</strong>: 모든 시스템이 느슨하게 연결됨 (중요!)</li>
+            </ul>
+        </div>
+
+        <h3>🎯 강의 여정</h3>
+        <p>이 프로젝트는 15개의 강의를 거쳐서 여기까지 왔습니다:</p>
+        <ul>
+            <li><strong>Lecture 1-3</strong>: Unity Behavior Tree 기초</li>
+            <li><strong>Lecture 4-5</strong>: 유닛 이동과 Command 시스템</li>
+            <li><strong>Lecture 6-11</strong>: 자원 채취 시스템</li>
+            <li><strong>Lecture 12-15</strong>: 자원 반납과 플레이어 자원 관리 <span class="badge new">현재 위치</span></li>
+        </ul>
+
+        <!-- 2. 폴더 구조 -->
+        <h2 id="structure">📂 2. 폴더 구조</h2>
+
+        <p>프로젝트는 명확하게 역할별로 나뉘어 있습니다. <strong>각 폴더는 한 가지 일만 합니다</strong> (단일 책임 원칙).</p>
+
+        <div class="folder-structure">
+Assets/Scripts/
+├── <strong style="color: #0064FF;">Behavior/</strong>          # Behavior Tree 커스텀 액션들
+│   ├── MoveToTargetLocationAction.cs
+│   ├── GatherSuppliesAction.cs
+│   └── FindClosestCommandPostAction.cs
+│
+├── <strong style="color: #0064FF;">Commands/</strong>          # 유저 명령 처리 (우클릭 등)
+│   ├── MoveCommand.cs
+│   ├── GatherCommand.cs
+│   └── StopCommand.cs
+│
+├── <strong style="color: #0064FF;">Environment/</strong>       # 게임 환경 (자원 등)
+│   ├── GatherableSupply.cs
+│   └── SupplySO.cs
+│
+├── <strong style="color: #FF3B30;">EventBus/</strong>          # 이벤트 시스템 (핵심!)
+│   ├── Bus.cs
+│   └── IEvent.cs
+│
+├── <strong style="color: #0064FF;">Events/</strong>            # 이벤트 정의들
+│   ├── UnitSelectedEvent.cs
+│   ├── UnitSpawnEvent.cs
+│   └── SupplyEvent.cs
+│
+├── <strong style="color: #0064FF;">Player/</strong>            # 플레이어 입력과 자원
+│   ├── PlayerInput.cs
+│   └── Supplies.cs
+│
+├── <strong style="color: #0064FF;">UI/</strong>                # UI 시스템
+│   ├── RuntimeUI.cs
+│   └── ActionsUI.cs
+│
+└── <strong style="color: #0064FF;">Units/</strong>             # 유닛들 (Worker, Building 등)
+    ├── AbstractUnit.cs
+    ├── Worker.cs
+    └── UnitCommands.cs
+        </div>
+
+        <div class="warning-box">
+            <h4>⚠️ 왜 이렇게 나눴나요?</h4>
+            <p><strong>나중에 서버를 추가할 때</strong> 쉽게 바꾸기 위해서입니다. 예를 들어:</p>
+            <ul>
+                <li><code>Commands/</code>: 플레이어 명령만 처리</li>
+                <li><code>EventBus/</code>: 시스템 간 통신만 처리</li>
+                <li><code>Units/</code>: 유닛 로직만 처리</li>
+            </ul>
+            <p>이렇게 나누면 <strong>한 부분을 바꿔도 다른 부분은 안전</strong>합니다! 🛡️</p>
+        </div>
+
+        <!-- 3. Event Bus 시스템 -->
+        <h2 id="eventbus">🚌 3. Event Bus 시스템 (가장 중요!)</h2>
+
+        <div class="highlight-box">
+            <h3>💡 초딩도 이해하는 Event Bus</h3>
+            <p style="color: white;"><strong>Event Bus</strong>는 학교 방송실 같은 겁니다.</p>
+            <p style="color: white;">선생님이 "오늘 체육대회입니다!"라고 방송하면, 모든 교실에서 동시에 들을 수 있죠. 누가 듣는지 선생님은 몰라도 됩니다. Event Bus도 똑같습니다!</p>
+            <ul style="color: white;">
+                <li><strong>Publisher (방송하는 사람)</strong>: "자원을 채취했어!" 라고 방송</li>
+                <li><strong>Subscriber (듣는 사람)</strong>: "아, 자원이 늘어났구나" 하고 UI 업데이트</li>
+            </ul>
+            <p style="color: white; margin-top: 16px;">Publisher는 Subscriber가 누군지 몰라도 됩니다. <strong>이게 느슨한 결합(Loose Coupling)</strong>입니다!</p>
+        </div>
+
+        <h3>📄 Bus.cs (핵심 코드 - 단 10줄!)</h3>
+        <div class="file-path">Assets/Scripts/EventBus/Bus.cs</div>
+
+        <pre><code><span class="comment">// 이 코드는 Generic Type을 사용한 Event Bus입니다</span>
+<span class="keyword">namespace</span> GameDevTV.RTS.EventBus
+{
+    <span class="keyword">public static class</span> <span class="class-name">Bus</span>&lt;T&gt; <span class="keyword">where</span> T : <span class="class-name">IEvent</span>  <span class="comment">// T는 반드시 IEvent여야 함</span>
+    {
+        <span class="comment">// Delegate: 함수를 변수처럼 저장할 수 있게 해줌</span>
+        <span class="keyword">public delegate void</span> <span class="method-name">Event</span>(T args);
+
+        <span class="comment">// OnEvent에 함수들을 += 로 등록하면 구독 완료!</span>
+        <span class="keyword">public static event</span> Event OnEvent;
+
+        <span class="comment">// Raise()를 호출하면 등록된 모든 함수가 실행됨</span>
+        <span class="keyword">public static void</span> <span class="method-name">Raise</span>(T evt) =&gt; OnEvent?.<span class="method-name">Invoke</span>(evt);
+    }
+}</code></pre>
+
+        <div class="success-box">
+            <h4>✅ 코드 설명</h4>
+            <p><strong>1. Generic Type (<code>&lt;T&gt;</code>)</strong></p>
+            <ul>
+                <li><code>Bus&lt;SupplyEvent&gt;</code>: 자원 이벤트용 Bus</li>
+                <li><code>Bus&lt;UnitSelectedEvent&gt;</code>: 유닛 선택 이벤트용 Bus</li>
+                <li>타입별로 독립된 Bus가 생성됩니다!</li>
+            </ul>
+
+            <p><strong>2. Delegate</strong></p>
+            <ul>
+                <li>함수를 변수처럼 저장할 수 있는 기능</li>
+                <li><code>OnEvent += MyFunction</code> 이렇게 등록</li>
+                <li><code>OnEvent -= MyFunction</code> 이렇게 해제</li>
+            </ul>
+
+            <p><strong>3. Null-conditional 연산자 (<code>?.</code>)</strong></p>
+            <ul>
+                <li><code>OnEvent?.Invoke(evt)</code>: OnEvent가 null이 아니면 실행</li>
+                <li>Null 체크를 자동으로 해줍니다!</li>
+            </ul>
+        </div>
+
+        <h3>🔔 Event Bus 사용 예시</h3>
+
+        <p><strong>1단계: 이벤트 정의</strong></p>
+        <pre><code><span class="comment">// SupplyEvent.cs - 자원 이벤트</span>
+<span class="keyword">public readonly struct</span> <span class="class-name">SupplyEvent</span> : <span class="class-name">IEvent</span>
+{
+    <span class="keyword">public readonly</span> <span class="keyword">int</span> Amount;           <span class="comment">// 채취한 양</span>
+    <span class="keyword">public readonly</span> <span class="class-name">SupplySO</span> Supply;       <span class="comment">// 어떤 자원인지</span>
+
+    <span class="keyword">public</span> <span class="method-name">SupplyEvent</span>(<span class="keyword">int</span> amount, <span class="class-name">SupplySO</span> supply)
+    {
+        Amount = amount;
+        Supply = supply;
+    }
+}</code></pre>
+
+        <p><strong>2단계: 이벤트 발행 (Publisher)</strong></p>
+        <pre><code><span class="comment">// Worker.cs에서 자원을 채취한 후</span>
+<span class="keyword">private void</span> <span class="method-name">HandleGatherSupplies</span>(<span class="class-name">GameObject</span> self, <span class="keyword">int</span> amount, <span class="class-name">SupplySO</span> supply)
+{
+    <span class="comment">// "자원을 채취했어!" 라고 방송</span>
+    <span class="class-name">Bus</span>&lt;<span class="class-name">SupplyEvent</span>&gt;.<span class="method-name">Raise</span>(<span class="keyword">new</span> <span class="class-name">SupplyEvent</span>(amount, supply));
+}</code></pre>
+
+        <p><strong>3단계: 이벤트 구독 (Subscriber)</strong></p>
+        <pre><code><span class="comment">// Supplies.cs에서 자원 업데이트</span>
+<span class="keyword">private void</span> <span class="method-name">Awake</span>()
+{
+    <span class="comment">// 자원 이벤트를 듣겠다고 등록</span>
+    <span class="class-name">Bus</span>&lt;<span class="class-name">SupplyEvent</span>&gt;.OnEvent += <span class="method-name">HandleSupplyEvent</span>;
+}
+
+<span class="keyword">private void</span> <span class="method-name">OnDestroy</span>()
+{
+    <span class="comment">// ⚠️ 중요! 메모리 누수 방지를 위해 반드시 해제</span>
+    <span class="class-name">Bus</span>&lt;<span class="class-name">SupplyEvent</span>&gt;.OnEvent -= <span class="method-name">HandleSupplyEvent</span>;
+}
+
+<span class="keyword">private void</span> <span class="method-name">HandleSupplyEvent</span>(<span class="class-name">SupplyEvent</span> evt)
+{
+    <span class="comment">// 자원이 늘어났으니 UI 업데이트!</span>
+    Minerals += evt.Amount;
+    mineralsText.<span class="method-name">SetText</span>(Minerals.<span class="method-name">ToString</span>());
+}</code></pre>
+
+        <div class="warning-box">
+            <h4>⚠️ 왜 OnDestroy()에서 구독 해제를 해야 하나요?</h4>
+            <p><strong>메모리 누수</strong>를 막기 위해서입니다!</p>
+            <p>GameObject가 파괴되어도 Bus는 여전히 그 함수를 기억하고 있습니다. 그러면:</p>
+            <ul>
+                <li>파괴된 오브젝트를 계속 참조 → 메모리 누수</li>
+                <li>이벤트 발생 시 에러 발생</li>
+            </ul>
+            <p>반드시 <code>-=</code>로 구독을 해제해야 합니다!</p>
+        </div>
+
+        <!-- 4. 유닛 시스템 -->
+        <h2 id="units">🤖 4. 유닛 시스템</h2>
+
+        <p>유닛 시스템은 <strong>상속 구조</strong>로 되어 있습니다. 마치 가족 관계처럼!</p>
+
+        <pre><code><span class="comment">// 상속 구조</span>
+AbstractCommandable          <span class="comment">// 할아버지: 선택 가능한 모든 것</span>
+    ↓
+AbstractUnit                 <span class="comment">// 아빠: 이동 가능한 유닛</span>
+    ↓
+Worker                       <span class="comment">// 아들: 자원 채취하는 유닛</span></code></pre>
+
+        <h3>📄 AbstractUnit.cs (모든 유닛의 기본)</h3>
+        <div class="file-path">Assets/Scripts/Units/AbstractUnit.cs</div>
+
+        <pre><code><span class="comment">// AbstractUnit.cs - 모든 유닛의 기본 클래스</span>
+[<span class="class-name">RequireComponent</span>(<span class="keyword">typeof</span>(<span class="class-name">NavMeshAgent</span>), <span class="keyword">typeof</span>(<span class="class-name">BehaviorGraphAgent</span>))]
+<span class="keyword">public abstract class</span> <span class="class-name">AbstractUnit</span> : <span class="class-name">AbstractCommandable</span>, <span class="class-name">IMoveable</span>
+{
+    <span class="comment">// 유닛의 반지름 (다른 유닛과 겹치지 않게)</span>
+    <span class="keyword">public float</span> AgentRadius =&gt; agent.radius;
+
+    <span class="comment">// NavMeshAgent: Unity의 길찾기 시스템</span>
+    <span class="keyword">private</span> <span class="class-name">NavMeshAgent</span> agent;
+
+    <span class="comment">// BehaviorGraphAgent: Behavior Tree를 실행하는 컴포넌트</span>
+    <span class="keyword">protected</span> <span class="class-name">BehaviorGraphAgent</span> graphAgent;
+
+    <span class="keyword">private void</span> <span class="method-name">Awake</span>()
+    {
+        <span class="comment">// 컴포넌트 가져오기 (캐싱)</span>
+        agent = <span class="method-name">GetComponent</span>&lt;<span class="class-name">NavMeshAgent</span>&gt;();
+        graphAgent = <span class="method-name">GetComponent</span>&lt;<span class="class-name">BehaviorGraphAgent</span>&gt;();
+
+        <span class="comment">// 처음에는 정지 상태</span>
+        graphAgent.<span class="method-name">SetVariableValue</span>(<span class="string">"Command"</span>, <span class="class-name">UnitCommands</span>.Stop);
+    }
+
+    <span class="keyword">protected override void</span> <span class="method-name">Start</span>()
+    {
+        <span class="keyword">base</span>.<span class="method-name">Start</span>();
+        <span class="comment">// "유닛이 생성됐어!" 라고 방송</span>
+        <span class="class-name">Bus</span>&lt;<span class="class-name">UnitSpawnEvent</span>&gt;.<span class="method-name">Raise</span>(<span class="keyword">new</span> <span class="class-name">UnitSpawnEvent</span>(<span class="keyword">this</span>));
+    }
+
+    <span class="comment">// 특정 위치로 이동</span>
+    <span class="keyword">public void</span> <span class="method-name">MoveTo</span>(<span class="class-name">Vector3</span> position)
+    {
+        graphAgent.<span class="method-name">SetVariableValue</span>(<span class="string">"TargetLocation"</span>, position);
+        graphAgent.<span class="method-name">SetVariableValue</span>(<span class="string">"Command"</span>, <span class="class-name">UnitCommands</span>.Move);
+    }
+
+    <span class="comment">// 정지</span>
+    <span class="keyword">public void</span> <span class="method-name">Stop</span>()
+    {
+        graphAgent.<span class="method-name">SetVariableValue</span>(<span class="string">"Command"</span>, <span class="class-name">UnitCommands</span>.Stop);
+    }
+}</code></pre>
+
+        <div class="info-box">
+            <h4>💡 주요 개념 설명</h4>
+            <p><strong>1. RequireComponent 속성</strong></p>
+            <ul>
+                <li>이 클래스를 추가하면 자동으로 NavMeshAgent와 BehaviorGraphAgent도 추가됨</li>
+                <li>실수로 빠뜨리는 것을 방지!</li>
+            </ul>
+
+            <p><strong>2. Awake()에서 GetComponent() 캐싱</strong></p>
+            <ul>
+                <li>GetComponent()는 느린 함수</li>
+                <li>Awake()에서 한 번만 호출하고 변수에 저장</li>
+                <li>Update()에서 매 프레임 호출하면 성능 저하!</li>
+            </ul>
+
+            <p><strong>3. Behavior Tree Variable 설정</strong></p>
+            <ul>
+                <li><code>SetVariableValue("Command", UnitCommands.Move)</code></li>
+                <li>Behavior Tree의 변수를 C# 코드에서 변경</li>
+                <li>Behavior Tree가 이 변수를 보고 행동을 결정</li>
+            </ul>
+        </div>
+
+        <h3>📄 Worker.cs (자원 채취 유닛)</h3>
+        <div class="file-path">Assets/Scripts/Units/Worker.cs</div>
+
+        <pre><code><span class="comment">// Worker.cs - AbstractUnit를 상속받아 자원 채취 기능 추가</span>
+<span class="keyword">public class</span> <span class="class-name">Worker</span> : <span class="class-name">AbstractUnit</span>
+{
+    <span class="comment">// 자원을 들고 있는지 확인 (Behavior Tree 변수에서 가져옴)</span>
+    <span class="keyword">public bool</span> HasSupplies
+    {
+        <span class="keyword">get</span>
+        {
+            <span class="keyword">if</span> (graphAgent != <span class="keyword">null</span> && graphAgent.<span class="method-name">GetVariable</span>(<span class="string">"SupplyAmountHeld"</span>, <span class="keyword">out</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="keyword">int</span>&gt; heldVariable))
+            {
+                <span class="keyword">return</span> heldVariable.Value &gt; <span class="number">0</span>;
+            }
+            <span class="keyword">return false</span>;
+        }
+    }
+
+    <span class="keyword">protected override void</span> <span class="method-name">Start</span>()
+    {
+        <span class="keyword">base</span>.<span class="method-name">Start</span>();
+
+        <span class="comment">// GatherSuppliesEvent에 구독 (Behavior Tree에서 발행하는 이벤트)</span>
+        <span class="keyword">if</span> (graphAgent.<span class="method-name">GetVariable</span>(<span class="string">"GatherSuppliesEvent"</span>, <span class="keyword">out</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GatherSuppliesEventChannel</span>&gt; eventChannelVariable))
+        {
+            eventChannelVariable.Value.Event += <span class="method-name">HandleGatherSupplies</span>;
+        }
+    }
+
+    <span class="comment">// 자원 채취 명령</span>
+    <span class="keyword">public void</span> <span class="method-name">Gather</span>(<span class="class-name">GatherableSupply</span> supply)
+    {
+        graphAgent.<span class="method-name">SetVariableValue</span>(<span class="string">"Supply"</span>, supply);
+        graphAgent.<span class="method-name">SetVariableValue</span>(<span class="string">"TargetGameObject"</span>, supply.gameObject);
+        graphAgent.<span class="method-name">SetVariableValue</span>(<span class="string">"Command"</span>, <span class="class-name">UnitCommands</span>.Gather);
+    }
+
+    <span class="comment">// 자원 반납 명령 (Command Post로)</span>
+    <span class="keyword">public void</span> <span class="method-name">ReturnSupplies</span>(<span class="class-name">GameObject</span> commandPost)
+    {
+        graphAgent.<span class="method-name">SetVariableValue</span>(<span class="string">"CommandPost"</span>, commandPost);
+        graphAgent.<span class="method-name">SetVariableValue</span>(<span class="string">"Command"</span>, <span class="class-name">UnitCommands</span>.ReturnSupplies);
+    }
+
+    <span class="comment">// Behavior Tree에서 자원 채취가 완료되면 이 함수가 호출됨</span>
+    <span class="keyword">private void</span> <span class="method-name">HandleGatherSupplies</span>(<span class="class-name">GameObject</span> self, <span class="keyword">int</span> amount, <span class="class-name">SupplySO</span> supply)
+    {
+        <span class="comment">// "자원을 채취했어!" 라고 방송</span>
+        <span class="class-name">Bus</span>&lt;<span class="class-name">SupplyEvent</span>&gt;.<span class="method-name">Raise</span>(<span class="keyword">new</span> <span class="class-name">SupplyEvent</span>(amount, supply));
+    }
+}</code></pre>
+
+        <div class="success-box">
+            <h4>✅ Worker의 작동 원리</h4>
+            <ol>
+                <li><strong>플레이어가 자원을 우클릭</strong> → <code>GatherCommand</code>가 <code>Worker.Gather()</code> 호출</li>
+                <li><strong>Behavior Tree가 작동</strong> → 자원으로 이동, 채취 애니메이션, 자원 획득</li>
+                <li><strong>채취 완료 시</strong> → <code>HandleGatherSupplies()</code> 호출 → <code>SupplyEvent</code> 발행</li>
+                <li><strong>Supplies 클래스가 듣고</strong> → UI 업데이트</li>
+            </ol>
+            <p>Worker는 Supplies 클래스를 모릅니다. Event Bus를 통해 간접적으로만 소통합니다!</p>
+        </div>
+
+        <h3>📄 UnitCommands.cs (유닛 명령어 열거형)</h3>
+        <div class="file-path">Assets/Scripts/Units/UnitCommands.cs</div>
+
+        <pre><code><span class="comment">// UnitCommands.cs - Behavior Tree에서 사용하는 명령어</span>
+[<span class="class-name">BlackboardEnum</span>]  <span class="comment">// Behavior Tree Blackboard에서 사용 가능</span>
+<span class="keyword">public enum</span> <span class="class-name">UnitCommands</span>
+{
+    Stop,            <span class="comment">// 정지</span>
+    Move,            <span class="comment">// 이동</span>
+    Gather,          <span class="comment">// 자원 채취</span>
+    ReturnSupplies   <span class="comment">// 자원 반납</span>
+}</code></pre>
+
+        <!-- 5. Commands 시스템 -->
+        <h2 id="commands">⚡ 5. Commands 시스템</h2>
+
+        <p><strong>Commands</strong>는 플레이어의 입력을 처리합니다. 우클릭했을 때 무엇을 해야 할지 결정하는 시스템입니다.</p>
+
+        <div class="info-box">
+            <h4>💡 Command 패턴이란?</h4>
+            <p><strong>Command 패턴</strong>은 "행동을 객체로 만드는 디자인 패턴"입니다.</p>
+            <p>예를 들어:</p>
+            <ul>
+                <li>땅을 우클릭 → <code>MoveCommand</code> 실행 → 유닛 이동</li>
+                <li>자원을 우클릭 → <code>GatherCommand</code> 실행 → 자원 채취</li>
+                <li>적을 우클릭 → <code>AttackCommand</code> 실행 → 공격</li>
+            </ul>
+            <p>각 행동이 독립된 클래스로 분리되어 있어서 쉽게 추가/수정/삭제할 수 있습니다!</p>
+        </div>
+
+        <h3>📄 MoveCommand.cs (이동 명령)</h3>
+        <div class="file-path">Assets/Scripts/Commands/MoveCommand.cs</div>
+
+        <pre><code><span class="comment">// MoveCommand.cs - 유닛을 이동시키는 명령</span>
+[<span class="class-name">CreateAssetMenu</span>(fileName = <span class="string">"Move Action"</span>, menuName = <span class="string">"AI/Commands/Move"</span>, order = <span class="number">100</span>)]
+<span class="keyword">public class</span> <span class="class-name">MoveCommand</span> : <span class="class-name">ActionBase</span>
+{
+    <span class="comment">// 원형 대형을 위한 반지름 배수</span>
+    [<span class="class-name">SerializeField</span>] <span class="keyword">private float</span> radiusMultiplier = <span class="number">3.5f</span>;
+
+    <span class="comment">// 여러 유닛을 선택했을 때 원형으로 배치하기 위한 변수들</span>
+    <span class="keyword">private int</span> unitsOnLayer = <span class="number">0</span>;          <span class="comment">// 현재 층에 배치된 유닛 수</span>
+    <span class="keyword">private int</span> maxUnitsOnLayer = <span class="number">1</span>;        <span class="comment">// 현재 층의 최대 유닛 수</span>
+    <span class="keyword">private float</span> circleRadius = <span class="number">0</span>;          <span class="comment">// 현재 원의 반지름</span>
+    <span class="keyword">private float</span> radialOffset = <span class="number">0</span>;          <span class="comment">// 각 유닛 간 각도</span>
+
+    <span class="comment">// 이 명령을 실행할 수 있는지 확인</span>
+    <span class="keyword">public override bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">CommandContext</span> context)
+    {
+        <span class="keyword">return</span> context.Commandable <span class="keyword">is</span> <span class="class-name">AbstractUnit</span>;
+    }
+
+    <span class="comment">// 실제로 명령을 실행</span>
+    <span class="keyword">public override void</span> <span class="method-name">Handle</span>(<span class="class-name">CommandContext</span> context)
+    {
+        <span class="class-name">AbstractUnit</span> unit = (<span class="class-name">AbstractUnit</span>)context.Commandable;
+
+        <span class="comment">// 첫 번째 유닛이면 변수 초기화</span>
+        <span class="keyword">if</span> (context.UnitIndex == <span class="number">0</span>)
+        {
+            unitsOnLayer = <span class="number">0</span>;
+            maxUnitsOnLayer = <span class="number">1</span>;
+            circleRadius = <span class="number">0</span>;
+            radialOffset = <span class="number">0</span>;
+        }
+
+        <span class="comment">// 원형 대형으로 위치 계산 (극좌표 → 직교좌표 변환)</span>
+        <span class="class-name">Vector3</span> targetPosition = <span class="keyword">new</span>(
+            context.Hit.point.x + circleRadius * <span class="class-name">Mathf</span>.<span class="method-name">Cos</span>(radialOffset * unitsOnLayer),
+            context.Hit.point.y,
+            context.Hit.point.z + circleRadius * <span class="class-name">Mathf</span>.<span class="method-name">Sin</span>(radialOffset * unitsOnLayer)
+        );
+
+        <span class="comment">// 유닛 이동!</span>
+        unit.<span class="method-name">MoveTo</span>(targetPosition);
+        unitsOnLayer++;
+
+        <span class="comment">// 현재 층이 다 찼으면 다음 층으로</span>
+        <span class="keyword">if</span> (unitsOnLayer &gt;= maxUnitsOnLayer)
+        {
+            unitsOnLayer = <span class="number">0</span>;
+            circleRadius += unit.AgentRadius * radiusMultiplier;
+            maxUnitsOnLayer = <span class="class-name">Mathf</span>.<span class="method-name">FloorToInt</span>(<span class="number">2</span> * <span class="class-name">Mathf</span>.PI * circleRadius / (unit.AgentRadius * <span class="number">2</span>));
+            radialOffset = <span class="number">2</span> * <span class="class-name">Mathf</span>.PI / maxUnitsOnLayer;
+        }
+    }
+}</code></pre>
+
+        <div class="success-box">
+            <h4>✅ 원형 대형 알고리즘 설명</h4>
+            <p><strong>왜 원형 대형으로 배치하나요?</strong></p>
+            <ul>
+                <li>10개 유닛을 한 점에 모으면 겹쳐서 보기 안 좋음</li>
+                <li>원형으로 배치하면 보기 좋고, 이동도 자연스러움</li>
+            </ul>
+            <p><strong>알고리즘:</strong></p>
+            <ol>
+                <li>첫 번째 유닛: 클릭한 위치 정확히</li>
+                <li>두 번째부터: 클릭한 위치를 중심으로 원을 그리며 배치</li>
+                <li>한 층이 다 차면 반지름을 늘려서 다음 층</li>
+            </ol>
+        </div>
+
+        <h3>📄 GatherCommand.cs (자원 채취 명령)</h3>
+        <div class="file-path">Assets/Scripts/Commands/GatherCommand.cs</div>
+
+        <pre><code><span class="comment">// GatherCommand.cs - 자원 채취 또는 반납 명령</span>
+[<span class="class-name">CreateAssetMenu</span>(fileName = <span class="string">"Gather Action"</span>, menuName = <span class="string">"AI/Commands/Gather"</span>, order = <span class="number">105</span>)]
+<span class="keyword">public class</span> <span class="class-name">GatherCommand</span> : <span class="class-name">ActionBase</span>
+{
+    [<span class="class-name">SerializeField</span>] <span class="keyword">private</span> <span class="class-name">UnitSO</span> commandPostSO;  <span class="comment">// Command Post 정보</span>
+
+    <span class="comment">// Worker만 처리 가능, 그리고 자원이나 Command Post를 클릭했을 때만</span>
+    <span class="keyword">public override bool</span> <span class="method-name">CanHandle</span>(<span class="class-name">CommandContext</span> context)
+    {
+        <span class="keyword">return</span> context.Commandable <span class="keyword">is</span> <span class="class-name">Worker</span>
+            && context.Hit.collider != <span class="keyword">null</span>
+            && <span class="method-name">IsGatherableSupplyOrCommandPost</span>(context.Hit.collider);
+    }
+
+    <span class="keyword">public override void</span> <span class="method-name">Handle</span>(<span class="class-name">CommandContext</span> context)
+    {
+        <span class="class-name">Worker</span> worker = context.Commandable <span class="keyword">as</span> <span class="class-name">Worker</span>;
+
+        <span class="comment">// 자원을 클릭했으면 → 채취</span>
+        <span class="keyword">if</span> (context.Hit.collider.<span class="method-name">TryGetComponent</span>(<span class="keyword">out</span> <span class="class-name">GatherableSupply</span> supply))
+        {
+            worker.<span class="method-name">Gather</span>(supply);
+        }
+        <span class="comment">// Command Post를 클릭했고 자원을 들고 있으면 → 반납</span>
+        <span class="keyword">else if</span> (<span class="method-name">IsCommandPost</span>(context.Hit.collider) && worker.HasSupplies)
+        {
+            worker.<span class="method-name">ReturnSupplies</span>(context.Hit.collider.gameObject);
+        }
+        <span class="comment">// 그 외 → 그냥 이동</span>
+        <span class="keyword">else</span>
+        {
+            worker.<span class="method-name">MoveTo</span>(context.Hit.collider.gameObject.transform.position);
+        }
+    }
+
+    <span class="keyword">private bool</span> <span class="method-name">IsGatherableSupplyOrCommandPost</span>(<span class="class-name">Collider</span> collider)
+        =&gt; collider.<span class="method-name">TryGetComponent</span>(<span class="keyword">out</span> <span class="class-name">GatherableSupply</span> _) || <span class="method-name">IsCommandPost</span>(collider);
+
+    <span class="keyword">private bool</span> <span class="method-name">IsCommandPost</span>(<span class="class-name">Collider</span> collider)
+        =&gt; collider.<span class="method-name">TryGetComponent</span>(<span class="keyword">out</span> <span class="class-name">BaseBuilding</span> building) && building.UnitSO.<span class="method-name">Equals</span>(commandPostSO);
+}</code></pre>
+
+        <div class="info-box">
+            <h4>💡 Command Priority (우선순위)</h4>
+            <p>여러 Command가 있을 때 어떤 것을 먼저 실행할까요?</p>
+            <p><strong>PlayerInput.cs</strong>에서 순서대로 <code>CanHandle()</code>을 호출하고, 첫 번째로 true를 반환하는 Command를 실행합니다.</p>
+            <pre><code><span class="keyword">foreach</span>(<span class="class-name">ICommand</span> command <span class="keyword">in</span> abstractUnits[i].AvailableCommands)
+{
+    <span class="keyword">if</span> (command.<span class="method-name">CanHandle</span>(context))
+    {
+        command.<span class="method-name">Handle</span>(context);
+        <span class="keyword">break</span>;  <span class="comment">// 첫 번째만 실행!</span>
+    }
+}</code></pre>
+            <p>그래서 <code>AvailableCommands</code> 리스트의 순서가 중요합니다!</p>
+        </div>
+
+        <!-- 6. 플레이어 입력 & 자원 -->
+        <h2 id="player">🎮 6. 플레이어 입력 & 자원</h2>
+
+        <h3>📄 PlayerInput.cs (플레이어 입력 처리)</h3>
+        <div class="file-path">Assets/Scripts/Player/PlayerInput.cs</div>
+
+        <p><strong>PlayerInput.cs</strong>는 이 프로젝트에서 가장 복잡한 클래스입니다. 390줄이나 되는 거대한 클래스입니다!</p>
+
+        <p><strong>주요 기능:</strong></p>
+        <ul>
+            <li>✅ <strong>유닛 선택</strong>: 좌클릭, 드래그 박스 선택</li>
+            <li>✅ <strong>유닛 명령</strong>: 우클릭으로 이동/채취</li>
+            <li>✅ <strong>카메라 컨트롤</strong>: 팬, 줌, 회전</li>
+            <li>✅ <strong>Event Bus 구독</strong>: UnitSelectedEvent, UnitSpawnEvent 등</li>
+        </ul>
+
+        <h4>핵심 코드 발췌: 우클릭 처리</h4>
+        <pre><code><span class="comment">// PlayerInput.cs - 우클릭으로 명령 실행</span>
+<span class="keyword">private void</span> <span class="method-name">HandleRightClick</span>()
+{
+    <span class="keyword">if</span> (selectedUnits.Count == <span class="number">0</span>) { <span class="keyword">return</span>; }  <span class="comment">// 선택된 유닛 없으면 무시</span>
+
+    <span class="class-name">Ray</span> cameraRay = camera.<span class="method-name">ScreenPointToRay</span>(<span class="class-name">Mouse</span>.current.position.<span class="method-name">ReadValue</span>());
+
+    <span class="comment">// 우클릭했고, Raycast가 Hit했으면</span>
+    <span class="keyword">if</span> (<span class="class-name">Mouse</span>.current.rightButton.wasReleasedThisFrame
+        && <span class="class-name">Physics</span>.<span class="method-name">Raycast</span>(cameraRay, <span class="keyword">out</span> <span class="class-name">RaycastHit</span> hit, <span class="keyword">float</span>.MaxValue, interactableLayers | floorLayers))
+    {
+        <span class="comment">// 선택된 유닛들을 AbstractUnit 리스트로 변환</span>
+        <span class="class-name">List</span>&lt;<span class="class-name">AbstractUnit</span>&gt; abstractUnits = <span class="keyword">new</span> (selectedUnits.Count);
+        <span class="keyword">foreach</span>(<span class="class-name">ISelectable</span> selectable <span class="keyword">in</span> selectedUnits)
+        {
+            <span class="keyword">if</span> (selectable <span class="keyword">is</span> <span class="class-name">AbstractUnit</span> unit)
+            {
+                abstractUnits.<span class="method-name">Add</span>(unit);
+            }
+        }
+
+        <span class="comment">// 각 유닛마다 적절한 Command 찾아서 실행</span>
+        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; abstractUnits.Count; i++)
+        {
+            <span class="class-name">CommandContext</span> context = <span class="keyword">new</span>(abstractUnits[i], hit, i);
+
+            <span class="keyword">foreach</span>(<span class="class-name">ICommand</span> command <span class="keyword">in</span> abstractUnits[i].AvailableCommands)
+            {
+                <span class="keyword">if</span> (command.<span class="method-name">CanHandle</span>(context))
+                {
+                    command.<span class="method-name">Handle</span>(context);
+                    <span class="keyword">break</span>;  <span class="comment">// 첫 번째 Command만 실행</span>
+                }
+            }
+        }
+    }
+}</code></pre>
+
+        <h4>핵심 코드 발췌: Event Bus 구독</h4>
+        <pre><code><span class="comment">// PlayerInput.cs - Event Bus 구독/해제</span>
+<span class="keyword">private void</span> <span class="method-name">Awake</span>()
+{
+    <span class="comment">// Event 구독</span>
+    <span class="class-name">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.OnEvent += <span class="method-name">HandleUnitSelected</span>;
+    <span class="class-name">Bus</span>&lt;<span class="class-name">UnitDeselectedEvent</span>&gt;.OnEvent += <span class="method-name">HandleUnitDeselected</span>;
+    <span class="class-name">Bus</span>&lt;<span class="class-name">UnitSpawnEvent</span>&gt;.OnEvent += <span class="method-name">HandleUnitSpawn</span>;
+    <span class="class-name">Bus</span>&lt;<span class="class-name">ActionSelectedEvent</span>&gt;.OnEvent += <span class="method-name">HandleActionSelected</span>;
+}
+
+<span class="keyword">private void</span> <span class="method-name">OnDestroy</span>()
+{
+    <span class="comment">// ⚠️ 메모리 누수 방지: 반드시 구독 해제!</span>
+    <span class="class-name">Bus</span>&lt;<span class="class-name">UnitSelectedEvent</span>&gt;.OnEvent -= <span class="method-name">HandleUnitSelected</span>;
+    <span class="class-name">Bus</span>&lt;<span class="class-name">UnitDeselectedEvent</span>&gt;.OnEvent -= <span class="method-name">HandleUnitDeselected</span>;
+    <span class="class-name">Bus</span>&lt;<span class="class-name">UnitSpawnEvent</span>&gt;.OnEvent -= <span class="method-name">HandleUnitSpawn</span>;
+    <span class="class-name">Bus</span>&lt;<span class="class-name">ActionSelectedEvent</span>&gt;.OnEvent -= <span class="method-name">HandleActionSelected</span>;
+}
+
+<span class="comment">// Expression-bodied function (간결한 함수 문법)</span>
+<span class="keyword">private void</span> <span class="method-name">HandleUnitSelected</span>(<span class="class-name">UnitSelectedEvent</span> evt) =&gt; selectedUnits.<span class="method-name">Add</span>(evt.Unit);
+<span class="keyword">private void</span> <span class="method-name">HandleUnitDeselected</span>(<span class="class-name">UnitDeselectedEvent</span> evt) =&gt; selectedUnits.<span class="method-name">Remove</span>(evt.Unit);
+<span class="keyword">private void</span> <span class="method-name">HandleUnitSpawn</span>(<span class="class-name">UnitSpawnEvent</span> evt) =&gt; aliveUnits.<span class="method-name">Add</span>(evt.Unit);</code></pre>
+
+        <div class="warning-box">
+            <h4>⚠️ 성능 최적화 포인트</h4>
+            <p><strong>HashSet vs List</strong></p>
+            <ul>
+                <li><code>HashSet&lt;AbstractUnit&gt; aliveUnits</code>: 유닛이 50개 이상일 수 있으므로 HashSet 사용</li>
+                <li><code>List&lt;ISelectable&gt; selectedUnits</code>: 선택된 유닛은 보통 12개 이하이므로 List 사용</li>
+            </ul>
+            <p><strong>HashSet의 장점:</strong></p>
+            <ul>
+                <li>Contains() 검색: O(1) vs O(n)</li>
+                <li>Add/Remove: O(1) vs O(n)</li>
+                <li>50개 이상일 때 큰 차이!</li>
+            </ul>
+        </div>
+
+        <h3>📄 Supplies.cs (플레이어 자원 관리)</h3>
+        <div class="file-path">Assets/Scripts/Player/Supplies.cs</div>
+
+        <pre><code><span class="comment">// Supplies.cs - 플레이어의 자원을 관리</span>
+<span class="keyword">public class</span> <span class="class-name">Supplies</span> : <span class="class-name">MonoBehaviour</span>
+{
+    [<span class="class-name">SerializeField</span>] <span class="keyword">private</span> <span class="class-name">TextMeshProUGUI</span> mineralsText;  <span class="comment">// 미네랄 UI</span>
+    [<span class="class-name">SerializeField</span>] <span class="keyword">private</span> <span class="class-name">TextMeshProUGUI</span> gasText;        <span class="comment">// 가스 UI</span>
+
+    [<span class="class-name">SerializeField</span>] <span class="keyword">private</span> <span class="class-name">SupplySO</span> mineralsSO;           <span class="comment">// 미네랄 데이터</span>
+    [<span class="class-name">SerializeField</span>] <span class="keyword">private</span> <span class="class-name">SupplySO</span> gasSO;                <span class="comment">// 가스 데이터</span>
+
+    <span class="comment">// static: 모든 곳에서 접근 가능 (예: Supplies.Minerals)</span>
+    <span class="keyword">public static int</span> Minerals { <span class="keyword">private set</span>; }
+    <span class="keyword">public static int</span> Gas { <span class="keyword">private set</span>; }
+    <span class="keyword">public static int</span> Population { <span class="keyword">private set</span>; }
+    <span class="keyword">public static int</span> PopulationLimit { <span class="keyword">private set</span>; }
+
+    <span class="keyword">private void</span> <span class="method-name">Awake</span>()
+    {
+        <span class="comment">// SupplyEvent 구독</span>
+        <span class="class-name">Bus</span>&lt;<span class="class-name">SupplyEvent</span>&gt;.OnEvent += <span class="method-name">HandleSupplyEvent</span>;
+    }
+
+    <span class="keyword">private void</span> <span class="method-name">OnDestroy</span>()
+    {
+        <span class="comment">// ⚠️ 구독 해제</span>
+        <span class="class-name">Bus</span>&lt;<span class="class-name">SupplyEvent</span>&gt;.OnEvent -= <span class="method-name">HandleSupplyEvent</span>;
+    }
+
+    <span class="keyword">private void</span> <span class="method-name">HandleSupplyEvent</span>(<span class="class-name">SupplyEvent</span> evt)
+    {
+        <span class="comment">// 미네랄이면</span>
+        <span class="keyword">if</span> (evt.Supply.<span class="method-name">Equals</span>(mineralsSO))
+        {
+            Minerals += evt.Amount;
+            mineralsText.<span class="method-name">SetText</span>(Minerals.<span class="method-name">ToString</span>());
+        }
+        <span class="comment">// 가스면</span>
+        <span class="keyword">else if</span> (evt.Supply.<span class="method-name">Equals</span>(gasSO))
+        {
+            Gas += evt.Amount;
+            gasText.<span class="method-name">SetText</span>(Gas.<span class="method-name">ToString</span>());
+        }
+    }
+}</code></pre>
+
+        <div class="success-box">
+            <h4>✅ Supplies의 작동 흐름</h4>
+            <ol>
+                <li><strong>Worker가 자원 채취 완료</strong> → <code>SupplyEvent</code> 발행</li>
+                <li><strong>Supplies가 이벤트 수신</strong> → <code>HandleSupplyEvent()</code> 호출</li>
+                <li><strong>자원 종류 확인</strong> → Minerals인지 Gas인지 체크</li>
+                <li><strong>자원 증가 & UI 업데이트</strong> → <code>SetText()</code>로 화면에 표시</li>
+            </ol>
+            <p>Worker는 Supplies를 모릅니다. Event Bus 덕분에 완전히 분리되어 있습니다!</p>
+        </div>
+
+        <!-- 7. Behavior Tree 시스템 -->
+        <h2 id="behavior">🌲 7. Behavior Tree 시스템</h2>
+
+        <p><strong>Behavior Tree</strong>는 Unity의 공식 AI 시스템입니다. 노드를 연결해서 시각적으로 AI를 만들 수 있습니다.</p>
+
+        <div class="info-box">
+            <h4>💡 Behavior Tree란?</h4>
+            <p><strong>Behavior Tree</strong>는 "행동을 트리 구조로 표현하는 AI 시스템"입니다.</p>
+            <p>마치 플로우차트처럼 동작합니다:</p>
+            <pre><code>Root
+├── Sequence (순차 실행)
+│   ├── Condition: Command == Gather?
+│   ├── Action: 자원으로 이동
+│   ├── Action: 채취 애니메이션
+│   └── Action: 자원 획득
+└── Sequence
+    ├── Condition: Command == Move?
+    └── Action: 목표 위치로 이동</code></pre>
+        </div>
+
+        <h3>커스텀 Behavior Tree 액션들</h3>
+
+        <p>이 프로젝트에는 18개의 커스텀 Behavior Tree 액션이 있습니다. 그 중 중요한 것들:</p>
+
+        <ul>
+            <li><code>MoveToTargetLocationAction.cs</code>: 목표 위치로 이동</li>
+            <li><code>MoveToGatherableSupplyAction.cs</code>: 자원으로 이동</li>
+            <li><code>GatherSuppliesAction.cs</code>: 자원 채취</li>
+            <li><code>FindClosestCommandPostAction.cs</code>: 가장 가까운 Command Post 찾기</li>
+            <li><code>StopAgentAction.cs</code>: 유닛 정지</li>
+        </div>
+
+        <h4>📄 GatherSuppliesAction.cs 예시</h4>
+        <div class="file-path">Assets/Scripts/Behavior/GatherSuppliesAction.cs</div>
+
+        <pre><code><span class="comment">// GatherSuppliesAction.cs - Behavior Tree에서 자원을 채취하는 액션</span>
+<span class="comment">// (실제 코드는 더 복잡하지만 핵심만 발췌)</span>
+
+<span class="keyword">protected override</span> <span class="class-name">Status</span> <span class="method-name">OnUpdate</span>()
+{
+    <span class="comment">// 1. 자원 객체 가져오기</span>
+    <span class="class-name">GatherableSupply</span> supply = <span class="class-name">Supply</span>.Value;
+
+    <span class="comment">// 2. 채취 진행 (시간 경과)</span>
+    gatheringTimer += <span class="class-name">Time</span>.deltaTime;
+
+    <span class="comment">// 3. 채취 완료되면</span>
+    <span class="keyword">if</span> (gatheringTimer &gt;= gatherTime)
+    {
+        <span class="comment">// 4. 이벤트 발행 (C# 코드로 전달)</span>
+        GatherSuppliesEvent.Value.Event?.<span class="method-name">Invoke</span>(
+            Self.Value,
+            supply.AmountPerGather,
+            supply.Supply
+        );
+
+        <span class="comment">// 5. Blackboard 변수 업데이트</span>
+        SupplyAmountHeld.Value += supply.AmountPerGather;
+
+        <span class="comment">// 6. 완료!</span>
+        <span class="keyword">return</span> <span class="class-name">Status</span>.Success;
+    }
+
+    <span class="comment">// 아직 진행 중</span>
+    <span class="keyword">return</span> <span class="class-name">Status</span>.Running;
+}</code></pre>
+
+        <div class="success-box">
+            <h4>✅ Behavior Tree와 C# 코드의 연결</h4>
+            <p><strong>Behavior Tree → C# 코드</strong></p>
+            <ul>
+                <li>Behavior Tree에서 <code>GatherSuppliesEventChannel</code>을 통해 C# 함수 호출</li>
+                <li><code>Worker.cs</code>의 <code>HandleGatherSupplies()</code>가 호출됨</li>
+                <li>C# 코드에서 Event Bus로 다른 시스템에 알림</li>
+            </ul>
+            <p><strong>C# 코드 → Behavior Tree</strong></p>
+            <ul>
+                <li><code>graphAgent.SetVariableValue("Command", UnitCommands.Gather)</code></li>
+                <li>Behavior Tree가 이 변수를 보고 Gather Sequence 실행</li>
+            </ul>
+        </div>
+
+        <!-- 8. 학습 경로 -->
+        <h2 id="path">🚀 8. 학습 경로 추천 (길 가면서 읽기)</h2>
+
+        <div class="reading-path">
+            <h3>📚 추천 읽기 순서 (총 60분)</h3>
+            <p style="color: white; margin-bottom: 20px;">처음부터 다 읽을 필요 없습니다! 이 순서대로 천천히 읽어보세요.</p>
+
+            <ol>
+                <li><strong>Event Bus 시스템 (5분)</strong> - 가장 중요!
+                    <ul>
+                        <li><code>Bus.cs</code> (10줄) - 핵심 중의 핵심</li>
+                        <li><code>IEvent.cs</code> (3줄) - 마커 인터페이스</li>
+                        <li><code>SupplyEvent.cs</code> - 실제 이벤트 예시</li>
+                    </ul>
+                </li>
+
+                <li><strong>유닛 구조 (10분)</strong>
+                    <ul>
+                        <li><code>UnitCommands.cs</code> (13줄) - 명령어 열거형</li>
+                        <li><code>AbstractUnit.cs</code> (40줄) - 모든 유닛의 기본</li>
+                        <li><code>Worker.cs</code> (52줄) - 구체적인 유닛</li>
+                    </ul>
+                </li>
+
+                <li><strong>Commands 시스템 (15분)</strong>
+                    <ul>
+                        <li><code>MoveCommand.cs</code> - 원형 대형 알고리즘</li>
+                        <li><code>GatherCommand.cs</code> - 자원 채취/반납 로직</li>
+                    </ul>
+                </li>
+
+                <li><strong>플레이어 입력 (10분)</strong>
+                    <ul>
+                        <li><code>PlayerInput.cs</code> - 핵심 부분만 발췌해서 읽기</li>
+                        <li><code>Supplies.cs</code> - 자원 관리</li>
+                    </ul>
+                </li>
+
+                <li><strong>Behavior Tree (10분)</strong>
+                    <ul>
+                        <li>Unity Editor에서 Worker BT.asset 열어서 구조 보기</li>
+                        <li><code>GatherSuppliesAction.cs</code> - 자원 채취 액션</li>
+                    </ul>
+                </li>
+
+                <li><strong>강의 노트 읽기 (10분)</strong>
+                    <ul>
+                        <li><code>complete-lecture-notes-4.html</code></li>
+                        <li>Lecture 14: Event Bus 설명</li>
+                        <li>Lecture 15: ReturnSupplies 설명</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="highlight-box">
+            <h3>🎯 핵심 개념 정리</h3>
+            <ul style="color: white;">
+                <li><strong>Event Bus</strong>: 시스템 간 느슨한 결합 (가장 중요!)</li>
+                <li><strong>Behavior Tree</strong>: Unity의 공식 AI 시스템 (시각적)</li>
+                <li><strong>Commands 패턴</strong>: 플레이어 명령을 객체로 (확장 용이)</li>
+                <li><strong>상속 구조</strong>: AbstractCommandable → AbstractUnit → Worker</li>
+                <li><strong>HashSet vs List</strong>: 성능 최적화 (50+ 유닛 대비)</li>
+                <li><strong>구독/해제 패턴</strong>: 메모리 누수 방지 (+=, -=)</li>
+            </ul>
+        </div>
+
+        <div class="success-box">
+            <h4>✅ 다음 단계</h4>
+            <p><strong>Lecture 16부터 계속 진행하기:</strong></p>
+            <ul>
+                <li>Lecture 16-20: 건물 건설 시스템</li>
+                <li>Lecture 21-25: 전투 시스템</li>
+                <li>Lecture 26-30: AI 적군</li>
+            </ul>
+            <p><strong>커스텀 기능 추가하기:</strong></p>
+            <ul>
+                <li>3-파트 로봇 시스템 (WorkerThreeRobot) - 이미 구현됨!</li>
+                <li>새로운 유닛 타입 추가</li>
+                <li>새로운 자원 타입 추가</li>
+            </ul>
+        </div>
+
+        <div class="warning-box">
+            <h4>⚠️ 주의사항</h4>
+            <ul>
+                <li>Event Bus 구독은 반드시 해제하세요 (<code>OnDestroy()</code>)</li>
+                <li><code>GetComponent()</code>는 <code>Awake()</code>에서만 (캐싱)</li>
+                <li>50+ 유닛을 고려한 성능 최적화 필수</li>
+                <li>Behavior Tree 변수는 타입 안전하게 사용 (<code>BlackboardVariable&lt;T&gt;</code>)</li>
+            </ul>
+        </div>
+
+        <hr style="margin: 60px 0; border: none; border-top: 2px solid #E5E8EB;">
+
+        <div class="info-box">
+            <h4>📖 관련 문서</h4>
+            <ul>
+                <li><strong>RULE_12_PROJECT_FILE_LOCATIONS.md</strong>: 모든 파일 위치 정리</li>
+                <li><strong>complete-lecture-notes-4.html</strong>: 전체 강의 노트 (Lecture 1-15)</li>
+                <li><strong>ARCHITECTURE_KR.html</strong>: 프로젝트 아키텍처 다이어그램</li>
+            </ul>
+        </div>
+
+        <p style="text-align: center; margin-top: 60px; color: #6B7684; font-size: 14px;">
+            작성일: 2025-10-18 | 커밋: 4a4845e (Lecture 15: Returning Supplies)<br>
+            문서 버전: 1.0
+        </p>
+    </div>
+</body>
+</html>
