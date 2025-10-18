@@ -68,6 +68,30 @@
 
 ## 📋 일반 규칙
 
+### Rule 12: PROJECT_FILE_LOCATIONS_RULE ⭐⭐
+**프로젝트 파일 위치 빠른 참조**
+
+**핵심:**
+- Worker BT: `Assets/Units/Worker/Worker BT.asset`
+- Worker.cs: `Assets/Scripts/Units/Worker.cs`
+- WorkerThreeRobot.cs: `Assets/Scripts/Units/WorkerThreeRobot.cs`
+- RobotPart.cs: `Assets/Scripts/Units/RobotPart.cs`
+- 강의 노트: `lecture/lecture-notes/complete-lecture-notes-4.html`
+
+**길 가면서 주석 읽기:**
+1. Event Bus 시스템 (Bus.cs, IEvent.cs) - 5분
+2. 유닛 구조 (AbstractUnit.cs, Worker.cs) - 10분
+3. 3-파트 로봇 (RobotPart.cs, WorkerThreeRobot.cs) - 15분
+
+**체크리스트:**
+- [ ] Worker BT 파일 위치 확인?
+- [ ] 주요 스크립트 파일 위치 확인?
+- [ ] 강의 노트에서 상세 설명 읽기?
+
+**상세:** `.claude/RULE_12_PROJECT_FILE_LOCATIONS.md`
+
+---
+
 ### Rule 4: LECTURE_NOTES_DOCUMENTATION_RULE
 **강의 노트 HTML (Toss 스타일, 맨 아래 APPEND)**
 
@@ -138,4 +162,4 @@
 
 ---
 
-**업데이트**: 2025-10-17 (Rule 11 추가 - Cherry-pick Strategy)
+**업데이트**: 2025-10-18 (Rule 12 추가 - Project File Locations)
