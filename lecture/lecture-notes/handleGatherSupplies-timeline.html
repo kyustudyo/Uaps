@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HandleGatherSupplies() 호출 타임라인 | Unity RTS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            line-height: 1.8;
+            color: #191F28;
+            background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            padding: 60px;
+        }
+
+        h1 {
+            font-size: 42px;
+            font-weight: 800;
+            color: #0064FF;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #6B7684;
+            margin-bottom: 40px;
+        }
+
+        .question-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 16px;
+            margin: 32px 0;
+            font-size: 24px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 60px;
+            margin: 40px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, #0064FF, #34C759);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 40px;
+            padding: 24px;
+            background: #F7F8FA;
+            border-radius: 12px;
+            border-left: 4px solid #0064FF;
+        }
+
+        .timeline-item.highlight {
+            background: linear-gradient(135deg, #FFE5E5 0%, #FFF4E5 100%);
+            border-left: 4px solid #FF3B30;
+            box-shadow: 0 4px 16px rgba(255, 59, 48, 0.1);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -64px;
+            top: 24px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border: 4px solid #0064FF;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 100, 255, 0.3);
+        }
+
+        .timeline-item.highlight::before {
+            background: #FF3B30;
+            border-color: #FF3B30;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 2px 8px rgba(255, 59, 48, 0.3);
+            }
+            50% {
+                transform: scale(1.2);
+                box-shadow: 0 4px 16px rgba(255, 59, 48, 0.6);
+            }
+        }
+
+        .time-badge {
+            display: inline-block;
+            background: #0064FF;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .time-badge.highlight {
+            background: #FF3B30;
+            animation: glow 2s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(255, 59, 48, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(255, 59, 48, 0.8);
+            }
+        }
+
+        .step-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #191F28;
+            margin-bottom: 12px;
+        }
+
+        .step-description {
+            font-size: 16px;
+            color: #4E5968;
+            margin-bottom: 16px;
+        }
+
+        pre {
+            background: #1E1E1E;
+            color: #D4D4D4;
+            padding: 20px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 16px 0;
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .comment {
+            color: #6A9955;
+        }
+
+        .keyword {
+            color: #569CD6;
+        }
+
+        .class-name {
+            color: #4EC9B0;
+        }
+
+        .method-name {
+            color: #DCDCAA;
+        }
+
+        .string {
+            color: #CE9178;
+        }
+
+        .number {
+            color: #B5CEA8;
+        }
+
+        .visual-flow {
+            background: linear-gradient(135deg, #E8F5E9 0%, #F0F4FF 100%);
+            padding: 32px;
+            border-radius: 16px;
+            margin: 32px 0;
+            text-align: center;
+        }
+
+        .visual-flow h3 {
+            color: #191F28;
+            margin-bottom: 24px;
+        }
+
+        .flow-step {
+            background: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            margin: 12px auto;
+            max-width: 500px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            font-weight: 600;
+            color: #333D4B;
+        }
+
+        .flow-arrow {
+            color: #0064FF;
+            font-size: 32px;
+            margin: 8px 0;
+        }
+
+        .info-box {
+            background: #F0F4FF;
+            border-left: 4px solid #0064FF;
+            padding: 24px;
+            border-radius: 12px;
+            margin: 24px 0;
+        }
+
+        .success-box {
+            background: #E8F5E9;
+            border-left: 4px solid #34C759;
+            padding: 24px;
+            border-radius: 12px;
+            margin: 24px 0;
+        }
+
+        .emoji {
+            font-size: 24px;
+        }
+
+        code {
+            background: #F7F8FA;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: 'SF Mono', monospace;
+            font-size: 14px;
+            color: #E91E63;
+        }
+
+        .key-point {
+            background: #FFF9E6;
+            border-left: 4px solid #FFB800;
+            padding: 24px;
+            border-radius: 12px;
+            margin: 32px 0;
+        }
+
+        .key-point h3 {
+            color: #191F28;
+            margin-bottom: 16px;
+        }
+
+        ul {
+            margin-left: 24px;
+            margin-top: 12px;
+        }
+
+        li {
+            margin: 8px 0;
+            color: #4E5968;
+        }
+
+        strong {
+            color: #191F28;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 HandleGatherSupplies() 호출 타임라인</h1>
+        <p class="subtitle">Worker가 Crystal을 채취할 때 정확히 무슨 일이 일어나는가?</p>
+
+        <div class="question-box">
+            ❓ HandleGatherSupplies()는 언제 호출되나요?
+        </div>
+
+        <div class="info-box">
+            <h3><span class="emoji">💡</span> 답변 미리보기</h3>
+            <p><strong>Behavior Tree의 GatherSuppliesAction이 자원 채취를 완료했을 때</strong> Event Channel을 통해 자동으로 호출됩니다!</p>
+            <p style="margin-top: 12px;">아래에서 5초간의 여정을 따라가봅시다! 🚀</p>
+        </div>
+
+        <!-- 타임라인 -->
+        <div class="timeline">
+            <!-- 0초 -->
+            <div class="timeline-item">
+                <div class="time-badge">0.00초</div>
+                <div class="step-title">1단계: 플레이어가 Crystal을 우클릭 🖱️</div>
+                <div class="step-description">게임 화면에서 Crystal(자원)을 마우스 우클릭합니다.</div>
+                <pre><code><span class="comment">// 플레이어 행동</span>
+플레이어: *Crystal을 우클릭* 👆</code></pre>
+            </div>
+
+            <!-- 0.01초 -->
+            <div class="timeline-item">
+                <div class="time-badge">0.01초</div>
+                <div class="step-title">2단계: GatherCommand.Handle() 실행</div>
+                <div class="step-description">우클릭 이벤트가 GatherCommand로 전달됩니다.</div>
+                <pre><code><span class="comment">// GatherCommand.cs</span>
+<span class="keyword">public override void</span> <span class="method-name">Handle</span>(<span class="class-name">CommandContext</span> context)
+{
+    <span class="class-name">Worker</span> worker = context.Commandable <span class="keyword">as</span> <span class="class-name">Worker</span>;
+
+    <span class="comment">// Crystal을 클릭했으므로</span>
+    <span class="keyword">if</span> (context.Hit.collider.<span class="method-name">TryGetComponent</span>(<span class="keyword">out</span> <span class="class-name">GatherableSupply</span> supply))
+    {
+        worker.<span class="method-name">Gather</span>(supply);  <span class="comment">// 👈 Worker에게 "Crystal 채취해!" 명령</span>
+    }
+}</code></pre>
+            </div>
+
+            <!-- 0.02초 -->
+            <div class="timeline-item">
+                <div class="time-badge">0.02초</div>
+                <div class="step-title">3단계: Worker.Gather() 실행</div>
+                <div class="step-description">Worker가 Behavior Tree 변수를 설정합니다.</div>
+                <pre><code><span class="comment">// Worker.cs</span>
+<span class="keyword">public void</span> <span class="method-name">Gather</span>(<span class="class-name">GatherableSupply</span> supply)
+{
+    <span class="comment">// Behavior Tree 변수 설정</span>
+    graphAgent.<span class="method-name">SetVariableValue</span>(<span class="string">"Supply"</span>, supply);
+    graphAgent.<span class="method-name">SetVariableValue</span>(<span class="string">"TargetGameObject"</span>, supply.gameObject);
+    graphAgent.<span class="method-name">SetVariableValue</span>(<span class="string">"Command"</span>, <span class="class-name">UnitCommands</span>.Gather); <span class="comment">// 👈 "Gather 모드!"</span>
+}
+
+<span class="comment">// 이제 Behavior Tree가 "아, Gather 명령이 왔구나!" 인식</span></code></pre>
+            </div>
+
+            <!-- 0.03~3초 -->
+            <div class="timeline-item">
+                <div class="time-badge">0.03초 ~ 3초</div>
+                <div class="step-title">4단계: Behavior Tree - Crystal로 이동 🚶</div>
+                <div class="step-description">MoveToGatherableSupplyAction이 실행되어 Worker가 Crystal 위치로 걸어갑니다.</div>
+                <pre><code><span class="comment">// Behavior Tree 흐름</span>
+Root
+├── Sequence <span class="string">"Gather Sequence"</span>
+│   ├── Condition: Command == Gather? <span class="string">✅ (true)</span>
+│   │
+│   ├── Action: <span class="class-name">MoveToGatherableSupplyAction</span>  <span class="comment">👈 지금 여기! (0.03초~3초)</span>
+│   │   └─ Worker가 Crystal 위치로 걸어감 <span class="emoji">🚶</span>
+│   │       NavMeshAgent.destination = Crystal.position
+│   │
+│   ├── Action: <span class="class-name">SetAgentAvoidanceAction</span>
+│   │
+│   └── Action: <span class="class-name">GatherSuppliesAction</span>
+</code></pre>
+            </div>
+
+            <!-- 3~5초 -->
+            <div class="timeline-item">
+                <div class="time-badge">3초 ~ 5초</div>
+                <div class="step-title">5단계: Behavior Tree - 채취 애니메이션 ⛏️</div>
+                <div class="step-description">GatherSuppliesAction이 실행되어 채취 애니메이션이 재생됩니다.</div>
+                <pre><code><span class="comment">// GatherSuppliesAction.cs (Behavior Tree 노드)</span>
+<span class="keyword">protected override</span> <span class="class-name">Status</span> <span class="method-name">OnUpdate</span>()
+{
+    <span class="class-name">GatherableSupply</span> supply = Supply.Value;  <span class="comment">// Crystal 정보</span>
+
+    <span class="comment">// 채취 진행 중... (타이머 증가)</span>
+    gatheringTimer += <span class="class-name">Time</span>.deltaTime;
+
+    <span class="comment">// 애니메이션 재생 ⛏️</span>
+    animator.<span class="method-name">SetBool</span>(<span class="string">"isGathering"</span>, <span class="keyword">true</span>);
+
+    <span class="comment">// 아직 채취 중...</span>
+    <span class="keyword">if</span> (gatheringTimer &lt; gatherTime)  <span class="comment">// gatherTime = 2초</span>
+    {
+        <span class="keyword">return</span> <span class="class-name">Status</span>.Running;  <span class="comment">// 계속 진행</span>
+    }
+
+    <span class="comment">// 👇 다음 단계로...</span>
+}</code></pre>
+            </div>
+
+            <!-- 5초 - 하이라이트! -->
+            <div class="timeline-item">
+                <div class="time-badge">5.00000초</div>
+                <div class="step-title">6단계: GatherSuppliesAction - 채취 완료! ✨</div>
+                <div class="step-description">2초가 지나서 채취가 완료되고, Event Channel로 이벤트를 발행합니다!</div>
+                <pre><code><span class="comment">// GatherSuppliesAction.cs (계속)</span>
+<span class="keyword">protected override</span> <span class="class-name">Status</span> <span class="method-name">OnUpdate</span>()
+{
+    <span class="comment">// ... (위에서 계속)</span>
+
+    <span class="comment">// 👇 2초가 지나서 채취 완료!</span>
+    <span class="keyword">if</span> (gatheringTimer &gt;= gatherTime)
+    {
+        <span class="comment">// 🔥 여기서 Event Channel로 이벤트 발행!</span>
+        GatherSuppliesEvent.Value.Event?.<span class="method-name">Invoke</span>(
+            Self.Value,                    <span class="comment">// Worker GameObject</span>
+            supply.AmountPerGather,        <span class="comment">// 10 (채취량)</span>
+            supply.Supply                  <span class="comment">// Crystal (SupplySO)</span>
+        );
+
+        <span class="comment">// Blackboard 변수 업데이트</span>
+        SupplyAmountHeld.Value += supply.AmountPerGather;  <span class="comment">// 0 → 10</span>
+
+        <span class="keyword">return</span> <span class="class-name">Status</span>.Success;  <span class="comment">// 완료!</span>
+    }
+}</code></pre>
+            </div>
+
+            <!-- 5.00001초 - 메인 이벤트! -->
+            <div class="timeline-item highlight">
+                <div class="time-badge highlight">5.00001초</div>
+                <div class="step-title">🔥 7단계: HandleGatherSupplies() 호출! (바로 여기!)</div>
+                <div class="step-description">Event Channel이 이벤트를 발행하면, 구독한 함수가 자동으로 호출됩니다!</div>
+
+                <div style="background: white; padding: 20px; border-radius: 12px; margin: 16px 0;">
+                    <p style="font-weight: 600; color: #FF3B30; margin-bottom: 12px;">⚡ 구독 설정 (게임 시작 시 미리 해놨음)</p>
+                    <pre><code><span class="comment">// Worker.cs - Start()에서</span>
+<span class="keyword">protected override void</span> <span class="method-name">Start</span>()
+{
+    <span class="keyword">base</span>.<span class="method-name">Start</span>();
+
+    <span class="comment">// 👇 Event Channel에 구독! (Start에서 1번만)</span>
+    <span class="keyword">if</span> (graphAgent.<span class="method-name">GetVariable</span>(<span class="string">"GatherSuppliesEvent"</span>,
+        <span class="keyword">out</span> <span class="class-name">BlackboardVariable</span>&lt;<span class="class-name">GatherSuppliesEventChannel</span>&gt; eventChannelVariable))
+    {
+        eventChannelVariable.Value.Event += <span class="method-name">HandleGatherSupplies</span>;  <span class="comment">// 👈 구독!</span>
+    }
+}</code></pre>
+                </div>
+
+                <div style="background: #FFE5E5; padding: 20px; border-radius: 12px; margin: 16px 0;">
+                    <p style="font-weight: 600; color: #FF3B30; margin-bottom: 12px;">🎉 호출되는 순간!</p>
+                    <pre><code><span class="comment">// Worker.cs - 바로 이 함수가 호출됨!</span>
+<span class="keyword">private void</span> <span class="method-name">HandleGatherSupplies</span>(<span class="class-name">GameObject</span> self, <span class="keyword">int</span> amount, <span class="class-name">SupplySO</span> supply)
+{
+    <span class="comment">// 파라미터:</span>
+    <span class="comment">// self   = Worker GameObject</span>
+    <span class="comment">// amount = 10 (채취량)</span>
+    <span class="comment">// supply = Crystal (SupplySO)</span>
+
+    <span class="comment">// Event Bus로 다시 발행 → Supplies.cs가 듣고 UI 업데이트!</span>
+    <span class="class-name">Bus</span>&lt;<span class="class-name">SupplyEvent</span>&gt;.<span class="method-name">Raise</span>(<span class="keyword">new</span> <span class="class-name">SupplyEvent</span>(amount, supply));
+}</code></pre>
+                </div>
+            </div>
+
+            <!-- 5.00002초 -->
+            <div class="timeline-item">
+                <div class="time-badge">5.00002초</div>
+                <div class="step-title">8단계: Supplies.HandleSupplyEvent() - UI 업데이트 🎉</div>
+                <div class="step-description">Event Bus를 통해 자원 관리 클래스가 이벤트를 받고 화면을 업데이트합니다.</div>
+                <pre><code><span class="comment">// Supplies.cs</span>
+<span class="keyword">private void</span> <span class="method-name">HandleSupplyEvent</span>(<span class="class-name">SupplyEvent</span> evt)
+{
+    <span class="comment">// evt.Amount = 10</span>
+    <span class="comment">// evt.Supply = Crystal</span>
+
+    <span class="keyword">if</span> (evt.Supply.<span class="method-name">Equals</span>(mineralsSO))  <span class="comment">// Crystal == Minerals?</span>
+    {
+        Minerals += evt.Amount;  <span class="comment">// 100 → 110</span>
+        mineralsText.<span class="method-name">SetText</span>(Minerals.<span class="method-name">ToString</span>());  <span class="comment">// UI 업데이트: "110"</span>
+    }
+}
+
+<span class="comment">// 💎 화면 오른쪽 상단: "Minerals: 100" → "Minerals: 110" ✨</span></code></pre>
+            </div>
+        </div>
+
+        <!-- 시각적 흐름 요약 -->
+        <div class="visual-flow">
+            <h3>🎯 전체 흐름 한눈에 보기</h3>
+
+            <div class="flow-step">0.00초: 플레이어 우클릭 Crystal 🖱️</div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step">0.01초: GatherCommand.Handle()</div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step">0.02초: Worker.Gather() → BT 변수 설정</div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step">0.03~3초: Behavior Tree → Crystal로 이동 🚶</div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step">3~5초: Behavior Tree → 채취 애니메이션 ⛏️</div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step" style="background: #FFE5E5; color: #FF3B30; font-weight: 700;">
+                5.00000초: GatherSuppliesAction → Event Channel 발행!
+            </div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step" style="background: #FF3B30; color: white; font-weight: 700;">
+                🔥 5.00001초: HandleGatherSupplies() 호출! 👈 바로 여기!
+            </div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step">5.00002초: Supplies.HandleSupplyEvent() → UI 업데이트</div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step" style="background: #34C759; color: white;">
+                ✨ 화면에 "Minerals: 110" 표시!
+            </div>
+        </div>
+
+        <!-- 핵심 정리 -->
+        <div class="key-point">
+            <h3>🔑 핵심 정리</h3>
+            <p style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">
+                <code>HandleGatherSupplies()</code>는 언제 호출되나요?
+            </p>
+            <ul style="font-size: 16px;">
+                <li><strong>Behavior Tree의 GatherSuppliesAction이 자원 채취를 완료했을 때</strong></li>
+                <li><strong>Event Channel을 통해 자동으로 호출됨</strong></li>
+                <li><strong>구독 설정은 Worker.Start()에서 미리 해놨음</strong> (<code>+=</code> 연산자)</li>
+            </ul>
+
+            <div style="margin-top: 24px; padding: 20px; background: white; border-radius: 12px;">
+                <p style="font-weight: 600; margin-bottom: 12px;">📻 방송국 비유:</p>
+                <ul style="font-size: 16px;">
+                    <li><strong>GatherSuppliesAction</strong>: "자원 채취 완료!" 📻 (방송국)</li>
+                    <li><strong>Event Channel</strong>: 전파 📡 (중계)</li>
+                    <li><strong>HandleGatherSupplies</strong>: "알겠습니다!" 📻 (라디오 수신)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- OnUpdate() 설명 추가 -->
+        <div class="question-box" style="margin: 40px 0;">
+            ❓ 그럼 OnUpdate()는 언제 호출되나요?
+        </div>
+
+        <div class="info-box">
+            <h3><span class="emoji">⏱️</span> OnUpdate()는 매 프레임마다 호출됩니다!</h3>
+            <p style="margin-top: 12px;"><strong>Unity의 Update()와 비슷</strong>하지만, <strong>Behavior Tree 노드가 활성화되어 있을 때만</strong> 호출됩니다!</p>
+        </div>
+
+        <div class="key-point" style="background: #E8F5E9; border-left-color: #34C759;">
+            <h3>🎯 OnUpdate() 호출 시점</h3>
+
+            <div style="background: white; padding: 20px; border-radius: 12px; margin: 16px 0;">
+                <p style="font-weight: 600; margin-bottom: 12px;">📅 3초 ~ 5초 동안 (2초간)</p>
+                <pre style="margin: 0;"><code><span class="comment">// GatherSuppliesAction.cs</span>
+<span class="keyword">protected override</span> <span class="class-name">Status</span> <span class="method-name">OnUpdate</span>()
+{
+    <span class="comment">// 👇 이 함수가 매 프레임마다 호출됨!</span>
+    <span class="comment">// 60 FPS라면 2초 동안 약 120번 호출!</span>
+
+    gatheringTimer += <span class="class-name">Time</span>.deltaTime;  <span class="comment">// 0.016초씩 증가</span>
+
+    <span class="comment">// 3.00초: gatheringTimer = 0.00</span>
+    <span class="comment">// 3.01초: gatheringTimer = 0.016</span>
+    <span class="comment">// 3.03초: gatheringTimer = 0.032</span>
+    <span class="comment">// ...</span>
+    <span class="comment">// 4.99초: gatheringTimer = 1.99</span>
+    <span class="comment">// 5.00초: gatheringTimer = 2.00 ✅ 완료!</span>
+
+    <span class="keyword">if</span> (gatheringTimer &gt;= gatherTime)  <span class="comment">// 2초</span>
+    {
+        <span class="comment">// 채취 완료! Event Channel 발행</span>
+        GatherSuppliesEvent.Value.Event?.<span class="method-name">Invoke</span>(...);
+        <span class="keyword">return</span> <span class="class-name">Status</span>.Success;
+    }
+
+    <span class="keyword">return</span> <span class="class-name">Status</span>.Running;  <span class="comment">// 아직 진행 중</span>
+}</code></pre>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <p style="font-weight: 600; margin-bottom: 12px;">🔄 호출 횟수 계산:</p>
+                <ul style="font-size: 16px;">
+                    <li><strong>60 FPS 기준</strong>: 1초에 60번 호출</li>
+                    <li><strong>2초 동안</strong>: 약 120번 호출</li>
+                    <li><strong>매 프레임</strong>: <code>Time.deltaTime</code> (약 0.016초)만큼 타이머 증가</li>
+                    <li><strong>2초 도달 시</strong>: <code>Status.Success</code> 반환 → 노드 완료!</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="visual-flow" style="background: linear-gradient(135deg, #FFF4E5 0%, #FFE5E5 100%);">
+            <h3>⏱️ OnUpdate() 호출 타임라인 (3초~5초)</h3>
+
+            <div class="flow-step" style="background: #FFF; border: 2px solid #FFB800;">
+                3.000초: OnUpdate() #1 호출<br>
+                <small style="color: #6B7684;">gatheringTimer = 0.000초</small>
+            </div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step" style="background: #FFF;">
+                3.016초: OnUpdate() #2 호출<br>
+                <small style="color: #6B7684;">gatheringTimer = 0.016초</small>
+            </div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step" style="background: #FFF;">
+                3.032초: OnUpdate() #3 호출<br>
+                <small style="color: #6B7684;">gatheringTimer = 0.032초</small>
+            </div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step" style="background: #FFF;">
+                ... (약 117번 더 호출) ...<br>
+                <small style="color: #6B7684;">매 프레임마다 타이머 증가</small>
+            </div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step" style="background: #FFE5E5; border: 2px solid #FF3B30;">
+                4.984초: OnUpdate() #120 호출<br>
+                <small style="color: #6B7684;">gatheringTimer = 1.984초 (아직 진행 중)</small>
+            </div>
+            <div class="flow-arrow">↓</div>
+
+            <div class="flow-step" style="background: #FF3B30; color: white; border: 2px solid #FF3B30;">
+                5.000초: OnUpdate() #121 호출 🔥<br>
+                <small style="color: white;">gatheringTimer = 2.000초 ✅ 완료!</small><br>
+                <small style="color: white;">→ Event Channel 발행!</small>
+            </div>
+        </div>
+
+        <div class="success-box">
+            <h3>💡 Unity Update()와 차이점</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+                <thead>
+                    <tr style="background: #34C759; color: white;">
+                        <th style="padding: 12px; text-align: left; border-radius: 8px 0 0 0;">특징</th>
+                        <th style="padding: 12px; text-align: left;">Unity Update()</th>
+                        <th style="padding: 12px; text-align: left; border-radius: 0 8px 0 0;">Behavior Tree OnUpdate()</th>
+                    </tr>
+                </thead>
+                <tbody style="background: white;">
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #E5E8EB;"><strong>호출 시점</strong></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #E5E8EB;">매 프레임 (항상)</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #E5E8EB;">노드가 활성화되어 있을 때만</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #E5E8EB;"><strong>사용처</strong></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #E5E8EB;">MonoBehaviour 클래스</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #E5E8EB;">Behavior Tree 액션 노드</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #E5E8EB;"><strong>반환 값</strong></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #E5E8EB;">void (없음)</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #E5E8EB;">Status (Running/Success/Failure)</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px;"><strong>예시</strong></td>
+                        <td style="padding: 12px;"><code>void Update()</code></td>
+                        <td style="padding: 12px;"><code>Status OnUpdate()</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="margin-top: 20px; padding: 16px; background: #F7F8FA; border-radius: 12px;">
+                <p style="font-weight: 600; margin-bottom: 8px;">📌 핵심 차이:</p>
+                <ul style="font-size: 16px; color: #4E5968;">
+                    <li><code>Update()</code>: 게임이 실행되는 동안 <strong>항상</strong> 호출</li>
+                    <li><code>OnUpdate()</code>: Behavior Tree 노드가 <strong>활성화된 동안만</strong> 호출</li>
+                    <li>예를 들어, GatherSuppliesAction은 <strong>3초~5초</strong> 동안만 활성화되므로<br>
+                    OnUpdate()도 그 2초 동안만 호출됨!</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 실제 게임 화면 -->
+        <div class="success-box">
+            <h3>🎮 실제 게임에서 보면:</h3>
+            <div style="font-size: 16px; line-height: 2; margin-top: 16px;">
+                <p><strong>1.</strong> 플레이어: <em>*Crystal 우클릭*</em></p>
+                <p><strong>2.</strong> Worker: "알겠습니다!" 🚶‍♂️💨 <span style="color: #6B7684;">(Crystal로 걸어감, 2초)</span></p>
+                <p><strong>3.</strong> Worker: <em>*Crystal 앞 도착*</em> ⛏️ <span style="color: #6B7684;">(채취 애니메이션, 2초)</span></p>
+                <p><strong>4.</strong> Worker: "채취 완료!" ✨</p>
+                <p style="margin-left: 40px; color: #FF3B30; font-weight: 600;">→ HandleGatherSupplies() 호출! 👈 <strong>바로 이 순간!</strong></p>
+                <p style="margin-left: 40px;">→ Event Bus로 "Crystal 10개 채취!" 방송</p>
+                <p><strong>5.</strong> UI: "Minerals: 100 → 110" 🎉</p>
+            </div>
+        </div>
+
+        <hr style="margin: 60px 0; border: none; border-top: 2px solid #E5E8EB;">
+
+        <div class="info-box">
+            <h3>📖 관련 문서</h3>
+            <ul>
+                <li><strong>project-walkthrough-lecture-15.html</strong>: 전체 프로젝트 가이드</li>
+                <li><strong>complete-lecture-notes-4.html</strong>: Lecture 1-15 전체 강의 노트</li>
+                <li><strong>RULE_12_PROJECT_FILE_LOCATIONS.md</strong>: 모든 파일 위치</li>
+            </ul>
+        </div>
+
+        <p style="text-align: center; margin-top: 60px; color: #6B7684; font-size: 14px;">
+            작성일: 2025-10-18 | Lecture 15: Returning Supplies<br>
+            문서 버전: 1.0
+        </p>
+    </div>
+</body>
+</html>
