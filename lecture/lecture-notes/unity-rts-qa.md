@@ -271,6 +271,81 @@ Worker #2 → Crystal
 
 ---
 
+## Q8. OnUpdate()는 BT Initialize 이후에 호출되는 거야?
+
+### 질문:
+worker의 비헤비어트리가 OnUpdate()될 때는 워커의 비헤비어 트리가 Initialize된 이후야?
+
+### 답변:
+
+**맞아! OnUpdate()는 반드시 Initialize 이후에 호출돼:**
+
+**Behavior Tree 라이프사이클:**
+
+```csharp
+// 1. BehaviorGraphAgent 활성화 시 (최초 1회)
+void Initialize()  // BT 전체 초기화
+{
+    // Blackboard 변수 설정
+    // Self, Command 등 초기화
+}
+
+// 2. 노드 실행 시작 (노드당 1회)
+Status OnStart()
+{
+    // 이 시점에는 이미 Initialize 완료됨!
+    // Blackboard 변수들 사용 가능
+}
+
+// 3. 매 프레임 (Running 상태일 때만)
+Status OnUpdate()
+{
+    // Initialize 완료 + OnStart 완료 후 호출됨!
+}
+
+// 4. 노드 종료 시 (노드당 1회)
+void OnEnd()
+{
+    // 정리 작업
+}
+```
+
+**Worker.cs에서 실제 순서:**
+
+```csharp
+// Worker 프리팹 생성 시
+1. Awake/Start() → Worker 컴포넌트 초기화
+2. BehaviorGraphAgent.Initialize() → BT 초기화
+   - Blackboard["Self"] = this.gameObject
+   - Blackboard["Command"] = UnitCommands.Stop
+
+// 이후 Eat() 호출 시
+3. Worker.Eat()
+   → graphAgent.SetVariableValue("Command", UnitCommands.Eat)
+
+4. BT가 "Eat Sequence" 조건 체크
+   → Command == Eat? → True!
+
+5. EatAction.OnStart() 호출
+   - Unit.Value (Blackboard의 Self) 사용 가능! ✅
+
+6. EatAction.OnUpdate() 반복 호출
+   - 이미 Initialize + OnStart 완료 상태! ✅
+```
+
+**실행 순서 요약:**
+```
+Initialize → OnStart → OnUpdate (반복) → OnEnd
+    ↑         ↑         ↑
+  최초 1회   노드당 1회  Running일 때만
+```
+
+**따라서:**
+- `OnUpdate()`에서 `Unit.Value` 같은 Blackboard 변수를 안전하게 사용 가능!
+- Initialize가 완료된 후에만 OnUpdate()가 호출됨 보장!
+
+---
+
 ## 요약
 
 | 질문 | 핵심 답변 |
@@ -282,6 +357,7 @@ Worker #2 → Crystal
 | if문 필터링 | Building 같은 비유닛 제거 |
 | float.MaxValue | 거리 무제한 (맵 끝까지 감지) |
 | UnitIndex | 포메이션/순서 (Move에서 사용) |
+| BT 라이프사이클 | Initialize → OnStart → OnUpdate (반복) → OnEnd |
 
 ---
 
