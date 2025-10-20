@@ -94,64 +94,7 @@ When reviewing code, ask yourself:
 
 ---
 
-### Rule 3: PERFORMANCE_OPTIMIZATION_RULE
-**Always consider performance when implementing features, especially for multiplayer scenarios with many units. This project aims to support online multiplayer similar to Nova 1492, where dozens of units may exist simultaneously. Optimize for scalability from the start to prevent lag and performance issues.**
-
-**Performance Considerations:**
-- **Avoid expensive operations in Update()** - Cache references, minimize GetComponent calls
-- **Use object pooling** - For frequently spawned/destroyed objects
-- **Optimize rotation/movement** - Use Quaternion.Slerp wisely, avoid unnecessary calculations
-- **Minimize allocations** - Avoid creating new objects in loops, reuse collections
-- **Efficient data structures** - Use appropriate collections (Dictionary vs List vs Array)
-- **LOD and culling** - Consider Level of Detail for distant units
-- **Network optimization** - Design with server-client architecture in mind
-
-**Examples:**
-
-#### ❌ Bad (Performance Issues):
-```csharp
-void Update() {
-    // GetComponent every frame - expensive!
-    transform.rotation = Quaternion.Slerp(
-        transform.rotation,
-        Quaternion.LookRotation(GameObject.Find("Target").transform.position - transform.position),
-        rotationSpeed * Time.deltaTime
-    );
-}
-```
-
-#### ✅ Good (Optimized):
-```csharp
-private Transform cachedTarget;
-private Quaternion targetRotation;
-
-void Start() {
-    cachedTarget = GameObject.Find("Target").transform; // Cache once
-}
-
-void Update() {
-    if (cachedTarget == null) return;
-
-    // Calculate only when needed
-    targetRotation = Quaternion.LookRotation(cachedTarget.position - transform.position);
-    transform.rotation = Quaternion.Slerp(
-        transform.rotation,
-        targetRotation,
-        rotationSpeed * Time.deltaTime
-    );
-}
-```
-
-**Action Steps:**
-1. Cache references in Awake/Start, not Update
-2. Avoid allocations in frequently-called methods
-3. Use appropriate data structures for the use case
-4. Consider scalability: "Will this work with 50+ units?"
-5. Profile and measure when optimizing
-
----
-
-### Rule 4: LECTURE_NOTES_DOCUMENTATION_RULE
+### Rule 3: LECTURE_NOTES_DOCUMENTATION_RULE
 **When user requests to add lecture notes with a commit hash and transcript, analyze the commit changes and create comprehensive documentation in Toss style format. Always update the existing lecture notes file at `/Users/hankyulee/Desktop/Uaps/lecture/lecture-notes/complete-lecture-notes.html`.**
 
 **Documentation Process:**
@@ -221,7 +164,7 @@ User: "와 [commit-hash] 커밋을 참고해서 complete-lecture-notes에 다음
 
 ---
 
-### Rule 5: GIT_COMMIT_MESSAGE_RULE
+### Rule 4: GIT_COMMIT_MESSAGE_RULE
 **Always write commit messages with both English and Korean titles so the user can understand. The Korean translation helps the user quickly grasp what changes were made without reading the entire commit message.**
 
 **Commit Message Format:**
@@ -330,66 +273,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ---
 
-### Rule 6: CROSS_CLASS_FEATURE_SYNC_RULE
-**When applying features from Worker to WorkerThreeRobot (or any similar class pairs), always check for existing logic conflicts. Don't just copy-paste interfaces and methods - understand how the new feature interacts with existing code.**
-
-**Why This Rule Exists:**
-- Worker and WorkerThreeRobot have different implementations
-- Worker is simple, WorkerThreeRobot has custom movement/rotation logic
-- Blindly copying features can introduce hidden bugs
-
-**Conflict Detection Steps:**
-
-1. **Read Both Classes Fully**:
-   - Before applying Worker changes to WorkerThreeRobot, read BOTH complete files
-   - Understand the architectural differences
-
-2. **Check for Logic Conflicts**:
-   - Does WorkerThreeRobot have Update() that conflicts with new feature?
-   - Does it have fields that might override the new behavior?
-   - Are there existing systems that need refactoring?
-
-3. **Test Integration Points**:
-   - After adding interface, verify ALL methods interact correctly
-   - Check Update(), Awake(), Start() for conflicts
-
-**Key Problem**: Update() may override new methods every frame. Check for field/logic conflicts.
-
-**Action Steps:**
-
-When user says: *"Worker에 X 기능 추가했는데, WorkerThreeRobot에도 추가"*
-
-1. **Read Worker changes** (git diff or file read)
-2. **Read FULL WorkerThreeRobot** (not just the sections to modify)
-3. **Identify conflicts**:
-   - Search for conflicting fields (e.g., `target`)
-   - Search for conflicting Update/FixedUpdate logic
-   - Search for methods that might override new behavior
-4. **Refactor if needed**: Don't just add, adapt the implementation
-5. **Verify**: Think through the execution flow frame-by-frame
-
-**Common Conflict Patterns:**
-
-| Pattern | What to Check |
-|---------|---------------|
-| Adding IMoveable | Does Update() override agent.SetDestination? |
-| Adding targeting system | Does existing movement conflict? |
-| Adding state machine | Are there hardcoded state checks in Update? |
-| Adding pooling | Does Awake/Start assume single instantiation? |
-
-**Quick Checklist:**
-
-Before applying Worker feature to WorkerThreeRobot:
-- [ ] Read both complete files
-- [ ] List architectural differences
-- [ ] Identify potential conflicts (Update, fields, etc.)
-- [ ] Plan refactoring if needed
-- [ ] Apply changes with adaptations
-- [ ] Mentally simulate frame-by-frame execution
-
----
-
-### Rule 7: MODULAR_ARCHITECTURE_RULE
+### Rule 5: MODULAR_ARCHITECTURE_RULE
 **This project follows a rapid prototyping approach: build core features first, then integrate server/network and other components later. Design all code to be easily modifiable and extensible to accommodate future integration without major refactoring.**
 
 **Why This Rule Exists:**
@@ -485,22 +369,7 @@ Before adding server/network systems, ensure:
 
 ---
 
-### Rule 8: THREE_PART_ROBOT_BUILDER_RULE
-**When creating or updating ThreePartRobotBuilder.cs (or similar Unity Editor automation tools), always ensure all required Unity components, serialized fields, and references are properly assigned. Never create incomplete prefabs that would require manual fixes.**
-
-**See:** `.claude/RULE_8_THREE_PART_ROBOT_BUILDER.md` for complete implementation details.
-
-**Quick Checklist:**
-- [ ] Layer set to 6 (Selectable Units)
-- [ ] All components added (NavMeshAgent, CapsuleCollider, Script)
-- [ ] All serialized fields assigned (headPart, bodyPart, legsPart, decalProjector, UnitSO, AvailableCommands)
-- [ ] DecalProjector GameObject created as child
-- [ ] Use SerializedObject for field assignment (not Reflection)
-- [ ] Test: Selection, movement, and DecalProjector visibility work
-
----
-
-### Rule 9: DETAILED_CODE_COMMENTS_RULE
+### Rule 6: DETAILED_CODE_COMMENTS_RULE
 **When writing code examples in lecture notes or documentation, always include detailed line-by-line comments that explain what each line does, why it's needed, and how it fits into the overall system. Make code examples educational and self-documenting.**
 
 **Requirements:**
@@ -549,6 +418,6 @@ This rule ensures that all code examples serve as effective learning tools, maki
 ---
 
 **Created**: 2024-10-03
-**Updated**: 2025-10-10 (Added Rule 6: CROSS_CLASS_FEATURE_SYNC_RULE, Rule 7: MODULAR_ARCHITECTURE_RULE, Rule 8: THREE_PART_ROBOT_BUILDER_RULE)
+**Updated**: 2025-10-20 (Simplified: Removed Rule 3, 6, 8. Renumbered remaining rules)
 **Project**: urts-course
 **Purpose**: Establish clear rules for code modification and improvement
