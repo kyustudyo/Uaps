@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>URTS - Building Restrictions (강의 메모)</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #222; }
+        .container { max-width: 980px; margin: 32px auto; padding: 0 16px; }
+        h1, h2, h3 { margin: 16px 0; }
+        .tag { display: inline-block; background:#eef; color:#335; padding:2px 8px; border-radius: 8px; font-size: 12px; margin-left: 8px; }
+        .section { margin: 28px 0; }
+        .code-block { background: #0b1021; color: #e6e6e6; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-family: SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace; font-size: 13px; }
+        .note { background: #f7f7f7; border-left: 4px solid #999; padding: 12px 14px; border-radius: 4px; }
+        ul { margin: 8px 0 8px 20px; }
+        li { margin: 4px 0; }
+        .kbd { font-family: SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace; background:#f1f1f1; padding: 2px 6px; border-radius: 4px; border: 1px solid #ddd; }
+    </style>
+}</head>
+<body>
+    <div class="container">
+        <h1>Building Restrictions - 건물 배치 제한</h1>
+        <div class="note">강의: 5886e13654c1a82cc10b9166f870f536f0066eb8 (체리픽 없이 정리본)</div>
+
+        <div class="section">
+            <h2>왜 필요한가?</h2>
+            <ul>
+                <li><b>NavMesh 위에서만</b> 건물을 배치하도록 제한해 워커가 접근 불가능한 물가/바다 등에 떠서 배치되는 문제 방지</li>
+                <li>기본적인 겹침/쌓기 문제도 <b>NavMesh 범위 검사</b>로 상당 부분 예방</li>
+                <li>프로젝트 전반에서 <b>재사용 가능한 규칙</b>이 필요하므로 ScriptableObject로 구성</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>핵심 아이디어</h2>
+            <ul>
+                <li><b>`BuildingRestriction`</b> ScriptableObject를 만들어 <span class="kbd">CanPlace(Vector3 position)</span> 제공</li>
+                <li>옵션: <b>MustBeFullyOnNavmesh</b>, <b>NavMeshAgentTypeID</b>, <b>NavMeshTolerance</b>, <b>Extents</b></li>
+                <li>Extents의 4개 코너를 <b>NavMesh.SamplePosition</b>으로 검사해 <b>완전히 NavMesh 위</b>인지 확인</li>
+                <li><b>BuildBuildingCommand</b>에서 다수 Restriction을 모두 통과해야만 배치 허용</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>구현 - BuildingRestriction</h2>
+            <div class="code-block">
+// BuildingRestriction.cs - 건물 배치 제한 규칙
+// ScriptableObject로 다형적/데이터 드리븐 구성
+
+using UnityEngine;
+using UnityEngine.AI;
+
+namespace GameDevTV.RTS.Commands
+{
+    [CreateAssetMenu(
+        fileName = "Building Restriction",
+        menuName = "Buildings/Restrictions",
+        order = 7
+    )]
+    public class BuildingRestriction : ScriptableObject
+    {
+        [field: SerializeField] public bool MustBeFullyOnNavmesh { get; private set; } = true;
+        [field: SerializeField] public int NavMeshAgentTypeID { get; private set; }
+        [field: SerializeField] public float NavMeshTolerance { get; private set; } = 0.1f;
+        [field: SerializeField] public Vector3 Extents { get; private set; } = Vector3.one; // 반경(half-size)
+
+        public bool CanPlace(Vector3 position)
+        {
+            if (MustBeFullyOnNavmesh)
+            {
+                return IsFullyOnNavmesh(position);
+            }
+
+            return true; // 부분만 올라가도 된다면(옵션 확장 여지)
+        }
+
+        private bool IsFullyOnNavmesh(Vector3 center)
+        {
+            var filter = new NavMeshQueryFilter
+            {
+                areaMask = NavMesh.AllAreas,
+                agentTypeID = NavMeshAgentTypeID
+            };
+
+            bool ok = true;
+
+            // +X +Z
+            ok = ok && NavMesh.SamplePosition(
+                center + new Vector3(Extents.x, 0f, Extents.z),
+                out _,
+                NavMeshTolerance,
+                filter
+            );
+
+            // +X -Z
+            ok = ok && NavMesh.SamplePosition(
+                center + new Vector3(Extents.x, 0f, -Extents.z),
+                out _,
+                NavMeshTolerance,
+                filter
+            );
+
+            // -X -Z
+            ok = ok && NavMesh.SamplePosition(
+                center + new Vector3(-Extents.x, 0f, -Extents.z),
+                out _,
+                NavMeshTolerance,
+                filter
+            );
+
+            // -X +Z
+            ok = ok && NavMesh.SamplePosition(
+                center + new Vector3(-Extents.x, 0f, Extents.z),
+                out _,
+                NavMeshTolerance,
+                filter
+            );
+
+            return ok;
+        }
+    }
+}
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>구현 - BuildBuildingCommand 연동</h2>
+            <div class="code-block">
+// BuildBuildingCommand.cs (발췌) - 모든 Restriction 통과 시에만 건설 허용
+
+using System.Linq;
+using UnityEngine;
+
+namespace GameDevTV.RTS.Commands
+{
+    public class BuildBuildingCommand : ActionBase
+    {
+        [field: SerializeField] public BuildingSO Building { get; private set; }
+        [field: SerializeField] public BuildingRestriction[] Restrictions { get; private set; }
+
+        public override bool CanHandle(CommandContext context)
+        {
+            return AllRestrictionsPass(context.Hit.point);
+        }
+
+        public override void Handle(CommandContext context)
+        {
+            if (!AllRestrictionsPass(context.Hit.point))
+            {
+                return; // 배치 불가
+            }
+
+            // builder.Build(Building, context.Hit.point) 등 기존 플로우
+        }
+
+        private bool AllRestrictionsPass(Vector3 point)
+        {
+            if (Restrictions == null || Restrictions.Length == 0)
+            {
+                return true;
+            }
+
+            return Restrictions.All(r => r != null && r.CanPlace(point));
+        }
+    }
+}
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>에디터 설정 팁</h2>
+            <ul>
+                <li><b>Agent Type ID</b>: NavMeshAgent 인스펙터에서 우측 상단 <span class="kbd">⋯</span> → <b>Debug</b>로 전환하면 정수 ID 확인 가능</li>
+                <li><b>Extents</b>: 콜라이더 <b>Size</b>의 절반(예: Size 3 → Extents 1.5)</li>
+                <li><b>NavMeshTolerance</b>: <b>샘플 반경</b>(권장 0.1). 너무 크면 물가에서도 통과될 수 있음</li>
+                <li>여러 제약을 <b>배열</b>로 추가하면 <b>AND</b> 조건으로 모두 충족해야 배치 허용</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>플레이어 경험</h2>
+            <ul>
+                <li>워커가 접근 불가한 곳(물 등)에 건물이 <b>절대 배치되지 않음</b></li>
+                <li>배치 실패 시(다음 강의에서) <b>시각 피드백</b>을 추가해 사용자 혼란 최소화</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>체크리스트</h2>
+            <ul>
+                <li>Restriction SO 생성 및 파라미터 설정</li>
+                <li>Command에 Restriction 배열 연결</li>
+                <li>현장 테스트: 물가/바깥 NavMesh, 경계, 경사에서 배치 시도</li>
+            </ul>
+        </div>
+
+    </div>
+</body>
+</html>
+
