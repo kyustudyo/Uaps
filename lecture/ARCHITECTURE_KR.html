@@ -523,6 +523,48 @@ graph TB
             </div>
         </div>
 
+        <h3>🔧 구현된 패턴별 기능</h3>
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+            <tr>
+                <th style="background: #667eea; color: white; padding: 15px; text-align: left; border-radius: 8px 0 0 0;">
+                    📢 이벤트 버스 사용
+                </th>
+                <th style="background: #ffab00; color: white; padding: 15px; text-align: left; border-radius: 0 8px 0 0;">
+                    🎯 커맨드 패턴 사용
+                </th>
+            </tr>
+            <tr>
+                <td style="padding: 20px; vertical-align: top; background: #f8f9fa;">
+                    <ul style="line-height: 1.8; margin: 0;">
+                        <li><strong>UnitSelectedEvent</strong> - 유닛 선택 알림</li>
+                        <li><strong>UnitDeselectedEvent</strong> - 유닛 선택 해제</li>
+                        <li><strong>UnitSpawnedEvent</strong> - 유닛 생성 알림</li>
+                        <li><strong>UnitDiedEvent</strong> - 유닛 사망 알림</li>
+                        <li><strong>BuildingConstructedEvent</strong> - 건물 건설 완료</li>
+                        <li><strong>ResourceChangedEvent</strong> - 자원 변경 알림</li>
+                        <li><strong>GameStateChangedEvent</strong> - 게임 상태 변경</li>
+                    </ul>
+                    <p style="color: #666; font-size: 0.9em; margin: 15px 0 0 0; font-style: italic;">
+                        느슨한 결합(Loose Coupling)으로 컴포넌트 간 독립성 유지
+                    </p>
+                </td>
+                <td style="padding: 20px; vertical-align: top; background: #f8f9fa;">
+                    <ul style="line-height: 1.8; margin: 0;">
+                        <li><strong>MoveCommand</strong> - 유닛 이동</li>
+                        <li><strong>AttackCommand</strong> - 적 공격</li>
+                        <li><strong>BuildCommand</strong> - 건물 건설</li>
+                        <li><strong>GatherCommand</strong> - 자원 수집</li>
+                        <li><strong>PatrolCommand</strong> - 순찰</li>
+                        <li><strong>StopCommand</strong> - 행동 중지</li>
+                        <li><strong>HoldPositionCommand</strong> - 위치 고수</li>
+                    </ul>
+                    <p style="color: #666; font-size: 0.9em; margin: 15px 0 0 0; font-style: italic;">
+                        실행 취소/재실행 가능한 명령 대기열 시스템
+                    </p>
+                </td>
+            </tr>
+        </table>
+
         <h3>🔗 모듈 의존성 다이어그램</h3>
         <div class="diagram-container">
             <div class="mermaid">
@@ -555,51 +597,53 @@ graph LR
             <div class="mermaid">
 classDiagram
     class IEvent {
-        <<interface>>
+        &lt;&lt;interface&gt;&gt;
     }
 
-    class Bus~T~ {
-        +OnEvent : Event~T~
+    class Bus {
+        &lt;&lt;generic T&gt;&gt;
+        +OnEvent Event~T~
         +Raise(T evt)
     }
 
     class ISelectable {
-        <<interface>>
+        &lt;&lt;interface&gt;&gt;
         +Select()
         +Deselect()
     }
 
     class ICommand {
-        <<interface>>
+        &lt;&lt;interface&gt;&gt;
         +CanHandle(context)
         +Handle(context)
     }
 
     class AbstractCommandable {
-        +CurrentHealth : int
-        +MaxHealth : int
-        +AvailableCommands : ActionBase[]
+        +CurrentHealth int
+        +MaxHealth int
+        +AvailableCommands ActionBase[]
         +Select()
         +Deselect()
     }
 
     class AbstractUnit {
-        +AgentRadius : float
+        +AgentRadius float
         +MoveTo(position)
     }
 
     class BaseBuilding {
-        +QueueSize : int
+        +QueueSize int
         +BuildUnit(unit)
         +CancelBuildingUnit(index)
     }
 
     class ActionBase {
-        +Icon : Sprite
-        +Slot : int
-        +RequiresClickToActivate : bool
-        +CanHandle(context)*
-        +Handle(context)*
+        &lt;&lt;abstract&gt;&gt;
+        +Icon Sprite
+        +Slot int
+        +RequiresClickToActivate bool
+        +CanHandle(context)
+        +Handle(context)
     }
 
     ISelectable <|.. AbstractCommandable
@@ -607,6 +651,15 @@ classDiagram
     AbstractCommandable <|-- BaseBuilding
     ICommand <|.. ActionBase
     IEvent <.. Bus
+
+    style IEvent fill:#f0f0f0,stroke:#333,color:#000
+    style Bus fill:#f0f0f0,stroke:#333,color:#000
+    style ISelectable fill:#f0f0f0,stroke:#333,color:#000
+    style ICommand fill:#f0f0f0,stroke:#333,color:#000
+    style AbstractCommandable fill:#e3f2fd,stroke:#333,color:#000
+    style AbstractUnit fill:#c8e6c9,stroke:#333,color:#000
+    style BaseBuilding fill:#c8e6c9,stroke:#333,color:#000
+    style ActionBase fill:#fff9c4,stroke:#333,color:#000
             </div>
             <div class="diagram-explanation">
                 가족 족보처럼 생각해보세요! AbstractCommandable이 부모고, AbstractUnit(로봇)과 BaseBuilding(건물)이 자식이에요. 모두 공통 능력(선택/선택해제)을 공유하지만, 각자 특별한 능력도 있어요!
