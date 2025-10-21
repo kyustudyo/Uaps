@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>강의 26: Building Events (빌딩 이벤트)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section h3 {
+            color: #333;
+            margin: 20px 0 15px 0;
+            font-size: 1.3rem;
+        }
+
+        .problem-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .solution-box {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .code-box {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .code-box .keyword {
+            color: #c678dd;
+        }
+
+        .code-box .type {
+            color: #e5c07b;
+        }
+
+        .code-box .string {
+            color: #98c379;
+        }
+
+        .code-box .comment {
+            color: #5c6370;
+            font-style: italic;
+        }
+
+        .flow-diagram {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .file-list {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .file-item {
+            padding: 10px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-icon {
+            font-size: 1.2rem;
+        }
+
+        .new-file {
+            border-left: 3px solid #28a745;
+        }
+
+        .modified-file {
+            border-left: 3px solid #ffc107;
+        }
+
+        .event-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .event-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .event-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .event-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .emoji {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        ul, ol {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        strong {
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ 강의 26: Building Events</h1>
+            <div class="subtitle">Behavior Tree에 빌딩 이벤트 도입하기</div>
+            <div class="subtitle" style="margin-top: 10px; font-size: 1rem;">
+                Commit: <code style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px;">db23ada</code>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- 문제 정의 -->
+            <div class="section">
+                <h2><span class="emoji">🐛</span>발견된 문제들</h2>
+
+                <div class="problem-box">
+                    <h3>문제 1: 여러 워커가 동시에 건물을 지을 때</h3>
+                    <ul>
+                        <li>워커 A가 건물을 짓다가 죽으면</li>
+                        <li>워커 B와 C를 모두 그 건물로 보내면</li>
+                        <li>둘 다 <span class="highlight">Cancel Building</span> 버튼이 나타남</li>
+                        <li>한 워커가 취소하면 다른 워커는 여전히 "짓고 있는" 상태로 보임</li>
+                    </ul>
+                </div>
+
+                <div class="problem-box">
+                    <h3>문제 2: 건물에 도착하기 전 커맨드 표시</h3>
+                    <ul>
+                        <li>워커가 건물로 <strong>이동 중</strong>일 때도 Cancel Building 버튼이 보임</li>
+                        <li>아직 건물에 도착하지도 않았는데 취소가 가능함</li>
+                        <li>Right-click으로 명령을 취소할 수 없어야 하는데 가능함</li>
+                    </ul>
+                </div>
+
+                <div class="problem-box">
+                    <h3>문제 3: 여러 워커가 Resume Building 할 때</h3>
+                    <ul>
+                        <li>첫 번째 워커만 실제로 건물을 지어야 함</li>
+                        <li>나머지 워커들은 단순히 <strong>Move 명령</strong>으로 처리되어야 함</li>
+                        <li>하지만 현재는 모든 워커가 건물을 짓는 것처럼 동작함</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 해결책 -->
+            <div class="section">
+                <h2><span class="emoji">💡</span>해결책: Building Events</h2>
+
+                <div class="solution-box">
+                    <h3>핵심 아이디어</h3>
+                    <p><strong>Behavior Tree에서 이벤트를 발생시켜</strong> Worker가 건물 짓기 상태를 정확히 관리하도록 합니다.</p>
+                    <ul>
+                        <li>워커가 건물 위치에 <strong>도착했을 때</strong> → ArrivedAt 이벤트</li>
+                        <li>워커가 건물 짓기를 <strong>시작했을 때</strong> → BeginBuilding 이벤트</li>
+                        <li>워커가 건물 짓기를 <strong>완료했을 때</strong> → CompletedBuilding 이벤트</li>
+                        <li>워커가 건물 짓기를 <strong>중단해야 할 때</strong> → Abort 이벤트</li>
+                        <li>워커가 건물 짓기를 <strong>취소했을 때</strong> → Cancel 이벤트</li>
+                    </ul>
+                </div>
+
+                <div class="flow-diagram">
+                    <h3 style="text-align: center; margin-bottom: 20px;">🔄 Building Event 흐름</h3>
+
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>워커가 건물 위치에 도착</strong><br>
+                            → <code>ArrivedAt</code> 이벤트 발생
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>건물이 이미 건설 중인지 확인</strong><br>
+                            → 건설 중이면 <code>Abort</code> 이벤트 (다른 워커가 이미 짓고 있음)<br>
+                            → 건설 중이 아니면 계속 진행
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <strong>건물 짓기 시작</strong><br>
+                            → <code>BeginBuilding</code> 이벤트 발생<br>
+                            → Cancel Building 커맨드 표시
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <strong>NavMesh 가장자리로 이동</strong><br>
+                            → 건물을 짓는 동안...
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <strong>건물 짓기 완료</strong><br>
+                            → <code>CompletedBuilding</code> 이벤트 발생<br>
+                            → 커맨드 초기화
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 새로 추가된 파일들 -->
+            <div class="section">
+                <h2><span class="emoji">📄</span>새로 추가된 파일들</h2>
+
+                <div class="file-list">
+                    <div class="file-item new-file">
+                        <span class="file-icon">🆕</span>
+                        <div>
+                            <strong>BuildingEventType.cs</strong><br>
+                            <small>빌딩 이벤트 종류를 정의하는 Enum</small>
+                        </div>
+                    </div>
+
+                    <div class="file-item new-file">
+                        <span class="file-icon">🆕</span>
+                        <div>
+                            <strong>BuildingEventChannel.cs</strong><br>
+                            <small>빌딩 이벤트를 전달하는 이벤트 채널</small>
+                        </div>
+                    </div>
+
+                    <div class="file-item new-file">
+                        <span class="file-icon">🆕</span>
+                        <div>
+                            <strong>BuildingIsInProgressCondition.cs</strong><br>
+                            <small>건물이 현재 건설 중인지 확인하는 커스텀 조건</small>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>1️⃣ BuildingEventType.cs</h3>
+                <div class="code-box">
+<span class="keyword">using</span> UnityEngine.Behavior;
+
+<span class="keyword">namespace</span> <span class="type">GameDevTV.RTS.Units</span>
+{
+    [<span class="type">BlackboardEnum</span>]  <span class="comment">// Behavior Tree에서 사용 가능</span>
+    <span class="keyword">public enum</span> <span class="type">BuildingEventType</span>
+    {
+        <span class="type">ArrivedAt</span>,         <span class="comment">// 워커가 건물 위치에 도착</span>
+        <span class="type">BeginBuilding</span>,     <span class="comment">// 워커가 건물 짓기 시작</span>
+        <span class="type">CompletedBuilding</span>, <span class="comment">// 건물 짓기 완료</span>
+        <span class="type">Cancel</span>,            <span class="comment">// 건물 짓기 취소 (환불)</span>
+        <span class="type">Abort</span>              <span class="comment">// 건물 짓기 중단 (다른 워커가 이미 건설 중)</span>
+    }
+}
+                </div>
+
+                <h3>2️⃣ BuildingEventChannel.cs</h3>
+                <div class="code-box">
+<span class="comment">// Unity Behavior에서 자동 생성됨</span>
+<span class="comment">// Blackboard → Events → Create Event Channel Type</span>
+<span class="comment">// 이벤트 이름: "self building event type on base building"</span>
+
+<span class="keyword">using</span> GameDevTV.RTS.Units;
+
+<span class="keyword">public class</span> <span class="type">BuildingEventChannel</span>
+{
+    <span class="comment">// GameObject self</span>
+    <span class="comment">// BuildingEventType eventType</span>
+    <span class="comment">// BaseBuilding building</span>
+}
+                </div>
+
+                <h3>3️⃣ BuildingIsInProgressCondition.cs</h3>
+                <div class="code-box">
+<span class="keyword">using</span> UnityEngine.Behavior;
+<span class="keyword">using</span> GameDevTV.RTS.Units;
+
+<span class="keyword">namespace</span> <span class="type">GameDevTV.RTS.Behavior</span>
+{
+    <span class="keyword">public class</span> <span class="type">BuildingIsInProgressCondition</span> : <span class="type">Condition</span>
+    {
+        <span class="keyword">public</span> <span class="type">BlackboardVariable&lt;BaseBuilding&gt;</span> baseBuildingValue;
+
+        <span class="keyword">public override bool</span> <span class="type">IsTrue</span>()
+        {
+            <span class="comment">// 건물이 존재하고 && 건물이 Building 상태면 true</span>
+            <span class="keyword">return</span> baseBuildingValue.Value != <span class="keyword">null</span> &&
+                   baseBuildingValue.Value.ProgressState == <span class="type">BuildingProgressState.Building</span>;
+        }
+    }
+}
+                </div>
+            </div>
+
+            <!-- Event Type 설명 -->
+            <div class="section">
+                <h2><span class="emoji">🎯</span>Event Type 상세 설명</h2>
+
+                <table class="event-table">
+                    <thead>
+                        <tr>
+                            <th>Event Type</th>
+                            <th>발생 시점</th>
+                            <th>동작</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>ArrivedAt</strong></td>
+                            <td>워커가 건물 위치에 도착했을 때</td>
+                            <td>
+                                • 건물이 이미 건설 중이면 중단 (Abort)<br>
+                                • 건물이 건설 중이 아니면 Cancel 버튼 표시
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>BeginBuilding</strong></td>
+                            <td>워커가 실제로 건물 짓기를 시작할 때</td>
+                            <td>
+                                • Cancel Building 커맨드 확실히 표시<br>
+                                • 안전 장치로 한 번 더 설정
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>CompletedBuilding</strong></td>
+                            <td>건물 짓기가 완료되었을 때</td>
+                            <td>
+                                • 별도 처리 없음 (이미 다른 곳에서 처리됨)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cancel</strong></td>
+                            <td>플레이어가 건물 짓기를 취소했을 때</td>
+                            <td>
+                                • 커맨드 오버라이드를 null로 설정<br>
+                                • Cancel 버튼 제거
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Abort</strong></td>
+                            <td>다른 워커가 이미 건물을 짓고 있을 때</td>
+                            <td>
+                                • 커맨드 오버라이드를 null로 설정<br>
+                                • 워커는 그냥 멈춤 (Stop)
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Worker.cs 변경 사항 -->
+            <div class="section">
+                <h2><span class="emoji">🔧</span>Worker.cs 변경 사항</h2>
+
+                <h3>Building Event 리스닝 추가</h3>
+                <div class="code-box">
+<span class="comment">// OnStart()에서 이벤트 채널 구독</span>
+<span class="keyword">var</span> buildingEventChannelVariable = graphAgent.GetVariable<<span class="type">BuildingEventChannel</span>>(<span class="string">"BuildingEventChannel"</span>);
+buildingEventChannelVariable.Value.Event += HandleBuildingEvent;
+                </div>
+
+                <h3>Building Event 핸들러</h3>
+                <div class="code-box">
+<span class="keyword">private void</span> <span class="type">HandleBuildingEvent</span>(<span class="type">GameObject</span> self, <span class="type">BuildingEventType</span> eventType, <span class="type">BaseBuilding</span> building)
+{
+    <span class="keyword">switch</span> (eventType)
+    {
+        <span class="keyword">case</span> <span class="type">BuildingEventType.ArrivedAt</span>:
+            <span class="comment">// 건물이 이미 건설 중이면 그냥 멈춤</span>
+            <span class="keyword">if</span> (building != <span class="keyword">null</span> && building.ProgressState == <span class="type">BuildingProgressState.Building</span>)
+            {
+                Stop();
+            }
+            <span class="keyword">else</span>
+            {
+                <span class="comment">// 건물이 건설 중이 아니면 Cancel 버튼 표시</span>
+                SetCommandOverrides(cancelBuildingCommand);
+            }
+            <span class="keyword">break</span>;
+
+        <span class="keyword">case</span> <span class="type">BuildingEventType.BeginBuilding</span>:
+            <span class="comment">// 안전 장치로 한 번 더 설정</span>
+            SetCommandOverrides(cancelBuildingCommand);
+            <span class="keyword">break</span>;
+
+        <span class="keyword">case</span> <span class="type">BuildingEventType.Cancel</span>:
+        <span class="keyword">case</span> <span class="type">BuildingEventType.Abort</span>:
+            <span class="comment">// 커맨드 초기화</span>
+            SetCommandOverrides(<span class="keyword">null</span>);
+            <span class="keyword">break</span>;
+
+        <span class="keyword">case</span> <span class="type">BuildingEventType.CompletedBuilding</span>:
+            <span class="comment">// 별도 처리 없음</span>
+            <span class="keyword">break</span>;
+    }
+}
+                </div>
+
+                <h3>BuildBuilding / ResumeBuilding 수정</h3>
+                <div class="code-box">
+<span class="keyword">public void</span> <span class="type">BuildBuilding</span>(<span class="type">BaseBuilding</span> building, <span class="type">Vector3</span> target)
+{
+    <span class="comment">// 새 건물 짓기 시작할 때는 즉시 Cancel 버튼 표시 (OK)</span>
+    SetCommandOverrides(cancelBuildingCommand);
+}
+
+<span class="keyword">public void</span> <span class="type">ResumeBuilding</span>(<span class="type">BaseBuilding</span> building, <span class="type">Vector3</span> target)
+{
+    <span class="comment">// ❌ 제거: SetCommandOverrides(cancelBuildingCommand)</span>
+    <span class="comment">// 이제 ArrivedAt 이벤트에서만 Cancel 버튼 표시</span>
+    <span class="comment">// 워커가 건물에 도착하기 전까지는 Right-click으로 취소 가능</span>
+}
+                </div>
+            </div>
+
+            <!-- ISelectable 변경 -->
+            <div class="section">
+                <h2><span class="emoji">✅</span>ISelectable / AbstractCommandable 변경</h2>
+
+                <div class="problem-box">
+                    <h3>이전 문제</h3>
+                    <p><code>SetCommandOverrides()</code>를 호출할 때마다 <code>UnitSelectedEvent</code>를 발생시켰습니다.</p>
+                    <p>하지만 유닛이 실제로 선택되지 않았는데도 이벤트가 발생해서 UI가 잘못 업데이트되었습니다.</p>
+                </div>
+
+                <div class="solution-box">
+                    <h3>해결책</h3>
+                    <p><code>IsSelected</code> 속성을 추가하고, <strong>유닛이 선택되었을 때만</strong> 이벤트를 발생시킵니다.</p>
+                </div>
+
+                <h3>ISelectable 인터페이스</h3>
+                <div class="code-box">
+<span class="keyword">public interface</span> <span class="type">ISelectable</span>
+{
+    <span class="keyword">public bool</span> IsSelected { <span class="keyword">get</span>; }  <span class="comment">// 새로 추가</span>
+    <span class="keyword">void</span> Select();
+    <span class="keyword">void</span> Deselect();
+}
+                </div>
+
+                <h3>AbstractCommandable 구현</h3>
+                <div class="code-box">
+<span class="keyword">public abstract class</span> <span class="type">AbstractCommandable</span> : <span class="type">MonoBehaviour</span>, <span class="type">ISelectable</span>
+{
+    <span class="keyword">public bool</span> IsSelected { <span class="keyword">get</span>; <span class="keyword">protected set</span>; }
+
+    <span class="keyword">public void</span> <span class="type">Select</span>()
+    {
+        IsSelected = <span class="keyword">true</span>;
+        <span class="comment">// ... 기존 코드</span>
+    }
+
+    <span class="keyword">public void</span> <span class="type">Deselect</span>()
+    {
+        IsSelected = <span class="keyword">false</span>;
+        <span class="comment">// ... 기존 코드</span>
+    }
+
+    <span class="keyword">protected void</span> <span class="type">SetCommandOverrides</span>(<span class="type">ActionBase[]</span> commands)
+    {
+        commandOverrides = commands;
+
+        <span class="comment">// ✅ 유닛이 선택되었을 때만 이벤트 발생</span>
+        <span class="keyword">if</span> (IsSelected)
+        {
+            Bus<<span class="type">UnitSelectedEvent</span>>.Raise(<span class="keyword">new</span> <span class="type">UnitSelectedEvent</span> { unit = <span class="keyword">this</span> });
+        }
+    }
+}
+                </div>
+            </div>
+
+            <!-- Behavior Tree 변경 -->
+            <div class="section">
+                <h2><span class="emoji">🌳</span>Worker Behavior Tree 변경</h2>
+
+                <h3>Build Building 서브트리 구조</h3>
+                <div class="flow-diagram">
+                    <div style="text-align: center; margin-bottom: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px;">
+                        <strong>기존 문제:</strong> 여러 워커가 Resume할 때 모두 Cancel 버튼이 나타남
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>Move to Target Location</strong><br>
+                            건물 위치로 이동
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>Send Event: ArrivedAt</strong><br>
+                            → 워커가 도착했음을 알림<br>
+                            → Worker.cs에서 건물 상태 확인 후 Cancel 버튼 표시
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <strong>Conditional Branch: Building Is In Progress?</strong><br>
+                            → True: Abort 이벤트 발생 후 중단<br>
+                            → False: 계속 진행
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <strong>Send Event: BeginBuilding</strong><br>
+                            → 건물 짓기 시작을 알림
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <strong>Move to Closest Point on Edge of NavMesh</strong><br>
+                            → NavMesh 가장자리로 이동 (건물 주변)
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <strong>Send Event: CompletedBuilding</strong><br>
+                            → 건물 짓기 완료를 알림
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">7</div>
+                        <div class="step-content">
+                            <strong>Set Building Under Construction to null</strong><br>
+                            → 상태 초기화
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 배운 내용 -->
+            <div class="section">
+                <h2><span class="emoji">📚</span>이 강의에서 배운 내용</h2>
+
+                <div class="solution-box">
+                    <h3>1️⃣ Behavior Tree에서 이벤트 발생시키기</h3>
+                    <ul>
+                        <li><strong>Send Event Message</strong> 노드 사용</li>
+                        <li>이벤트 채널을 통해 C# 코드로 이벤트 전달</li>
+                        <li>BT와 스크립트 간 통신 방법</li>
+                    </ul>
+                </div>
+
+                <div class="solution-box">
+                    <h3>2️⃣ 커스텀 Condition 만들기</h3>
+                    <ul>
+                        <li><code>Condition</code> 클래스 상속</li>
+                        <li><code>IsTrue()</code> 메서드 오버라이드</li>
+                        <li><strong>Conditional Branch</strong> 노드에서 사용</li>
+                        <li>복잡한 조건 로직을 BT에 추가 가능</li>
+                    </ul>
+                </div>
+
+                <div class="solution-box">
+                    <h3>3️⃣ 이벤트 기반 상태 관리</h3>
+                    <ul>
+                        <li>여러 워커가 같은 건물을 동시에 지으려 할 때 충돌 방지</li>
+                        <li>정확한 타이밍에 UI 업데이트 (Cancel 버튼 표시/숨김)</li>
+                        <li><code>IsSelected</code> 체크로 불필요한 이벤트 발생 방지</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 요약 -->
+            <div class="section">
+                <h2><span class="emoji">🎯</span>핵심 요약</h2>
+
+                <div style="background: white; padding: 25px; border-radius: 12px; border: 3px solid #667eea;">
+                    <h3 style="color: #667eea; margin-top: 0;">해결된 문제들</h3>
+                    <ul style="font-size: 1.1rem;">
+                        <li>✅ 여러 워커가 동시에 건물을 지을 때 <strong>첫 번째 워커만</strong> 건물을 짓고 나머지는 중단</li>
+                        <li>✅ 워커가 건물에 <strong>도착한 후에만</strong> Cancel 버튼 표시</li>
+                        <li>✅ Cancel/Abort 시 커맨드 UI가 <strong>정확히</strong> 업데이트됨</li>
+                        <li>✅ Resume Building 시 Right-click으로 <strong>중도 취소 가능</strong></li>
+                    </ul>
+
+                    <h3 style="color: #667eea; margin-top: 25px;">새로 추가된 기능</h3>
+                    <ul style="font-size: 1.1rem;">
+                        <li>📢 <strong>BuildingEventType</strong> - 5가지 이벤트 타입</li>
+                        <li>📡 <strong>BuildingEventChannel</strong> - BT → C# 이벤트 전달</li>
+                        <li>🔍 <strong>BuildingIsInProgressCondition</strong> - 커스텀 조건</li>
+                        <li>✅ <strong>IsSelected</strong> - 선택 상태 확인</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 마무리 -->
+            <div class="section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                <h2 style="color: white;">🎉 완료!</h2>
+                <p style="font-size: 1.2rem; line-height: 1.8;">
+                    이제 여러 워커가 건물을 지을 때 발생하던 모든 문제가 해결되었습니다.<br>
+                    <strong>이벤트 기반 아키텍처</strong>로 더 안정적이고 예측 가능한 동작을 구현했습니다.
+                </p>
+                <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 8px;">
+                    <strong>다음 단계:</strong> 더 많은 Unity Behavior 기능을 활용해보세요!
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
