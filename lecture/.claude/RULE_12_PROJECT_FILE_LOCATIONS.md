@@ -35,6 +35,11 @@ lecture/lecture-notes/complete-lecture-notes-4.html
 lecture/urts-course/ARCHITECTURE_KR.html
 ```
 
+### TODO 파일
+```
+TODO/index.html
+```
+
 ---
 
 ## 🗂️ 프로젝트 폴더 구조
