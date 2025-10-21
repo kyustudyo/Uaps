@@ -32,6 +32,7 @@ Assets/Units/Worker/WorkerThreeRobot.prefab
 ### 강의 노트
 ```
 lecture/lecture-notes/complete-lecture-notes-4.html
+lecture/lecture-notes/lecture-26-building-events.html
 lecture/urts-course/ARCHITECTURE_KR.html
 ```
 
@@ -78,4 +79,4 @@ Assets/Scripts/Units/IMoveable.cs          # 이동 가능 인터페이스
 
 ---
 
-**업데이트**: 2025-10-20 (간소화)
+**업데이트**: 2025-10-21 (강의 26 노트 추가)
