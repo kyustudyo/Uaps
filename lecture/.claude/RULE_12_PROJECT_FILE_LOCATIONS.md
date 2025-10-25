@@ -34,6 +34,7 @@ Assets/Units/Worker/WorkerThreeRobot.prefab
 lecture/lecture-notes/complete-lecture-notes-4.html
 lecture/lecture-notes/lecture-26-building-events.html
 lecture/lecture-notes/lecture-sensing-nearby-units.html
+lecture/lecture-notes/eventchannel-invoke-raise-explained.html
 lecture/urts-course/ARCHITECTURE_KR.html
 ```
 
@@ -80,4 +81,4 @@ Assets/Scripts/Units/IMoveable.cs          # 이동 가능 인터페이스
 
 ---
 
-**업데이트**: 2025-10-25 (Sensing Nearby Units 강의 노트 추가)
+**업데이트**: 2025-10-25 (EventChannel/Invoke/Raise 설명 노트 추가)

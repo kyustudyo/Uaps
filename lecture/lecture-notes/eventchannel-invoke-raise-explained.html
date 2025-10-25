@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventChannel, Invoke, Raise 완벽 정리</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .section h3 {
+            color: #333;
+            margin: 20px 0 15px 0;
+            font-size: 1.3rem;
+        }
+
+        .code-box {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        .code-box .keyword {
+            color: #c678dd;
+        }
+
+        .code-box .type {
+            color: #e5c07b;
+        }
+
+        .code-box .string {
+            color: #98c379;
+        }
+
+        .code-box .comment {
+            color: #5c6370;
+            font-style: italic;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .comparison-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .comparison-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .concept-box {
+            background: #e3f2fd;
+            border-left: 5px solid #2196f3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .important-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .visual-box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .emoji {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        ul, ol {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        strong {
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📡 EventChannel, Invoke, Raise</h1>
+            <div class="subtitle" style="font-size: 1.2rem; opacity: 0.9; margin-top: 10px;">
+                이벤트 전달 메커니즘 완벽 정리
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- EventChannel이란? -->
+            <div class="section">
+                <h2><span class="emoji">📡</span>EventChannel이란?</h2>
+
+                <div class="visual-box">
+                    <h3 style="margin-bottom: 20px;">📻 라디오 방송국</h3>
+                    <p style="font-size: 1.2rem; color: #666; line-height: 1.8;">
+                        EventChannel은 <strong>라디오 방송국</strong>처럼 생각하면 됩니다.<br>
+                        방송국이 메시지를 내보내면, 채널을 맞춘 모든 라디오가 동시에 들을 수 있습니다.
+                    </p>
+                </div>
+
+                <div class="concept-box">
+                    <h3>EventChannel = Unity Behavior Tree의 이벤트 전달 시스템</h3>
+                    <p style="font-size: 1.1rem; margin-bottom: 15px;">
+                        <strong>Unity Behavior</strong>에서 Blackboard의 이벤트를 전달하기 위한 특수 클래스입니다.
+                    </p>
+                    <ul style="font-size: 1.05rem; line-height: 1.8;">
+                        <li><strong>Behavior Tree</strong>에서 C# 코드로 이벤트 전달</li>
+                        <li><strong>Blackboard 변수</strong>로 저장되어 접근 가능</li>
+                        <li><strong>Generic Type</strong>으로 만들어져 타입 안전성 보장</li>
+                    </ul>
+                </div>
+
+                <h3>EventChannel 생성 방법</h3>
+                <div class="code-box">
+<span class="comment">// Unity Behavior Blackboard에서 생성</span>
+1. Blackboard 열기
+2. Events 탭 선택
+3. Quick + 버튼 클릭
+4. "Create new event channel type" 선택
+5. 이름 입력: <span class="string">"BuildingEventChannel"</span>
+6. Story 입력: <span class="string">"self building event type on base building"</span>
+7. 파라미터 설정:
+   - self: <span class="type">GameObject</span>
+   - building event type: <span class="type">BuildingEventType</span>
+   - base building: <span class="type">BaseBuilding</span>
+                </div>
+
+                <h3>생성된 EventChannel 코드</h3>
+                <div class="code-box">
+<span class="comment">// 자동 생성된 BuildingEventChannel.cs</span>
+<span class="keyword">using</span> UnityEngine;
+<span class="keyword">using</span> GameDevTV.RTS.Units;
+
+<span class="keyword">namespace</span> <span class="type">GameDevTV.RTS.Behavior</span>
+{
+    <span class="keyword">public class</span> <span class="type">BuildingEventChannel</span>
+    {
+        <span class="comment">// C# Event 정의</span>
+        <span class="keyword">public event</span> <span class="type">System.Action</span>&lt;<span class="type">GameObject</span>, <span class="type">BuildingEventType</span>, <span class="type">BaseBuilding</span>&gt; Event;
+
+        <span class="comment">// Behavior Tree에서 이 메서드로 이벤트 발생</span>
+        <span class="keyword">public void</span> <span class="type">SendEventMessage</span>(<span class="type">GameObject</span> self, <span class="type">BuildingEventType</span> eventType, <span class="type">BaseBuilding</span> building)
+        {
+            Event?.Invoke(self, eventType, building);
+        }
+    }
+}
+                </div>
+
+                <div class="important-box">
+                    <h3>핵심 포인트</h3>
+                    <ul style="font-size: 1.05rem; line-height: 1.8;">
+                        <li>EventChannel은 <strong>Unity Behavior 전용</strong> 이벤트 시스템</li>
+                        <li>Blackboard 변수로 저장되어 <strong>Behavior Tree와 C# 코드를 연결</strong></li>
+                        <li>내부적으로 C# <code>event</code> + <code>Action</code> 사용</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Invoke vs Raise -->
+            <div class="section">
+                <h2><span class="emoji">⚡</span>Invoke vs Raise - 차이점</h2>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>항목</th>
+                            <th>Invoke</th>
+                            <th>Raise</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>정의</strong></td>
+                            <td>C# delegate/event를 호출하는 <strong>기본 메서드</strong></td>
+                            <td>Event Bus 패턴에서 사용하는 <strong>커스텀 메서드</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>사용처</strong></td>
+                            <td>
+                                • EventChannel<br>
+                                • 일반 C# event<br>
+                                • Delegate
+                            </td>
+                            <td>
+                                • Event Bus (Bus&lt;T&gt;)<br>
+                                • 전역 이벤트 시스템
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>구문</strong></td>
+                            <td><code>Event?.Invoke(args)</code></td>
+                            <td><code>Bus&lt;T&gt;.Raise(eventData)</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Null 체크</strong></td>
+                            <td><code>?.</code> 연산자로 안전하게 체크</td>
+                            <td>내부에서 자동 처리</td>
+                        </tr>
+                        <tr>
+                            <td><strong>구독 방식</strong></td>
+                            <td><code>myEvent += Handler</code></td>
+                            <td><code>Bus&lt;T&gt;.OnEvent += Handler</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>범위</strong></td>
+                            <td>특정 인스턴스 (Local)</td>
+                            <td>전역 (Global)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>1️⃣ Invoke - C# 기본 이벤트 호출</h3>
+                <div class="concept-box">
+                    <h4>Invoke는 C#의 표준 방법</h4>
+                    <p>Delegate나 Event를 호출할 때 사용하는 <strong>C# 내장 메서드</strong>입니다.</p>
+                </div>
+
+                <div class="code-box">
+<span class="comment">// DamageableSensor.cs 예시</span>
+<span class="keyword">public class</span> <span class="type">DamageableSensor</span> : <span class="type">MonoBehaviour</span>
+{
+    <span class="comment">// Delegate 정의</span>
+    <span class="keyword">public delegate void</span> <span class="type">UnitDetectionEvent</span>(<span class="type">IDamageable</span> damageable);
+
+    <span class="comment">// Event 선언</span>
+    <span class="keyword">public event</span> <span class="type">UnitDetectionEvent</span> OnUnitEnter;
+
+    <span class="keyword">private void</span> <span class="type">OnTriggerEnter</span>(<span class="type">Collider</span> collider)
+    {
+        <span class="keyword">if</span> (collider.TryGetComponent&lt;<span class="type">IDamageable</span>&gt;(<span class="keyword">out var</span> damageable))
+        {
+            damageables.Add(damageable);
+
+            <span class="comment">// ✅ Invoke 사용 (Null-conditional 연산자)</span>
+            OnUnitEnter?.Invoke(damageable);
+            <span class="comment">// Event가 null이 아니면 Invoke() 호출</span>
+        }
+    }
+}
+                </div>
+
+                <div class="code-box">
+<span class="comment">// EventChannel에서 Invoke 사용</span>
+<span class="keyword">public class</span> <span class="type">BuildingEventChannel</span>
+{
+    <span class="keyword">public event</span> <span class="type">System.Action</span>&lt;<span class="type">GameObject</span>, <span class="type">BuildingEventType</span>, <span class="type">BaseBuilding</span>&gt; Event;
+
+    <span class="keyword">public void</span> <span class="type">SendEventMessage</span>(<span class="type">GameObject</span> self, <span class="type">BuildingEventType</span> eventType, <span class="type">BaseBuilding</span> building)
+    {
+        <span class="comment">// ✅ Invoke 사용</span>
+        Event?.Invoke(self, eventType, building);
+    }
+}
+                </div>
+
+                <h3>2️⃣ Raise - Event Bus 패턴 전용</h3>
+                <div class="concept-box">
+                    <h4>Raise는 Bus&lt;T&gt; 클래스의 커스텀 메서드</h4>
+                    <p><strong>Event Bus 패턴</strong>에서 전역 이벤트를 발생시킬 때 사용하는 우리가 직접 만든 메서드입니다.</p>
+                </div>
+
+                <div class="code-box">
+<span class="comment">// Bus.cs - Event Bus 구현</span>
+<span class="keyword">public static class</span> <span class="type">Bus</span>&lt;<span class="type">T</span>&gt; <span class="keyword">where</span> <span class="type">T</span> : <span class="keyword">struct</span>, <span class="type">IEvent</span>
+{
+    <span class="comment">// 전역 Event</span>
+    <span class="keyword">public static event</span> <span class="type">System.Action</span>&lt;<span class="type">T</span>&gt; OnEvent;
+
+    <span class="comment">// ✅ Raise 메서드 (커스텀)</span>
+    <span class="keyword">public static void</span> <span class="type">Raise</span>(<span class="type">T</span> eventData)
+    {
+        <span class="comment">// 내부적으로 Invoke 사용</span>
+        OnEvent?.Invoke(eventData);
+    }
+}
+                </div>
+
+                <div class="code-box">
+<span class="comment">// Worker.cs - Raise 사용 예시</span>
+<span class="keyword">public class</span> <span class="type">Worker</span> : <span class="type">AbstractUnit</span>
+{
+    <span class="keyword">public void</span> <span class="type">BuildBuilding</span>(<span class="type">BaseBuilding</span> building, <span class="type">Vector3</span> target)
+    {
+        <span class="comment">// 건물 건설 시작</span>
+        SetCommandOverrides(cancelBuildingCommand);
+
+        <span class="comment">// ✅ Raise 사용 - 자원 감소 이벤트 발생</span>
+        Bus&lt;<span class="type">SupplyEvent</span>&gt;.Raise(<span class="keyword">new</span> <span class="type">SupplyEvent</span>(-building.Cost.Minerals, building.Cost.MineralsSO));
+        Bus&lt;<span class="type">SupplyEvent</span>&gt;.Raise(<span class="keyword">new</span> <span class="type">SupplyEvent</span>(-building.Cost.Gas, building.Cost.GasSO));
+    }
+}
+                </div>
+
+                <div class="important-box">
+                    <h3>왜 Raise라는 이름을 쓸까?</h3>
+                    <p style="font-size: 1.05rem; line-height: 1.8;">
+                        <strong>"Raise"</strong>는 "이벤트를 발생시킨다(raise an event)"는 의미입니다.<br><br>
+                        <code>Invoke</code>보다 <strong>의미가 명확</strong>하고, Event Bus 패턴에서 <strong>"이벤트를 전파한다"</strong>는 의도를 더 잘 표현합니다.
+                    </p>
+                </div>
+            </div>
+
+            <!-- 실전 비교 -->
+            <div class="section">
+                <h2><span class="emoji">🔍</span>실전 코드 비교</h2>
+
+                <h3>상황 1: EventChannel (Behavior Tree → C#)</h3>
+                <div class="code-box">
+<span class="comment">// Behavior Tree에서 "Send Event Message" 노드 실행</span>
+<span class="comment">// → BuildingEventChannel.SendEventMessage() 호출</span>
+
+<span class="keyword">public class</span> <span class="type">BuildingEventChannel</span>
+{
+    <span class="keyword">public event</span> <span class="type">System.Action</span>&lt;<span class="type">GameObject</span>, <span class="type">BuildingEventType</span>, <span class="type">BaseBuilding</span>&gt; Event;
+
+    <span class="keyword">public void</span> <span class="type">SendEventMessage</span>(<span class="type">GameObject</span> self, <span class="type">BuildingEventType</span> eventType, <span class="type">BaseBuilding</span> building)
+    {
+        <span class="comment">// ✅ Invoke 사용 (C# 표준)</span>
+        Event?.Invoke(self, eventType, building);
+    }
+}
+
+<span class="comment">// Worker.cs에서 구독</span>
+<span class="keyword">protected override void</span> <span class="type">Start</span>()
+{
+    <span class="keyword">base</span>.Start();
+
+    <span class="keyword">var</span> buildingEventChannel = graphAgent.GetVariable&lt;<span class="type">BuildingEventChannel</span>&gt;(<span class="string">"BuildingEventChannel"</span>);
+
+    <span class="comment">// 구독</span>
+    buildingEventChannel.Value.Event += HandleBuildingEvent;
+}
+
+<span class="keyword">private void</span> <span class="type">HandleBuildingEvent</span>(<span class="type">GameObject</span> self, <span class="type">BuildingEventType</span> eventType, <span class="type">BaseBuilding</span> building)
+{
+    <span class="comment">// 이벤트 처리</span>
+}
+                </div>
+
+                <h3>상황 2: Event Bus (전역 이벤트)</h3>
+                <div class="code-box">
+<span class="comment">// Worker.cs - 자원 소비 이벤트 발생</span>
+<span class="keyword">public void</span> <span class="type">BuildBuilding</span>(<span class="type">BaseBuilding</span> building, <span class="type">Vector3</span> target)
+{
+    <span class="comment">// ✅ Raise 사용 (Event Bus)</span>
+    Bus&lt;<span class="type">SupplyEvent</span>&gt;.Raise(<span class="keyword">new</span> <span class="type">SupplyEvent</span>(-building.Cost.Minerals, building.Cost.MineralsSO));
+}
+
+<span class="comment">// SupplyManager.cs - 어디서든 구독 가능</span>
+<span class="keyword">private void</span> <span class="type">OnEnable</span>()
+{
+    <span class="comment">// 구독</span>
+    Bus&lt;<span class="type">SupplyEvent</span>&gt;.OnEvent += HandleSupplyEvent;
+}
+
+<span class="keyword">private void</span> <span class="type">HandleSupplyEvent</span>(<span class="type">SupplyEvent</span> evt)
+{
+    <span class="comment">// 자원 증감 처리</span>
+}
+                </div>
+
+                <h3>상황 3: DamageableSensor (Local Event)</h3>
+                <div class="code-box">
+<span class="comment">// DamageableSensor.cs - 특정 센서의 이벤트</span>
+<span class="keyword">public class</span> <span class="type">DamageableSensor</span> : <span class="type">MonoBehaviour</span>
+{
+    <span class="keyword">public delegate void</span> <span class="type">UnitDetectionEvent</span>(<span class="type">IDamageable</span> damageable);
+    <span class="keyword">public event</span> <span class="type">UnitDetectionEvent</span> OnUnitEnter;
+
+    <span class="keyword">private void</span> <span class="type">OnTriggerEnter</span>(<span class="type">Collider</span> collider)
+    {
+        <span class="keyword">if</span> (collider.TryGetComponent&lt;<span class="type">IDamageable</span>&gt;(<span class="keyword">out var</span> damageable))
+        {
+            <span class="comment">// ✅ Invoke 사용 (Local Event)</span>
+            OnUnitEnter?.Invoke(damageable);
+        }
+    }
+}
+
+<span class="comment">// AbstractUnit.cs - 자신의 센서만 구독</span>
+[<span class="type">SerializeField</span>] <span class="keyword">private</span> <span class="type">DamageableSensor</span> damageableSensor;
+
+<span class="keyword">protected override void</span> <span class="type">Start</span>()
+{
+    <span class="keyword">base</span>.Start();
+
+    <span class="keyword">if</span> (damageableSensor != <span class="keyword">null</span>)
+    {
+        <span class="comment">// 이 유닛의 센서만 구독</span>
+        damageableSensor.OnUnitEnter += HandleUnitEnter;
+    }
+}
+                </div>
+            </div>
+
+            <!-- 정리 -->
+            <div class="section">
+                <h2><span class="emoji">📚</span>핵심 정리</h2>
+
+                <div class="visual-box">
+                    <h3 style="color: #667eea;">언제 무엇을 쓸까?</h3>
+                    <table class="comparison-table" style="margin-top: 20px;">
+                        <thead>
+                            <tr>
+                                <th>상황</th>
+                                <th>사용할 것</th>
+                                <th>예시</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Behavior Tree → C#</strong></td>
+                                <td>EventChannel + <code>Invoke</code></td>
+                                <td>BuildingEventChannel</td>
+                            </tr>
+                            <tr>
+                                <td><strong>전역 이벤트</strong></td>
+                                <td>Bus&lt;T&gt; + <code>Raise</code></td>
+                                <td>SupplyEvent, UnitSelectedEvent</td>
+                            </tr>
+                            <tr>
+                                <td><strong>로컬 이벤트</strong></td>
+                                <td>C# event + <code>Invoke</code></td>
+                                <td>DamageableSensor.OnUnitEnter</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="concept-box">
+                    <h3>1️⃣ EventChannel</h3>
+                    <ul style="font-size: 1.05rem; line-height: 1.8;">
+                        <li>Unity Behavior Tree 전용 이벤트 시스템</li>
+                        <li>Blackboard 변수로 저장</li>
+                        <li>Behavior Tree에서 <code>SendEventMessage()</code> 호출 → 내부에서 <code>Invoke</code></li>
+                    </ul>
+                </div>
+
+                <div class="concept-box">
+                    <h3>2️⃣ Invoke</h3>
+                    <ul style="font-size: 1.05rem; line-height: 1.8;">
+                        <li>C# delegate/event를 호출하는 <strong>기본 메서드</strong></li>
+                        <li><code>Event?.Invoke(args)</code> - Null-conditional 연산자로 안전하게 호출</li>
+                        <li>로컬 이벤트 (특정 인스턴스)</li>
+                    </ul>
+                </div>
+
+                <div class="concept-box">
+                    <h3>3️⃣ Raise</h3>
+                    <ul style="font-size: 1.05rem; line-height: 1.8;">
+                        <li>Event Bus 패턴의 <strong>커스텀 메서드</strong></li>
+                        <li><code>Bus&lt;T&gt;.Raise(eventData)</code> - 전역 이벤트 발생</li>
+                        <li>내부적으로 <code>Invoke</code> 사용</li>
+                    </ul>
+                </div>
+
+                <div class="important-box" style="background: #e8f5e9; border-left-color: #4caf50;">
+                    <h3>💡 결론</h3>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">
+                        <strong>Invoke</strong>는 C#의 기본 메서드<br>
+                        <strong>Raise</strong>는 Event Bus에서 Invoke를 감싼 커스텀 메서드<br>
+                        <strong>EventChannel</strong>은 Unity Behavior에서 Invoke를 사용하는 이벤트 전달 시스템<br><br>
+                        <strong>결국 모두 내부적으로 Invoke를 사용합니다!</strong>
+                    </p>
+                </div>
+            </div>
+
+            <!-- 마무리 -->
+            <div class="section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                <h2 style="color: white;">🎉 완벽 이해!</h2>
+                <p style="font-size: 1.2rem; line-height: 1.8;">
+                    이제 EventChannel, Invoke, Raise의 차이를 완벽하게 이해했습니다!<br><br>
+                    <strong>핵심:</strong> 모두 이벤트를 전달하는 방법이지만, 용도와 범위가 다릅니다.
+                </p>
+                <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 8px;">
+                    <strong>기억하세요:</strong><br>
+                    • EventChannel = Behavior Tree ↔ C# 연결<br>
+                    • Invoke = C# 기본 이벤트 호출<br>
+                    • Raise = Event Bus 전역 이벤트
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
