@@ -416,9 +416,156 @@
                 </div>
             </div>
 
+            <!-- Rigidbody가 뭔가요? -->
+            <div class="section">
+                <h2><span class="emoji">🎱</span>Rigidbody가 뭔가요?</h2>
+
+                <div class="visual-box">
+                    <h3 style="margin-bottom: 20px;">🍎 사과가 떨어지는 이유</h3>
+                    <p style="font-size: 1.2rem; color: #666; line-height: 1.8;">
+                        현실 세계에서 사과를 공중에 두면 <strong>중력</strong> 때문에 떨어집니다.<br>
+                        Unity에서도 똑같이 만들려면? <strong>Rigidbody</strong>를 추가하면 됩니다!
+                    </p>
+                </div>
+
+                <div class="concept-box">
+                    <h3>Rigidbody = "물리 법칙을 따르는 물체"</h3>
+                    <p style="font-size: 1.1rem; margin-bottom: 15px;">
+                        Rigidbody는 Unity의 <strong>물리 엔진</strong>이 오브젝트를 인식하게 만드는 컴포넌트입니다.
+                    </p>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Rigidbody 없으면</th>
+                                <th>Rigidbody 있으면</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>❌ 중력 적용 안 됨</td>
+                                <td>✅ 중력으로 떨어짐</td>
+                            </tr>
+                            <tr>
+                                <td>❌ 충돌해도 튕겨나가지 않음</td>
+                                <td>✅ 부딪히면 튕겨남</td>
+                            </tr>
+                            <tr>
+                                <td>❌ 힘을 가해도 움직이지 않음</td>
+                                <td>✅ AddForce()로 밀 수 있음</td>
+                            </tr>
+                            <tr>
+                                <td>❌ OnTriggerEnter 이벤트 못 받음</td>
+                                <td>✅ OnTriggerEnter 이벤트 받음</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="important-box">
+                    <h3>🔑 이번 강의에서 Rigidbody를 쓰는 이유</h3>
+                    <p style="font-size: 1.1rem; margin-bottom: 10px;">
+                        우리는 <strong>물리 시뮬레이션</strong>이 필요한 게 아니라,<br>
+                        <strong>OnTriggerEnter/Exit 이벤트</strong>를 받기 위해 Rigidbody를 추가합니다.
+                    </p>
+                    <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <p style="color: #333; font-size: 1rem;">
+                            <strong>Unity 규칙:</strong><br>
+                            Trigger Collider(Is Trigger ✅)와 상호작용하려면,<br>
+                            움직이는 물체에 <strong>Rigidbody</strong> 또는 <strong>CharacterController</strong>가 필요합니다.
+                        </p>
+                    </div>
+                </div>
+
+                <h3>Rigidbody의 두 가지 모드</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>설정</th>
+                            <th>Is Kinematic = False (기본)</th>
+                            <th>Is Kinematic = True</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>중력</strong></td>
+                            <td>✅ 적용됨 (떨어짐)</td>
+                            <td>❌ 적용 안 됨</td>
+                        </tr>
+                        <tr>
+                            <td><strong>충돌</strong></td>
+                            <td>✅ 부딪히면 튕겨남</td>
+                            <td>❌ 충돌 무시</td>
+                        </tr>
+                        <tr>
+                            <td><strong>힘/속도</strong></td>
+                            <td>✅ AddForce()로 움직임</td>
+                            <td>❌ 직접 Transform 이동만 가능</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Trigger 이벤트</strong></td>
+                            <td>✅ 받음</td>
+                            <td>✅ 받음 (둘 다 가능!)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>성능</strong></td>
+                            <td>⚠️ 물리 계산 많음</td>
+                            <td>✅ 물리 계산 거의 없음</td>
+                        </tr>
+                        <tr>
+                            <td><strong>사용 예시</strong></td>
+                            <td>🏀 공, 📦 상자 (현실적 움직임)</td>
+                            <td>🤖 유닛, 🚪 문 (스크립트로 제어)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="concept-box">
+                    <h3>🎯 우리 프로젝트 설정</h3>
+                    <div style="background: white; padding: 20px; border-radius: 8px; margin-top: 15px;">
+                        <div style="font-size: 1.1rem; line-height: 2;">
+                            <strong style="color: #667eea;">Worker & Rifleman:</strong><br>
+                            • Rigidbody 추가 ✅<br>
+                            • Is Kinematic: <strong>True</strong> (NavMesh Agent가 이동 제어)<br>
+                            • Use Gravity: <strong>False</strong> (바닥 뚫고 안 떨어지게)<br><br>
+
+                            <strong style="color: #667eea;">이유:</strong><br>
+                            1️⃣ OnTriggerEnter/Exit 이벤트를 받기 위해<br>
+                            2️⃣ 하지만 물리 시뮬레이션은 필요 없음 (NavMesh가 이동 처리)<br>
+                            3️⃣ 성능 최적화 (물리 계산 안 함)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="visual-box">
+                    <h3>📊 비유로 이해하기</h3>
+                    <table class="comparison-table" style="margin-top: 15px;">
+                        <thead>
+                            <tr>
+                                <th>상황</th>
+                                <th>비유</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Rigidbody 없음</strong></td>
+                                <td>👻 유령 - 중력도 없고 충돌도 없음</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Rigidbody (Is Kinematic = False)</strong></td>
+                                <td>🏀 공 - 중력으로 떨어지고 튕김</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Rigidbody (Is Kinematic = True)</strong></td>
+                                <td>🤖 로봇 - Trigger 감지만 하고 직접 제어</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- Rigidbody 설정 -->
             <div class="section">
-                <h2><span class="emoji">🔧</span>Rigidbody 설정</h2>
+                <h2><span class="emoji">🔧</span>Rigidbody 설정 (실습)</h2>
 
                 <div class="important-box">
                     <h3>왜 Rigidbody가 필요한가?</h3>
