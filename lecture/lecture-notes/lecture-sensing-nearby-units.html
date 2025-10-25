@@ -563,6 +563,230 @@
                 </div>
             </div>
 
+            <!-- CharacterController란? -->
+            <div class="section">
+                <h2><span class="emoji">🎮</span>CharacterController란?</h2>
+
+                <div class="visual-box">
+                    <h3 style="margin-bottom: 20px;">🚶 걷는 사람 vs 🏀 공</h3>
+                    <p style="font-size: 1.2rem; color: #666; line-height: 1.8;">
+                        사람은 <strong>의지대로 걷고</strong> 멈춥니다.<br>
+                        공은 <strong>물리 법칙에 따라</strong> 굴러가고 튕깁니다.<br><br>
+                        Unity에서 사람처럼 움직이려면? <strong>CharacterController</strong>를 쓰면 됩니다!
+                    </p>
+                </div>
+
+                <div class="concept-box">
+                    <h3>CharacterController = "플레이어 캐릭터 전용 이동 컴포넌트"</h3>
+                    <p style="font-size: 1.1rem; margin-bottom: 15px;">
+                        CharacterController는 <strong>1인칭/3인칭 게임의 플레이어</strong>를 위해 만들어진 특수 컴포넌트입니다.
+                    </p>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>특징</th>
+                                <th>설명</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>물리 시뮬레이션</strong></td>
+                                <td>❌ 안 함 (직접 제어)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>충돌 처리</strong></td>
+                                <td>✅ 벽에 막힘 (하지만 튕기지 않음)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>이동 방식</strong></td>
+                                <td><code>Move()</code> 메서드로 직접 이동</td>
+                            </tr>
+                            <tr>
+                                <td><strong>중력</strong></td>
+                                <td>⚠️ 직접 구현해야 함</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Trigger 이벤트</strong></td>
+                                <td>✅ OnTriggerEnter/Exit 받음</td>
+                            </tr>
+                            <tr>
+                                <td><strong>사용 예시</strong></td>
+                                <td>🎮 FPS 게임 플레이어, RPG 캐릭터</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Rigidbody vs CharacterController 비교</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>항목</th>
+                            <th>Rigidbody (Is Kinematic = False)</th>
+                            <th>Rigidbody (Is Kinematic = True)</th>
+                            <th>CharacterController</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>물리 시뮬레이션</strong></td>
+                            <td>✅ 완전히 적용</td>
+                            <td>❌ 안 함</td>
+                            <td>❌ 안 함</td>
+                        </tr>
+                        <tr>
+                            <td><strong>중력</strong></td>
+                            <td>✅ 자동 적용</td>
+                            <td>❌ 적용 안 됨</td>
+                            <td>⚠️ 직접 구현</td>
+                        </tr>
+                        <tr>
+                            <td><strong>충돌</strong></td>
+                            <td>✅ 튕김</td>
+                            <td>❌ 통과</td>
+                            <td>✅ 막히지만 안 튕김</td>
+                        </tr>
+                        <tr>
+                            <td><strong>이동 방식</strong></td>
+                            <td><code>AddForce()</code></td>
+                            <td><code>Transform.position</code></td>
+                            <td><code>Move()</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>계단 오르기</strong></td>
+                            <td>❌ 어려움</td>
+                            <td>❌ 직접 구현</td>
+                            <td>✅ 자동 지원</td>
+                        </tr>
+                        <tr>
+                            <td><strong>경사면</strong></td>
+                            <td>⚠️ 미끄러짐</td>
+                            <td>❌ 직접 구현</td>
+                            <td>✅ 자동 처리</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Trigger 이벤트</strong></td>
+                            <td>✅</td>
+                            <td>✅</td>
+                            <td>✅</td>
+                        </tr>
+                        <tr>
+                            <td><strong>성능</strong></td>
+                            <td>⚠️ 느림 (물리 계산)</td>
+                            <td>✅ 빠름</td>
+                            <td>✅ 빠름</td>
+                        </tr>
+                        <tr>
+                            <td><strong>사용 예시</strong></td>
+                            <td>🏀 공, 📦 상자</td>
+                            <td>🤖 RTS 유닛 (NavMesh)</td>
+                            <td>🎮 FPS/RPG 플레이어</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="important-box">
+                    <h3>🔑 어떤 걸 써야 할까?</h3>
+                    <table class="comparison-table" style="margin-top: 15px;">
+                        <thead>
+                            <tr>
+                                <th>상황</th>
+                                <th>추천 컴포넌트</th>
+                                <th>이유</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>FPS/TPS 플레이어</strong></td>
+                                <td>CharacterController</td>
+                                <td>계단, 경사면 자동 처리</td>
+                            </tr>
+                            <tr>
+                                <td><strong>RTS 유닛 (NavMesh)</strong></td>
+                                <td>Rigidbody (Is Kinematic = True)</td>
+                                <td>NavMesh가 이동 제어</td>
+                            </tr>
+                            <tr>
+                                <td><strong>물리 기반 오브젝트</strong></td>
+                                <td>Rigidbody (Is Kinematic = False)</td>
+                                <td>현실적인 물리 시뮬레이션</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2D 플랫포머</strong></td>
+                                <td>Rigidbody2D</td>
+                                <td>2D 물리 엔진</td>
+                            </tr>
+                            <tr>
+                                <td><strong>고정된 오브젝트</strong></td>
+                                <td>Collider만</td>
+                                <td>움직이지 않음</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="concept-box">
+                    <h3>🎯 우리 프로젝트는?</h3>
+                    <div style="background: white; padding: 20px; border-radius: 8px; margin-top: 15px;">
+                        <div style="font-size: 1.1rem; line-height: 2;">
+                            <strong style="color: #667eea;">Worker & Rifleman:</strong><br>
+                            ✅ <strong>Rigidbody (Is Kinematic = True)</strong> 사용<br><br>
+
+                            <strong style="color: #667eea;">이유:</strong><br>
+                            1️⃣ RTS 게임이므로 <strong>NavMesh Agent</strong>가 이동 제어<br>
+                            2️⃣ OnTriggerEnter/Exit 이벤트 필요 (DamageableSensor)<br>
+                            3️⃣ 물리 시뮬레이션 불필요 (성능 최적화)<br>
+                            4️⃣ CharacterController는 플레이어 캐릭터용이므로 부적합
+                        </div>
+                    </div>
+                </div>
+
+                <div class="visual-box">
+                    <h3>📊 한눈에 비교하기</h3>
+                    <table class="comparison-table" style="margin-top: 15px;">
+                        <thead>
+                            <tr>
+                                <th>컴포넌트</th>
+                                <th>비유</th>
+                                <th>언제 쓸까?</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>없음</strong></td>
+                                <td>👻 유령</td>
+                                <td>움직이지 않는 건물, 장식</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Rigidbody<br>(Kinematic = False)</strong></td>
+                                <td>🏀 공</td>
+                                <td>중력, 힘, 충돌이 필요할 때</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Rigidbody<br>(Kinematic = True)</strong></td>
+                                <td>🤖 로봇</td>
+                                <td>스크립트로 제어하는 유닛<br>(NavMesh, AI)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CharacterController</strong></td>
+                                <td>🚶 사람</td>
+                                <td>플레이어 캐릭터<br>(FPS, RPG)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="important-box" style="background: #e8f5e9; border-left-color: #4caf50;">
+                    <h3>💡 핵심 정리</h3>
+                    <ul style="font-size: 1.05rem; line-height: 1.8;">
+                        <li><strong>Rigidbody</strong> = 물리 법칙 따르는 물체 (공, 상자)</li>
+                        <li><strong>Rigidbody (Kinematic)</strong> = Trigger만 감지하고 직접 제어 (RTS 유닛)</li>
+                        <li><strong>CharacterController</strong> = 플레이어 전용 이동 (FPS, RPG)</li>
+                        <li><strong>셋 다 OnTriggerEnter/Exit 이벤트를 받을 수 있음!</strong></li>
+                    </ul>
+                </div>
+            </div>
+
             <!-- Rigidbody 설정 -->
             <div class="section">
                 <h2><span class="emoji">🔧</span>Rigidbody 설정 (실습)</h2>
