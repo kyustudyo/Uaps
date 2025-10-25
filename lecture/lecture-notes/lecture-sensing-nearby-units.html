@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>강의: Sensing Nearby Units (근처 유닛 감지)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section h3 {
+            color: #333;
+            margin: 20px 0 15px 0;
+            font-size: 1.3rem;
+        }
+
+        .concept-box {
+            background: #e3f2fd;
+            border-left: 5px solid #2196f3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .important-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .code-box {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        .code-box .keyword {
+            color: #c678dd;
+        }
+
+        .code-box .type {
+            color: #e5c07b;
+        }
+
+        .code-box .string {
+            color: #98c379;
+        }
+
+        .code-box .comment {
+            color: #5c6370;
+            font-style: italic;
+        }
+
+        .flow-diagram {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .comparison-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .comparison-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .emoji {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        ul, ol {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        strong {
+            color: #667eea;
+        }
+
+        .visual-box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .sensor-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            gap: 30px;
+        }
+
+        .unit-circle {
+            width: 80px;
+            height: 80px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            position: relative;
+        }
+
+        .sensor-radius {
+            width: 200px;
+            height: 200px;
+            border: 3px dashed #4facfe;
+            border-radius: 50%;
+            position: absolute;
+            opacity: 0.5;
+        }
+
+        .nearby-unit {
+            width: 50px;
+            height: 50px;
+            background: #ffc107;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Sensing Nearby Units</h1>
+            <div class="subtitle">근처 유닛을 감지하는 Physics 기반 센서 만들기</div>
+        </div>
+
+        <div class="content">
+            <!-- AI 이해 프레임워크 -->
+            <div class="section">
+                <h2><span class="emoji">🧠</span>AI가 세상을 이해하는 방법</h2>
+
+                <div class="concept-box">
+                    <h3>핵심 개념: State & Sensors</h3>
+                    <p style="font-size: 1.1rem; margin-bottom: 15px;">
+                        AI가 복잡한 세상을 이해하려면 <strong>구조화된 방법</strong>이 필요합니다.
+                    </p>
+                    <ul style="font-size: 1.05rem; line-height: 1.8;">
+                        <li><strong>State (상태)</strong> - AI가 알고 있는 데이터</li>
+                        <li><strong>Sensors (센서)</strong> - AI에게 데이터를 제공하는 메커니즘</li>
+                    </ul>
+                </div>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>구성 요소</th>
+                            <th>설명</th>
+                            <th>예시</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>State (상태)</strong></td>
+                            <td>AI가 현재 알고 있는 모든 정보</td>
+                            <td>
+                                • Blackboard 데이터<br>
+                                • 현재 명령 (Move, Attack 등)<br>
+                                • 타겟 위치
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Sensors (센서)</strong></td>
+                            <td>상태를 업데이트하는 C# 클래스/메커니즘</td>
+                            <td>
+                                • Physics 센서 (이번 강의)<br>
+                                • Raycast 센서<br>
+                                • 시야(Vision) 센서
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="important-box">
+                    <h3>🔑 왜 이렇게 해야 할까?</h3>
+                    <p style="font-size: 1.05rem;">
+                        모든 걸 즉흥적으로(ad hoc) 처리하면 <strong>코드가 금방 복잡해지고 유지보수가 불가능</strong>해집니다.
+                        <br><br>
+                        State와 Sensors로 나누면:
+                    </p>
+                    <ul style="margin-top: 10px;">
+                        <li>✅ 코드가 체계적이고 확장 가능</li>
+                        <li>✅ AI 로직과 데이터 수집이 분리됨</li>
+                        <li>✅ 새로운 센서를 쉽게 추가 가능</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Physics 기반 센서 -->
+            <div class="section">
+                <h2><span class="emoji">⚡</span>Physics 기반 센서 만들기</h2>
+
+                <div class="visual-box">
+                    <h3 style="margin-bottom: 20px;">센서 작동 방식</h3>
+                    <div class="sensor-visual">
+                        <div style="position: relative;">
+                            <div class="unit-circle">
+                                🤖
+                                <div class="sensor-radius"></div>
+                            </div>
+                        </div>
+                        <div style="font-size: 2rem;">→</div>
+                        <div class="nearby-unit">👷</div>
+                        <div class="nearby-unit">👷</div>
+                    </div>
+                    <p style="margin-top: 20px; color: #666;">
+                        <strong>Sphere Collider (Trigger)</strong>를 사용해서<br>
+                        반경 8 유닛 내의 모든 IDamageble을 감지
+                    </p>
+                </div>
+
+                <h3>📋 구현 단계</h3>
+                <div class="flow-diagram">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>DamageableSensor GameObject 생성</strong><br>
+                            Rifleman 아래에 빈 GameObject 추가
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>Sphere Collider 추가</strong><br>
+                            • Radius: 8<br>
+                            • Is Trigger: ✅ (충돌하지 않고 감지만)
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <strong>Rigidbody 추가 (Worker & Rifleman)</strong><br>
+                            • Use Gravity: ❌<br>
+                            • Is Kinematic: ✅ (물리 시뮬레이션 OFF)
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <strong>DamageableSensor 스크립트 작성</strong><br>
+                            OnTriggerEnter/Exit 이벤트 처리
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <strong>Physics Layer 설정</strong><br>
+                            "DamageableSensors" 레이어 생성 및 충돌 매트릭스 설정
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rigidbody 설정 -->
+            <div class="section">
+                <h2><span class="emoji">🔧</span>Rigidbody 설정</h2>
+
+                <div class="important-box">
+                    <h3>왜 Rigidbody가 필요한가?</h3>
+                    <p>
+                        Unity에서 <code>OnTriggerEnter</code>와 <code>OnTriggerExit</code> 이벤트를 받으려면,
+                        <strong>Trigger Collider</strong>와 상호작용하는 물체에 <strong>Rigidbody 또는 CharacterController</strong>가 있어야 합니다.
+                    </p>
+                </div>
+
+                <h3>Worker/Rifleman에 Rigidbody 추가</h3>
+                <div class="code-box">
+<span class="comment">// Inspector 설정</span>
+<span class="type">Rigidbody</span> 컴포넌트:
+  ✅ Is Kinematic: <span class="keyword">true</span>    <span class="comment">// 물리 시뮬레이션 비활성화</span>
+  ❌ Use Gravity: <span class="keyword">false</span>     <span class="comment">// 중력 적용 안 함</span>
+                </div>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>설정</th>
+                            <th>값</th>
+                            <th>이유</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Is Kinematic</strong></td>
+                            <td>✅ True</td>
+                            <td>NavMesh Agent가 이동을 제어하므로 물리 시뮬레이션 불필요</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Use Gravity</strong></td>
+                            <td>❌ False</td>
+                            <td>유닛이 바닥을 뚫고 떨어지는 것 방지</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- DamageableSensor 스크립트 -->
+            <div class="section">
+                <h2><span class="emoji">📝</span>DamageableSensor.cs 스크립트</h2>
+
+                <h3>전체 코드</h3>
+                <div class="code-box">
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Linq;
+<span class="keyword">using</span> UnityEngine;
+
+<span class="keyword">namespace</span> <span class="type">GameDevTV.RTS.Units</span>
+{
+    [<span class="type">RequireComponent</span>(<span class="keyword">typeof</span>(<span class="type">Collider</span>))]
+    <span class="keyword">public class</span> <span class="type">DamageableSensor</span> : <span class="type">MonoBehaviour</span>
+    {
+        <span class="comment">// Delegate 정의: 유닛 감지 이벤트</span>
+        <span class="keyword">public delegate void</span> <span class="type">UnitDetectionEvent</span>(<span class="type">IDamageable</span> damageable);
+
+        <span class="comment">// 이벤트: 유닛이 센서 범위에 들어왔을 때</span>
+        <span class="keyword">public event</span> <span class="type">UnitDetectionEvent</span> OnUnitEnter;
+
+        <span class="comment">// 이벤트: 유닛이 센서 범위에서 나갔을 때</span>
+        <span class="keyword">public event</span> <span class="type">UnitDetectionEvent</span> OnUnitExit;
+
+        <span class="comment">// 현재 감지된 모든 IDamageable 저장</span>
+        <span class="keyword">private</span> <span class="type">HashSet</span>&lt;<span class="type">IDamageable</span>&gt; damageables = <span class="keyword">new</span> <span class="type">HashSet</span>&lt;<span class="type">IDamageable</span>&gt;();
+
+        <span class="comment">// 외부에서 읽기 전용으로 접근 가능 (List 복사본 반환)</span>
+        <span class="keyword">public</span> <span class="type">List</span>&lt;<span class="type">IDamageable</span>&gt; Damageables => damageables.ToList();
+
+        <span class="comment">// Unity 이벤트: Trigger에 뭔가 들어왔을 때</span>
+        <span class="keyword">private void</span> <span class="type">OnTriggerEnter</span>(<span class="type">Collider</span> collider)
+        {
+            <span class="comment">// IDamageable 컴포넌트가 있는지 확인</span>
+            <span class="keyword">if</span> (collider.TryGetComponent&lt;<span class="type">IDamageable</span>&gt;(<span class="keyword">out</span> <span class="keyword">var</span> damageable))
+            {
+                <span class="comment">// HashSet에 추가</span>
+                damageables.Add(damageable);
+
+                <span class="comment">// 이벤트 발생 (null 체크)</span>
+                OnUnitEnter?.Invoke(damageable);
+            }
+        }
+
+        <span class="comment">// Unity 이벤트: Trigger에서 뭔가 나갔을 때</span>
+        <span class="keyword">private void</span> <span class="type">OnTriggerExit</span>(<span class="type">Collider</span> collider)
+        {
+            <span class="comment">// IDamageable 컴포넌트가 있는지 확인</span>
+            <span class="keyword">if</span> (collider.TryGetComponent&lt;<span class="type">IDamageable</span>&gt;(<span class="keyword">out</span> <span class="keyword">var</span> damageable))
+            {
+                <span class="comment">// HashSet에서 제거</span>
+                damageables.Remove(damageable);
+
+                <span class="comment">// 이벤트 발생 (null 체크)</span>
+                OnUnitExit?.Invoke(damageable);
+            }
+        }
+    }
+}
+                </div>
+
+                <h3>코드 설명</h3>
+
+                <div class="concept-box">
+                    <h4>1️⃣ Delegate와 Event</h4>
+                    <div class="code-box">
+<span class="keyword">public delegate void</span> <span class="type">UnitDetectionEvent</span>(<span class="type">IDamageable</span> damageable);
+<span class="keyword">public event</span> <span class="type">UnitDetectionEvent</span> OnUnitEnter;
+<span class="keyword">public event</span> <span class="type">UnitDetectionEvent</span> OnUnitExit;
+                    </div>
+                    <p style="margin-top: 10px;">
+                        <strong>Delegate</strong>: 함수 시그니처 정의<br>
+                        <strong>Event</strong>: 다른 클래스에서 구독할 수 있는 이벤트
+                    </p>
+                </div>
+
+                <div class="concept-box">
+                    <h4>2️⃣ HashSet으로 중복 방지</h4>
+                    <div class="code-box">
+<span class="keyword">private</span> <span class="type">HashSet</span>&lt;<span class="type">IDamageable</span>&gt; damageables = <span class="keyword">new</span> <span class="type">HashSet</span>&lt;<span class="type">IDamageable</span>&gt;();
+                    </div>
+                    <p style="margin-top: 10px;">
+                        HashSet은 <strong>중복을 자동으로 방지</strong>하므로 같은 유닛이 여러 번 추가되지 않습니다.
+                    </p>
+                </div>
+
+                <div class="concept-box">
+                    <h4>3️⃣ 읽기 전용 List 반환</h4>
+                    <div class="code-box">
+<span class="keyword">public</span> <span class="type">List</span>&lt;<span class="type">IDamageable</span>&gt; Damageables => damageables.ToList();
+                    </div>
+                    <p style="margin-top: 10px;">
+                        <strong>왜 ToList()를 할까?</strong><br>
+                        외부에서 <code>Damageables.Add()</code>를 해도 <strong>복사본</strong>만 변경되므로 원본 HashSet은 안전합니다.
+                    </p>
+                </div>
+
+                <div class="important-box">
+                    <h4>⚠️ 만약 이렇게 했다면?</h4>
+                    <div class="code-box">
+<span class="comment">// ❌ 잘못된 방법</span>
+<span class="keyword">public</span> <span class="type">HashSet</span>&lt;<span class="type">IDamageable</span>&gt; Damageables { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+                    </div>
+                    <p style="margin-top: 10px;">
+                        외부에서 <code>sensor.Damageables.Add(something)</code>을 하면 원본 HashSet이 변경됩니다! 🚨<br>
+                        <code>private set</code>은 <strong>참조 교체</strong>만 막고, <strong>내용 변경</strong>은 막지 못합니다.
+                    </p>
+                </div>
+            </div>
+
+            <!-- AbstractUnit 통합 -->
+            <div class="section">
+                <h2><span class="emoji">🔗</span>AbstractUnit.cs 통합</h2>
+
+                <h3>DamageableSensor 연결</h3>
+                <div class="code-box">
+<span class="keyword">using</span> GameDevTV.RTS.Units;
+
+<span class="keyword">public abstract class</span> <span class="type">AbstractUnit</span> : <span class="type">AbstractCommandable</span>, <span class="type">IMoveable</span>, <span class="type">IDamageable</span>
+{
+    [<span class="type">SerializeField</span>] <span class="keyword">private</span> <span class="type">DamageableSensor</span> damageableSensor;
+
+    <span class="keyword">protected override void</span> <span class="type">Start</span>()
+    {
+        <span class="keyword">base</span>.Start();
+
+        <span class="comment">// DamageableSensor 이벤트 구독</span>
+        <span class="keyword">if</span> (damageableSensor != <span class="keyword">null</span>)
+        {
+            damageableSensor.OnUnitEnter += HandleUnitEnter;
+            damageableSensor.OnUnitExit += HandleUnitExit;
+        }
+    }
+
+    <span class="keyword">private void</span> <span class="type">HandleUnitEnter</span>(<span class="type">IDamageable</span> damageable)
+    {
+        <span class="type">Debug</span>.Log(<span class="string">$"Detected unit ENTER - </span>{damageableSensor.Damageables.Count}<span class="string"> nearby damageables"</span>);
+
+        <span class="comment">// TODO: Blackboard에 업데이트</span>
+        <span class="comment">// graphAgent.SetVariableValue("NearbyEnemies", damageableSensor.Damageables);</span>
+    }
+
+    <span class="keyword">private void</span> <span class="type">HandleUnitExit</span>(<span class="type">IDamageable</span> damageable)
+    {
+        <span class="type">Debug</span>.Log(<span class="string">$"Detected unit EXIT - </span>{damageableSensor.Damageables.Count}<span class="string"> nearby damageables"</span>);
+
+        <span class="comment">// TODO: Blackboard에 업데이트</span>
+    }
+}
+                </div>
+
+                <div class="concept-box">
+                    <h3>Awake vs Start 패턴</h3>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>메서드</th>
+                                <th>용도</th>
+                                <th>예시</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Awake()</strong></td>
+                                <td>자기 자신 초기화</td>
+                                <td>
+                                    • 컴포넌트 GetComponent<br>
+                                    • 내부 변수 초기화
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Start()</strong></td>
+                                <td>의존성 설정</td>
+                                <td>
+                                    • 다른 컴포넌트 이벤트 구독<br>
+                                    • 다른 오브젝트 참조
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 10px;">
+                        이렇게 하면 <strong>Start()에서 의존성을 설정할 때</strong> 다른 오브젝트의 Awake()가 이미 실행된 상태라 안전합니다.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Physics Layer 설정 -->
+            <div class="section">
+                <h2><span class="emoji">🎮</span>Physics Layer 설정</h2>
+
+                <h3>1️⃣ 새 레이어 생성</h3>
+                <div class="flow-diagram">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>Inspector → Layer → Add Layer</strong><br>
+                            Layer 10에 "DamageableSensors" 추가
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>DamageableSensor GameObject</strong><br>
+                            Layer를 "DamageableSensors"로 변경
+                        </div>
+                    </div>
+                </div>
+
+                <h3>2️⃣ Layer Collision Matrix 설정</h3>
+                <div class="important-box">
+                    <p><strong>Edit → Project Settings → Physics → Layer Collision Matrix</strong></p>
+                    <p style="margin-top: 10px;">
+                        <code>DamageableSensors</code> 레이어가 충돌할 대상:
+                    </p>
+                    <ul style="margin-top: 10px;">
+                        <li>✅ <strong>Units</strong> - 유닛과 충돌</li>
+                        <li>✅ <strong>Buildings</strong> - 건물과 충돌</li>
+                        <li>❌ <strong>Default, UI, Floor 등</strong> - 나머지는 충돌 안 함</li>
+                    </ul>
+                </div>
+
+                <div class="visual-box">
+                    <h3>Collision Matrix 시각화</h3>
+                    <table class="comparison-table" style="margin-top: 15px;">
+                        <thead>
+                            <tr>
+                                <th>레이어</th>
+                                <th>DamageableSensors와 충돌?</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Units</td>
+                                <td style="background: #d4edda;">✅ 충돌함</td>
+                            </tr>
+                            <tr>
+                                <td>Buildings</td>
+                                <td style="background: #d4edda;">✅ 충돌함</td>
+                            </tr>
+                            <tr>
+                                <td>Default</td>
+                                <td style="background: #f8d7da;">❌ 충돌 안 함</td>
+                            </tr>
+                            <tr>
+                                <td>Floor</td>
+                                <td style="background: #f8d7da;">❌ 충돌 안 함</td>
+                            </tr>
+                            <tr>
+                                <td>UI</td>
+                                <td style="background: #f8d7da;">❌ 충돌 안 함</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 테스트 -->
+            <div class="section">
+                <h2><span class="emoji">🧪</span>테스트</h2>
+
+                <h3>테스트 절차</h3>
+                <div class="flow-diagram">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong>Rifleman 프리팹 설정</strong><br>
+                            • DamageableSensor 추가<br>
+                            • Sphere Collider (Radius: 8, Is Trigger: ✅)<br>
+                            • DamageableSensor 스크립트 추가<br>
+                            • Layer: DamageableSensors
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong>AbstractUnit에 참조 연결</strong><br>
+                            Inspector에서 DamageableSensor 드래그
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <strong>Play Mode 테스트</strong><br>
+                            Rifleman을 Worker 근처로 이동시키면서 Console 확인
+                        </div>
+                    </div>
+                </div>
+
+                <h3>예상 출력</h3>
+                <div class="code-box">
+<span class="comment">// Rifleman이 Worker에게 다가갈 때</span>
+Detected unit ENTER - 1 nearby damageables
+Detected unit ENTER - 2 nearby damageables
+Detected unit ENTER - 3 nearby damageables
+
+<span class="comment">// Rifleman이 Worker에게서 멀어질 때</span>
+Detected unit EXIT - 2 nearby damageables
+Detected unit EXIT - 1 nearby damageables
+Detected unit EXIT - 0 nearby damageables
+                </div>
+            </div>
+
+            <!-- 배운 내용 -->
+            <div class="section">
+                <h2><span class="emoji">📚</span>이 강의에서 배운 내용</h2>
+
+                <div class="concept-box">
+                    <h3>1️⃣ AI 아키텍처 패턴</h3>
+                    <ul>
+                        <li><strong>State</strong> - AI가 알고 있는 데이터 (Blackboard)</li>
+                        <li><strong>Sensors</strong> - 데이터를 수집하는 메커니즘</li>
+                        <li>복잡도를 관리하는 구조화된 접근 방식</li>
+                    </ul>
+                </div>
+
+                <div class="concept-box">
+                    <h3>2️⃣ Unity Physics Trigger</h3>
+                    <ul>
+                        <li><code>OnTriggerEnter</code> / <code>OnTriggerExit</code> 이벤트</li>
+                        <li>Sphere Collider + Is Trigger = 충돌 없이 감지만</li>
+                        <li>Rigidbody (Is Kinematic) 필수</li>
+                    </ul>
+                </div>
+
+                <div class="concept-box">
+                    <h3>3️⃣ Delegate와 Event</h3>
+                    <ul>
+                        <li>클래스 간 느슨한 결합 (Loose Coupling)</li>
+                        <li>이벤트 구독/구독 해제 패턴</li>
+                        <li><code>?.Invoke()</code> - Null-conditional 연산자</li>
+                    </ul>
+                </div>
+
+                <div class="concept-box">
+                    <h3>4️⃣ 컬렉션과 캡슐화</h3>
+                    <ul>
+                        <li>HashSet으로 중복 방지</li>
+                        <li><code>ToList()</code>로 복사본 반환해서 원본 보호</li>
+                        <li><code>private set</code>은 참조만 막고 내용은 못 막음</li>
+                    </ul>
+                </div>
+
+                <div class="concept-box">
+                    <h3>5️⃣ Physics Layer System</h3>
+                    <ul>
+                        <li>Layer로 충돌 대상 필터링</li>
+                        <li>Layer Collision Matrix로 성능 최적화</li>
+                        <li>불필요한 충돌 계산 제거</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 요약 -->
+            <div class="section">
+                <h2><span class="emoji">🎯</span>핵심 요약</h2>
+
+                <div style="background: white; padding: 25px; border-radius: 12px; border: 3px solid #667eea;">
+                    <h3 style="color: #667eea; margin-top: 0;">DamageableSensor 완성!</h3>
+
+                    <table class="comparison-table" style="margin-top: 15px;">
+                        <thead>
+                            <tr>
+                                <th>컴포넌트</th>
+                                <th>역할</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Sphere Collider</strong></td>
+                                <td>반경 8 유닛 내 감지 영역</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DamageableSensor.cs</strong></td>
+                                <td>OnTriggerEnter/Exit 처리 및 이벤트 발생</td>
+                            </tr>
+                            <tr>
+                                <td><strong>HashSet&lt;IDamageable&gt;</strong></td>
+                                <td>현재 감지된 유닛 저장 (중복 방지)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>OnUnitEnter/Exit 이벤트</strong></td>
+                                <td>AbstractUnit에 알림</td>
+                            </tr>
+                            <tr>
+                                <td><strong>AbstractUnit</strong></td>
+                                <td>이벤트 구독 및 Blackboard 업데이트 (향후)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 style="color: #667eea; margin-top: 25px;">다음 단계</h3>
+                    <ul style="font-size: 1.1rem; margin-top: 10px;">
+                        <li>🎯 Behavior Tree에서 <code>NearbyEnemies</code> 데이터 활용</li>
+                        <li>⚔️ 자동 공격 로직 구현</li>
+                        <li>👁️ 시야(Vision) 센서 추가 (선택적)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 마무리 -->
+            <div class="section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                <h2 style="color: white;">🎉 완료!</h2>
+                <p style="font-size: 1.2rem; line-height: 1.8;">
+                    이제 유닛이 <strong>주변 8 유닛 반경 내의 모든 IDamageable을 감지</strong>할 수 있습니다!<br><br>
+                    Physics 기반 센서를 만들어서 AI가 <strong>세상을 이해하는 첫 번째 단계</strong>를 완성했습니다.
+                </p>
+                <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 8px;">
+                    <strong>State & Sensors 패턴</strong>으로 더 복잡한 AI도 체계적으로 구현할 수 있습니다!
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

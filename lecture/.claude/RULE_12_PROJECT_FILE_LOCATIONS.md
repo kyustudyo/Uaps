@@ -33,6 +33,7 @@ Assets/Units/Worker/WorkerThreeRobot.prefab
 ```
 lecture/lecture-notes/complete-lecture-notes-4.html
 lecture/lecture-notes/lecture-26-building-events.html
+lecture/lecture-notes/lecture-sensing-nearby-units.html
 lecture/urts-course/ARCHITECTURE_KR.html
 ```
 
@@ -79,4 +80,4 @@ Assets/Scripts/Units/IMoveable.cs          # 이동 가능 인터페이스
 
 ---
 
-**업데이트**: 2025-10-21 (강의 26 노트 추가)
+**업데이트**: 2025-10-25 (Sensing Nearby Units 강의 노트 추가)
